@@ -49,17 +49,14 @@ DecoderInputBuffers::DecoderInputBuffers(
     {
         forwardBatchSlots.emplace_back(BufferManager::pinnedPool(ITensor::makeShape({maxBatchSize}), nvSizeType));
     }
+
+    logits.resize(maxBatchSize);
 }
 
 DecoderBuffers::DecoderBuffers(SizeType32 maxNumSequences, SizeType32 maxBeamWidth, SizeType32 maxAttentionWindow,
     SizeType32 maxSeqLen, SizeType32 maxTokensPerStep, BufferManager const& manager, ModelConfig const& modelConfig,
     WorldConfig const& worldConfig)
 {
-    if (worldConfig.isLastPipelineParallelRank())
-    {
-        logits.resize(maxNumSequences);
-    }
-
     auto constexpr TRTTokenIdType = runtime::TRTDataType<runtime::TokenIdType>::value;
 
     cacheIndirectionInput = manager.gpu(
@@ -105,8 +102,8 @@ DecoderBuffers::DecoderBuffers(SizeType32 maxNumSequences, SizeType32 maxBeamWid
     }
 }
 
-void DecoderBuffers::DraftBuffers::create(SizeType32 maxNumSequences, SizeType32 maxTokensPerStep,
-    BufferManager const& manager, ModelConfig const& modelConfig)
+void DraftBuffers::create(SizeType32 maxNumSequences, SizeType32 maxTokensPerStep, BufferManager const& manager,
+    ModelConfig const& modelConfig)
 {
     auto const speculativeDecodingMode = modelConfig.getSpeculativeDecodingMode();
 

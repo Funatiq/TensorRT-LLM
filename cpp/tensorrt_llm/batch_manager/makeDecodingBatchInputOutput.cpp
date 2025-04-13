@@ -162,7 +162,7 @@ MakeDecodingBatchInputOutput::operator()(RequestVector const& contextRequests, R
 
     auto activeSlots = getActiveSlots(contextRequests, generationRequests);
 
-    auto decodingInput = createDecoderBatchInputs(activeSlots, decoderState, decoderBuffers.logits, maxNumSequences,
+    auto decodingInput = createDecoderBatchInputs(activeSlots, decoderState, inputBuffers.logits, maxNumSequences,
         inputBuffers.forwardBatchSlots, decoderBuffers.cacheIndirectionInput);
 
     if (modelConfig.getSpeculativeDecodingMode().hasDraftLogits())
