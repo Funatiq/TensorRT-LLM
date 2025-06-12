@@ -250,13 +250,10 @@ void initBindings(pybind11::module_& m)
             [](tr::TllmRuntime& self) { return self.getEngine().getTensorDataType("logits"); });
 
     py::class_<tr::decoder_batch::Request>(m, "Request")
-        .def(py::init<tr::decoder_batch::Request::TensorConstPtr, tr::SizeType32, std::optional<tr::SizeType32>,
-                 std::optional<tr::SizeType32>>(),
-            py::arg("ids"), py::arg("input_len"), py::arg("max_new_tokens") = std::nullopt,
-            py::arg("end_id") = std::nullopt)
+        .def(py::init<tr::decoder_batch::Request::TensorConstPtr, tr::SizeType32, std::optional<tr::SizeType32>>(),
+            py::arg("ids"), py::arg("input_len"), py::arg("end_id") = std::nullopt)
         .def_readwrite("ids", &tr::decoder_batch::Request::ids)
         .def_readwrite("input_len", &tr::decoder_batch::Request::inputLen)
-        .def_readwrite("max_new_tokens", &tr::decoder_batch::Request::maxNewTokens)
         .def_readwrite("end_id", &tr::decoder_batch::Request::endId)
         .def_readwrite("draft_logits", &tr::decoder_batch::Request::draftLogits)
         .def_readwrite("embedding_bias", &tr::decoder_batch::Request::embeddingBias)
