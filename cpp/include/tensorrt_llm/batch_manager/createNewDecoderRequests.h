@@ -94,7 +94,7 @@ private:
     static void newRequest(SizeType32 batchSlot, runtime::decoder_batch::Request const& request,
         SamplingConfig const& samplingConfig, runtime::ModelConfig const& modelConfig,
         runtime::decoder::DecoderState& decoderState, CudaStream const& runtimeStream, CudaStream const& decoderStream,
-        SizeType32 maxSequenceLength, SizeType32 maxNewTokens);
+        SizeType32 maxSequenceLength, SizeType32 maxNewTokens, SizeType32 endId);
 
     //! @brief Setups decoder internal tensors for new speculative decoding request
     static void newRequestSpeculativeDecoding(SizeType32 batchIdx, runtime::decoder_batch::Request const& request,

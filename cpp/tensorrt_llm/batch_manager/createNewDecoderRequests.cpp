@@ -162,7 +162,7 @@ CreateNewDecoderRequests::operator()(runtime::ModelConfig const& modelConfig, ru
 void CreateNewDecoderRequests::newRequest(SizeType32 batchSlot, runtime::decoder_batch::Request const& request,
     SamplingConfig const& samplingConfig, runtime::ModelConfig const& modelConfig,
     runtime::decoder::DecoderState& decoderState, CudaStream const& runtimeStream, CudaStream const& decoderStream,
-    SizeType32 maxSequenceLength, SizeType32 maxNewTokens)
+    SizeType32 maxSequenceLength, SizeType32 maxNewTokens, SizeType32 endId)
 {
     TLLM_LOG_TRACE("%s start", __PRETTY_FUNCTION__);
 
@@ -187,7 +187,6 @@ void CreateNewDecoderRequests::newRequest(SizeType32 batchSlot, runtime::decoder
             "Input length (%d) + max new tokens (%d) + draft tokens (%d) must be less than max sequence length (%d).",
             inputLength, maxNewTokens, numDecodingDraftEngineTokens, maxSequenceLength));
     TLLM_CHECK(requestIds->getDataType() == TRTDataType<TokenIdType>::value);
-    auto const endId = request.endId.value_or(-1);
 
     // input
     auto& dJointInput = decoderState.getJointDecodingInput();
@@ -592,7 +591,7 @@ CreateNewDecoderRequests::createDecoderRequests(RequestVector const& finishedCon
         TensorPtr inputView = ITensor::slice(inputIds, inputOffset, promptLen);
         bufferManager.copy(reqTokens.data(), *inputView);
 
-        auto decoderRequest = decoder_batch::Request{inputView, promptLen, llmReq->mEndId};
+        auto decoderRequest = decoder_batch::Request{inputView, promptLen};
 
         llmReq->mSamplingConfig.normalizeLogProbs = mIsNormalizeLogProbs;
         if (modelConfig.getSpeculativeDecodingMode().isDraftTokensExternal())
@@ -659,7 +658,7 @@ CreateNewDecoderRequests::createDecoderRequests(RequestVector const& finishedCon
 
         TLLM_CHECK(llmReq->mSeqSlot.has_value());
         newRequest(llmReq->mSeqSlot.value(), decoderRequest, llmReq->mSamplingConfig, modelConfig, decoderState,
-            runtimeStream, decoderStream, maxSequenceLength, llmReq->mMaxNewTokens);
+            runtimeStream, decoderStream, maxSequenceLength, llmReq->mMaxNewTokens, llmReq->mEndId.value_or(-1));
 
         decoderRequests.push_back(decoderRequest);
 
