@@ -25,7 +25,6 @@
 #include "tensorrt_llm/runtime/decoderState.h"
 #include "tensorrt_llm/runtime/decodingInput.h"
 #include "tensorrt_llm/runtime/decodingOutput.h"
-#include "tensorrt_llm/runtime/gptDecoderBatched.h"
 #include "tensorrt_llm/runtime/runtimeKernels.h"
 #include "tensorrt_llm/runtime/speculativeDecodingMode.h"
 #include "tensorrt_llm/runtime/utils/mpiUtils.h"
@@ -163,7 +162,7 @@ CreateNewDecoderRequests::operator()(runtime::ModelConfig const& modelConfig, ru
 void CreateNewDecoderRequests::newRequest(SizeType32 batchSlot, runtime::decoder_batch::Request const& request,
     SamplingConfig const& samplingConfig, runtime::ModelConfig const& modelConfig,
     runtime::decoder::DecoderState& decoderState, CudaStream const& runtimeStream, CudaStream const& decoderStream,
-    SizeType32 maxSequenceLength)
+    SizeType32 maxSequenceLength, SizeType32 maxNewTokens)
 {
     TLLM_LOG_TRACE("%s start", __PRETTY_FUNCTION__);
 
@@ -182,8 +181,6 @@ void CreateNewDecoderRequests::newRequest(SizeType32 batchSlot, runtime::decoder
     auto const inputLength = request.inputLen;
     auto const numDecodingEngineTokens = request.generatedTokensPerEngineStep;
     auto const numDecodingDraftEngineTokens = numDecodingEngineTokens - 1;
-    auto const maxNewTokens
-        = request.maxNewTokens.value_or(maxSequenceLength - inputLength - numDecodingDraftEngineTokens);
 
     TLLM_CHECK_WITH_INFO(inputLength + maxNewTokens + numDecodingDraftEngineTokens <= maxSequenceLength,
         tc::fmtstr(
@@ -595,7 +592,7 @@ CreateNewDecoderRequests::createDecoderRequests(RequestVector const& finishedCon
         TensorPtr inputView = ITensor::slice(inputIds, inputOffset, promptLen);
         bufferManager.copy(reqTokens.data(), *inputView);
 
-        auto decoderRequest = decoder_batch::Request{inputView, promptLen, llmReq->mMaxNewTokens, llmReq->mEndId};
+        auto decoderRequest = decoder_batch::Request{inputView, promptLen, llmReq->mEndId};
 
         llmReq->mSamplingConfig.normalizeLogProbs = mIsNormalizeLogProbs;
         if (modelConfig.getSpeculativeDecodingMode().isDraftTokensExternal())
@@ -662,7 +659,7 @@ CreateNewDecoderRequests::createDecoderRequests(RequestVector const& finishedCon
 
         TLLM_CHECK(llmReq->mSeqSlot.has_value());
         newRequest(llmReq->mSeqSlot.value(), decoderRequest, llmReq->mSamplingConfig, modelConfig, decoderState,
-            runtimeStream, decoderStream, maxSequenceLength);
+            runtimeStream, decoderStream, maxSequenceLength, llmReq->mMaxNewTokens);
 
         decoderRequests.push_back(decoderRequest);
 
