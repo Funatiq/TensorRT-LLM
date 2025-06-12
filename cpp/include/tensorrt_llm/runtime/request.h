@@ -31,10 +31,9 @@ public:
     using TensorPtr = ITensor::SharedPtr;
     using BufferPtr = IBuffer::SharedPtr;
 
-    explicit Request(TensorConstPtr ids, SizeType32 inputLen, std::optional<SizeType32> endId = std::nullopt)
+    explicit Request(TensorConstPtr ids, SizeType32 inputLen)
         : ids{std::move(ids)}
         , inputLen(inputLen)
-        , endId{endId}
     {
     }
 
@@ -43,7 +42,6 @@ public:
     SizeType32 inputLen; // Input length without draft tokens, increasing with generation steps
 
     // optional parameters
-    std::optional<SizeType32> endId;            // end token id
     SizeType32 generatedTokensPerEngineStep{1}; //
     TensorPtr embeddingBias;                    // [vocabSizePadded], on gpu
     TensorPtr badWordsList;                     // [2, badWordsLength] on gpu
