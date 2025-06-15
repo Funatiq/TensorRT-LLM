@@ -1466,11 +1466,12 @@ void TrtGptModelInflightBatching::createBuffers(executor::DecodingConfig const& 
         mDecoderInputBuffers.back().setupMedusaLogits(getMaxNumSequences(), mModelConfig);
         mDecoderOutputBuffers.emplace_back(getMaxNumSequences(), mOperatingBeamWidth, getMaxSequenceLen(),
             mModelConfig.getMaxDecodingTokens(), mRuntime->getBufferManager());
+        mDecoderOutputBuffers.back().setupSpeculativeDecoding(
+            getMaxNumSequences(), mModelConfig.getMaxDecodingTokens(), mModelConfig);
     }
 
-    mDecoderBuffers
-        = std::make_unique<DecoderBuffers>(getMaxNumSequences(), mOperatingBeamWidth, getMaxAttentionWindow(),
-            mModelConfig.getMaxDecodingTokens(), mRuntime->getBufferManager(), mModelConfig, mWorldConfig);
+    mDecoderBuffers = std::make_unique<DecoderBuffers>(
+        getMaxNumSequences(), mOperatingBeamWidth, getMaxAttentionWindow(), mRuntime->getBufferManager());
 
     mSlotDecoderBuffers.clear();
     for (SizeType32 i = 0; i < getMaxNumSequences(); ++i)
@@ -2036,9 +2037,8 @@ runtime::CudaEvent TrtGptModelInflightBatching::decoderStepAsync(ScheduledReques
     auto decoderFinishEvent = mDecoder->forwardAsync(*mDecoderState, *mDecodingOutput, *decodingInput);
 
     auto const returnLogProbs = batchReturnLogProbs(scheduledRequests);
-    auto updateDecoderBuffersEvent
-        = (*mUpdateDecoderBuffers)(mModelConfig, *mDecoderBuffers, mDecoderOutputBuffers.at(fusedBufferId),
-            mRuntime->getBufferManager(), *mDecoderState, returnLogProbs, decoderFinishEvent);
+    auto updateDecoderBuffersEvent = (*mUpdateDecoderBuffers)(mModelConfig, mDecoderOutputBuffers.at(fusedBufferId),
+        mRuntime->getBufferManager(), *mDecoderState, returnLogProbs, decoderFinishEvent);
 
     TLLM_LOG_TRACE("%s stop", __PRETTY_FUNCTION__);
     return updateDecoderBuffersEvent;
@@ -2161,13 +2161,6 @@ void TrtGptModelInflightBatching::updateRequests(ScheduledRequests const& schedu
     auto const* const decoderFinishedSumPtr = bufferCast<SizeType32 const>(*decoderOutputBuffers.finishedSumHost);
     auto const* const cumLogProbsPtr = bufferCast<float const>(*decoderOutputBuffers.cumLogProbsHost);
     auto const* const logProbsPtr = bufferCast<float const>(*decoderOutputBuffers.logProbsHost);
-    auto const* const nextDraftTokensHostData = mModelConfig.getSpeculativeDecodingMode().predictsDraftTokens()
-        ? bufferCast<TokenIdType const>(*mDecoderBuffers->draftBuffers.nextDraftTokensHost)
-        : nullptr;
-    auto const* const nextDraftTokensLengthsHostData = mModelConfig.getSpeculativeDecodingMode().predictsDraftTokens()
-            && mModelConfig.getSpeculativeDecodingMode().variableDraftLength()
-        ? bufferCast<SizeType32 const>(*mDecoderBuffers->draftBuffers.nextDraftTokensLengthsHost)
-        : nullptr;
     auto const* const finishReasonsHostData
         = bufferCast<kernels::FinishedState>(*decoderOutputBuffers.finishReasonsHost);
 
@@ -2271,10 +2264,14 @@ void TrtGptModelInflightBatching::updateRequests(ScheduledRequests const& schedu
             auto nextDraftTokensLen = mModelConfig.getSpeculativeDecodingModule().getMaxDecodingDraftTokens();
             if (mModelConfig.getSpeculativeDecodingMode().variableDraftLength())
             {
+                auto const* const nextDraftTokensLengthsHostData
+                    = bufferCast<SizeType32 const>(*decoderOutputBuffers.nextDraftTokensLengthsHost);
                 nextDraftTokensLen = nextDraftTokensLengthsHostData[seqSlot];
             }
             TLLM_CHECK(nextDraftTokensLen <= maxDraftTokensLen);
 
+            auto const* const nextDraftTokensHostData
+                = bufferCast<TokenIdType const>(*decoderOutputBuffers.nextDraftTokensHost);
             auto draftTokensShared
                 = std::make_shared<std::vector<TokenIdType>>(nextDraftTokensHostData + seqSlot * maxDraftTokensLen,
                     nextDraftTokensHostData + seqSlot * maxDraftTokensLen + nextDraftTokensLen);
@@ -2402,6 +2399,7 @@ void TrtGptModelInflightBatching::rewindKVCacheBlocks(SizeType32 numSequences)
     TLLM_LOG_TRACE("%s start", __PRETTY_FUNCTION__);
     auto const bufferId = getFusedBufferId();
     auto& runtimeBuffers = *mBuffers.at(bufferId);
+    auto& decoderOutputBuffers = mDecoderOutputBuffers.at(bufferId);
 
     auto localNbLayers = mModelConfig.getNbAttentionLayers(
         mWorldConfig.getPipelineParallelism(), mWorldConfig.getPipelineParallelRank());
@@ -2427,7 +2425,7 @@ void TrtGptModelInflightBatching::rewindKVCacheBlocks(SizeType32 numSequences)
     if (mModelConfig.getSpeculativeDecodingMode().variableDraftLength())
     {
         commonRewindLen = 0;
-        rewindLens = bufferCast<SizeType32 const>(*mDecoderBuffers->draftBuffers.prevDraftTokensLengthsHost);
+        rewindLens = bufferCast<SizeType32 const>(*decoderOutputBuffers.prevDraftTokensLengthsHost);
     }
 
     tensorrt_llm::runtime::kernels::invokeUpdateKVBlockArrayDraftTokenLocation(
