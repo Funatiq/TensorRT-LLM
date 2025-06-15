@@ -138,7 +138,7 @@ MakeDecodingBatchInputOutput::operator()(RequestVector const& contextRequests, R
 
     if (modelConfig.getSpeculativeDecodingMode().hasDraftLogits())
     {
-        decodingInput->predictedDraftLogits = decoderBuffers.draftBuffers.predictedDraftLogits;
+        decodingInput->predictedDraftLogits = inputBuffers.predictedDraftLogits;
     }
 
     if (modelConfig.getSpeculativeDecodingMode().isExplicitDraftTokens())
