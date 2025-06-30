@@ -299,7 +299,7 @@ def prepare_model_tests(model_name: str,
             run_command(generate_command,
                         cwd=root_dir,
                         env=model_env,
-                        timeout=600)
+                        timeout=660)
     else:
         run_command(generate_expected_output,
                     cwd=root_dir,

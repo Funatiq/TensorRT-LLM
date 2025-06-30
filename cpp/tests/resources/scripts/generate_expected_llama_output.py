@@ -110,6 +110,8 @@ def generate_outputs(num_beams, only_multi_gpu=False):
         print(
             f'Generating outputs for Llama FP16 with TP={tp_size}, PP={pp_size} and CP={cp_size}'
         )
+        start_time = time.time()
+
         if tp_size == 4 and pp_size == 1:
             output_logits = True
             output_log_probs = True
@@ -127,6 +129,9 @@ def generate_outputs(num_beams, only_multi_gpu=False):
                         output_logits=output_logits,
                         output_log_probs=output_log_probs,
                         output_cum_log_probs=output_cum_log_probs)
+
+        duration = time.time() - start_time
+        print(f"Generation took {duration} seconds")
 
 
 if __name__ == '__main__':
