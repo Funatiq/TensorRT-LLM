@@ -1120,12 +1120,27 @@ class PyExecutor:
     @nvtx_range("_forward_step_inter_pp")
     def _forward_step_inter_pp(self, scheduled_batch) -> SampleState:
         self._forward_step(scheduled_batch)
+
+        sample_requests = ScheduledRequests()
+        # Separate chunked requests so we can handle them in update_requests w/o relying on the request state.
+        # This is necessary in overlap scheduler because the request state is updated before update_requests is executed.
+        sample_requests.chunked_requests = [
+            r for r in scheduled_batch.context_requests
+            if not r.is_last_context_chunk
+        ]
+        sample_requests.context_requests = [
+            r for r in scheduled_batch.context_requests
+            if r.is_last_context_chunk
+        ]
+        sample_requests.generation_requests = scheduled_batch.generation_requests
+
         sampler_event = torch.cuda.Event()
         sampler_event.record()
         self._update_request_states(scheduled_batch)
         sampler_event.synchronize()
+
         return self.sampler.SampleState(
-            scheduled_requests=scheduled_batch,
+            scheduled_requests=sample_requests,
             sampler_event=sampler_event,
         )
 
