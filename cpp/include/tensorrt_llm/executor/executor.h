@@ -1469,7 +1469,7 @@ private:
 class ExecutorConfig
 {
 public:
-    static constexpr uint64_t kDefaultMaxSeqIdleMicroseconds = 180000000;
+    static constexpr uint64_t kDefaultMaxSeqIdleMicroseconds = 180'000'000;
 
     static constexpr SizeType32 kDefaultIterStatsMaxIterations = 1000;
 
