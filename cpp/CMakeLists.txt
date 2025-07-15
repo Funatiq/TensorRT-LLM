@@ -212,7 +212,7 @@ else()
   list(APPEND CUDA_TOOLKIT_COMPONENTS nvrtc_static nvrtc_builtins_static)
 endif()
 
-find_package(CUDAToolkit 11.2 REQUIRED COMPONENTS ${CUDA_TOOLKIT_COMPONENTS})
+find_package(CUDAToolkit 12.9 REQUIRED COMPONENTS ${CUDA_TOOLKIT_COMPONENTS})
 
 set(CMAKE_CUDA_RUNTIME_LIBRARY Static)
 
