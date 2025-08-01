@@ -259,6 +259,25 @@ void setupWords(std::vector<runtime::ITensor::SharedPtr>& jointWordsLists,
     }
 };
 
+void initializeLogProbs(DecodingOutput& dJointOutput, SizeType32 batchSlot, SamplingConfig const& samplingConfig,
+    BufferManager const& manager)
+{
+    auto const beamWidth = samplingConfig.beamWidth;
+
+    // cumLogProb is mandatory for beamWidth > 1
+    if ((samplingConfig.cumLogProbs.has_value() && samplingConfig.cumLogProbs->at(0)) || beamWidth > 1)
+    {
+        auto cumLogProbs = ITensor::slice(dJointOutput.cumLogProbs, batchSlot, 1);
+        manager.setZero(*cumLogProbs);
+    }
+
+    if (samplingConfig.outputLogProbs.has_value() && samplingConfig.outputLogProbs->at(0))
+    {
+        auto logProbs = ITensor::slice(dJointOutput.logProbs, batchSlot, 1);
+        manager.setZero(*logProbs);
+    }
+}
+
 } // namespace
 
 void CreateNewDecoderRequests::newRequest(SizeType32 batchSlot, runtime::decoder_batch::Request const& request,
@@ -330,19 +349,6 @@ void CreateNewDecoderRequests::newRequest(SizeType32 batchSlot, runtime::decoder
             runtime::kernels::invokeFill(
                 *finishedSteps, tk::FinishedState::skipDecoding().toUnderlying(), decoderStream);
         }
-    }
-
-    // cumLogProb is mandatory for beamWidth > 1
-    if ((samplingConfig.cumLogProbs.has_value() && samplingConfig.cumLogProbs->at(0)) || beamWidth > 1)
-    {
-        auto cumLogProbs = ITensor::slice(dJointOutput.cumLogProbs, batchSlot, 1);
-        manager.setZero(*cumLogProbs);
-    }
-
-    if (samplingConfig.outputLogProbs.has_value() && samplingConfig.outputLogProbs->at(0))
-    {
-        auto logProbs = ITensor::slice(dJointOutput.logProbs, batchSlot, 1);
-        manager.setZero(*logProbs);
     }
 
     TLLM_LOG_TRACE("%s stop", __PRETTY_FUNCTION__);
@@ -656,6 +662,8 @@ CreateNewDecoderRequests::createDecoderRequests(RequestVector const& finishedCon
             batchSlot, decoderRequest, samplingConfig, modelConfig, decoderState, decoderStream, maxSequenceLength);
 
         auto& dJointOutput = decoderState.getJointDecodingOutput();
+
+        initializeLogProbs(dJointOutput, batchSlot, samplingConfig, bufferManager);
 
         auto const& reqTokens = llmReq->getTokens(0);
         TLLM_CHECK(reqTokens.size() == static_cast<decltype(reqTokens.size())>(promptLen));
