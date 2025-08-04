@@ -132,6 +132,7 @@ void DecoderState::setupSpeculativeDecodingBuffers(
 
     mSpeculativeDecodingMode = speculativeDecodingMode;
 
+    auto constexpr nvTokenIdType = TRTDataType<TokenIdType>::value;
     auto constexpr nvSizeType = TRTDataType<SizeType32>::value;
 
     auto& dInput = mJointDecodingInput;
@@ -180,6 +181,7 @@ void DecoderState::setupSpeculativeDecodingBuffers(
         DecodingInput::ExternalDraftTokensInputs externalDraftTokensInputs;
 
         externalDraftTokensInputs.draftLogits = bufferManager.emptyTensor(MemoryType::kGPU, dtype);
+        externalDraftTokensInputs.draftLogitsHost = bufferManager.emptyTensor(MemoryType::kPINNEDPOOL, dtype);
         externalDraftTokensInputs.draftProbs = bufferManager.emptyTensor(MemoryType::kGPU, dtype);
         externalDraftTokensInputs.targetProbs = bufferManager.emptyTensor(MemoryType::kGPU, dtype);
         externalDraftTokensInputs.numDraftTokens = bufferManager.emptyTensor(MemoryType::kGPU, nvSizeType);
@@ -188,8 +190,8 @@ void DecoderState::setupSpeculativeDecodingBuffers(
             = bufferManager.emptyTensor(MemoryType::kGPU, TRTDataType<bool>::value);
         externalDraftTokensInputs.useDraftLogitsHost
             = bufferManager.emptyTensor(MemoryType::kPINNEDPOOL, TRTDataType<bool>::value);
-        externalDraftTokensInputs.draftTokenIds
-            = bufferManager.emptyTensor(MemoryType::kGPU, nvinfer1::DataType::kINT32);
+        externalDraftTokensInputs.draftTokenIds = bufferManager.emptyTensor(MemoryType::kGPU, nvTokenIdType);
+        externalDraftTokensInputs.draftTokenIdsHost = bufferManager.emptyTensor(MemoryType::kPINNEDPOOL, nvTokenIdType);
 
         dInput->externalDraftTokensInputs = externalDraftTokensInputs;
     }
@@ -366,10 +368,16 @@ void DecoderState::reshapeSpeculativeDecodingBuffers(SpeculativeDecodingMode con
             {mMaxBatchSize, mMaxDecodingEngineTokens, mMaxBeamWidth, static_cast<SizeType32>(vocabSizePadded)});
         dInput.externalDraftTokensInputs->draftProbs->reshape(probsShape);
         dInput.externalDraftTokensInputs->targetProbs->reshape(probsShape);
-        dInput.externalDraftTokensInputs->draftLogits->reshape(
-            ITensor::makeShape({mMaxBatchSize, mMaxDecodingEngineTokens, static_cast<SizeType32>(vocabSizePadded)}));
-        dInput.externalDraftTokensInputs->draftTokenIds->reshape(
-            ITensor::makeShape({mMaxBatchSize, mMaxDecodingEngineTokens}));
+
+        auto const logitsShape
+            = ITensor::makeShape({mMaxBatchSize, mMaxDecodingEngineTokens, static_cast<SizeType32>(vocabSizePadded)});
+        dInput.externalDraftTokensInputs->draftLogits->reshape(logitsShape);
+        dInput.externalDraftTokensInputs->draftLogitsHost->reshape(logitsShape);
+
+        auto const tokenIdsShape = ITensor::makeShape({mMaxBatchSize, mMaxDecodingEngineTokens});
+        dInput.externalDraftTokensInputs->draftTokenIds->reshape(tokenIdsShape);
+        dInput.externalDraftTokensInputs->draftTokenIdsHost->reshape(tokenIdsShape);
+
         dInput.externalDraftTokensInputs->numDraftTokens->reshape(maxBatchSizeShape);
         dInput.externalDraftTokensInputs->numDraftTokensHost->reshape(maxBatchSizeShape);
         dInput.externalDraftTokensInputs->useDraftLogits->reshape(maxBatchSizeShape);
