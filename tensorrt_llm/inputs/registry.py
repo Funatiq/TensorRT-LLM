@@ -449,7 +449,7 @@ def create_input_processor(
         model_path_or_dir: Path or repo id used to locate pretrained config/tokenizer.
         tokenizer: Tokenizer instance.
         checkpoint_format: Checkpoint format identifier. "HF" uses Hugging Face-style
-            config loading; any other value skips HF config loading. None is treated as "HF".
+            config loading; any other value skips HF config loading.
 
     Returns:
         An InputProcessor implementation (model-specific if registered; otherwise DefaultInputProcessor).
@@ -459,7 +459,7 @@ def create_input_processor(
 
     model_config = None
 
-    if checkpoint_format is None or checkpoint_format == "HF":
+    if checkpoint_format == "HF":
         try:
             config = ModelConfig.from_pretrained(model_path_or_dir,
                                                  trust_remote_code=True)
