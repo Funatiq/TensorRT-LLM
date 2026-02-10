@@ -479,11 +479,6 @@ public:
             TLLM_CHECK(batch_beam % beam_width == 0);
             int32_t const num_requests = batch_beam / beam_width;
 
-            TLLM_CHECK_WITH_INFO(num_tokens % num_seqs == 0,
-                "seq_len should be same for all generation requests, num_tokens=%d, num_seqs=%d", num_tokens, num_seqs);
-            int32_t const input_seq_length = num_tokens / num_seqs;
-
-            common_enqueue_params.input_seq_length = input_seq_length;
             AttentionOp::EnqueueGenerationParams<T> enqueue_params{common_enqueue_params};
             enqueue_params.layer_idx = op.mLayerIdx;
             enqueue_params.beam_width = beam_width;
@@ -547,6 +542,14 @@ public:
                 enqueue_params.spec_decoding_is_generation_length_variable = true;
                 TLLM_CHECK(spec_decoding_tensor_params[1].value().dim() == 2); // [batch_size, max_draft_len + 1]
                 enqueue_params.spec_decoding_max_generation_length = spec_decoding_tensor_params[1].value().sizes()[1];
+                enqueue_params.input_seq_length = spec_decoding_tensor_params[1].value().sizes()[1];
+            }
+            else
+            {
+                TLLM_CHECK_WITH_INFO(num_tokens % num_seqs == 0,
+                    "seq_len should be same for all generation requests, num_tokens=%d, num_seqs=%d", num_tokens,
+                    num_seqs);
+                enqueue_params.input_seq_length = num_tokens / num_seqs;
             }
 
             // Current mlaGeneration will using fmha to do attention, so we don't go into enqueueGeneration
