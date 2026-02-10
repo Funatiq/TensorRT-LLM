@@ -1764,9 +1764,9 @@ class PyExecutor:
                                 scheduled_requests=scheduled_batch):
                             self.drafter.prepare_draft_tokens(
                                 scheduled_batch, self.resource_manager)
-                            # Pad draft tokens to the max draft length. This is for CUDA graph compatibility.
-                            self.drafter.pad_draft_tokens_for_cuda_graph(
-                                scheduled_batch)
+                            if self.model_engine.cuda_graph_config is not None:
+                                self.drafter.pad_draft_tokens_for_cuda_graph(
+                                    scheduled_batch)
                         # add_batch must be called again to restore to target requests with updated draft tokens.
                         if self.guided_decoder is not None:
                             self.guided_decoder.add_batch(scheduled_batch)

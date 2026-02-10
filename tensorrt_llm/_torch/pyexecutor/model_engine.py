@@ -2260,7 +2260,7 @@ class PyTorchModelEngine(ModelEngine):
                 gather_ids.extend(
                     list(
                         range(len(position_ids),
-                              len(position_ids) + 1 + self.runtime_draft_len)))
+                              len(position_ids) + 1 + num_draft_tokens)))
                 # For the target model + tree decoding
                 if not self.is_draft_model and not spec_config.is_linear_tree:
                     assert spec_tree_manager is not None
