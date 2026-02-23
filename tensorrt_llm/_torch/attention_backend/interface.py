@@ -23,6 +23,7 @@ from ..memory_buffer_utils import Buffers
 from ..metadata import KVCacheParams
 from ..pyexecutor.mamba_cache_manager import MambaCacheManager
 from ..pyexecutor.resource_manager import KVCacheManager, KVCacheManagerV2
+from ..pyexecutor.scheduler import ScheduledRequests
 from ..utils import get_model_extra_attrs
 
 try:
@@ -371,7 +372,7 @@ class AttentionMetadata:
 
     def update_spec_dec_param(
             self,
-            batch_size,
+            scheduled_requests: ScheduledRequests,
             is_spec_decoding_enabled,
             is_spec_dec_tree,
             is_spec_dec_dynamic_tree,

@@ -710,6 +710,9 @@ class FlashInferTrtllmGenAttention:
         bmm2_scale: float,
         window_left: int = -1,
         out: torch.Tensor = None,
+        q_len_per_req: Optional[int] = 1,
+        max_q_len: Optional[int] = None,
+        cum_seq_lens_q: Optional[torch.Tensor] = None,
     ):
         """
         Execute generation (decode) phase using flashinfer.
@@ -728,6 +731,18 @@ class FlashInferTrtllmGenAttention:
             bmm2_scale=bmm2_scale,
             window_left=window_left,
             kv_layout=self._layout,
+            q_len_per_req=q_len_per_req,
+            # max_q_len : Optional[int] = None
+            #     The maximum query sequence length across all requests when using variable-length queries.
+            #     Only supported by trtllm-gen backend. Must be provided together with ``cum_seq_lens_q``.
+            #     When None, all requests use uniform query length specified by ``q_len_per_req``.
+            max_q_len=max_q_len,
+            # cum_seq_lens_q : Optional[torch.Tensor] = None
+            #     Cumulative query sequence lengths for variable-length query support, shape: ``[batch_size + 1]``,
+            #     dtype: ``torch.int32``.
+            #     Only supported by trtllm-gen backend. Must be provided together with ``max_q_len``.
+            #     When None, all requests use uniform query length specified by ``q_len_per_req``.
+            cum_seq_lens_q=cum_seq_lens_q,
         )
 
 
@@ -1254,6 +1269,21 @@ def trtllm_gen_attention(
             # The flashinfer kernel uses seq_lens to determine valid block range.
             # Clamping invalid indices to valid range causes attention to read wrong KV data.
 
+            [
+                spec_decoding_generation_lengths,
+                spec_decoding_position_offsets,
+                spec_decoding_packed_mask,
+            ] = spec_decoding_tensor_params
+
+            if spec_decoding_generation_lengths is not None:
+                q_len_per_req = None
+                max_q_len = spec_decoding_generation_lengths.max().item()
+                cum_seq_lens_q = torch.cumsum(spec_decoding_generation_lengths, dim=0)
+            else:
+                q_len_per_req = 1
+                max_q_len = None
+                cum_seq_lens_q = None
+
             # Run generation phase
             backend.run_generation(
                 query=gen_query,
@@ -1266,6 +1296,9 @@ def trtllm_gen_attention(
                 bmm2_scale=bmm2_scale,
                 window_left=window_left if window_left > 0 else -1,
                 out=gen_output,
+                q_len_per_req=q_len_per_req,
+                max_q_len=max_q_len,
+                cum_seq_lens_q=cum_seq_lens_q,
             )
 
     logger.debug(f"trtllm_gen_attention stops at layer {layer_idx}")

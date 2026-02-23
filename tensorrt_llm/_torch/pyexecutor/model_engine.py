@@ -3457,7 +3457,7 @@ class PyTorchModelEngine(ModelEngine):
                 spec_resource_manager, self.is_draft_model, self.attn_backend,
                 self.model_is_wrapped)
             attn_metadata.update_spec_dec_param(
-                batch_size=scheduled_requests.batch_size,
+                scheduled_requests=scheduled_requests,
                 is_spec_decoding_enabled=is_spec_dec_mode,
                 is_spec_dec_tree=spec_metadata.is_spec_dec_tree,
                 is_spec_dec_dynamic_tree=spec_metadata.is_spec_dec_dynamic_tree,

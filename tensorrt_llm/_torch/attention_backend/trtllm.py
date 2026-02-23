@@ -6,6 +6,9 @@ from typing import TYPE_CHECKING, List, Optional, Tuple
 
 import torch
 
+from tensorrt_llm._torch.pyexecutor.llm_request import get_draft_token_length
+from tensorrt_llm._torch.pyexecutor.scheduler import ScheduledRequests
+
 if TYPE_CHECKING:
     from ..speculative.utils import SpecDecodingTensor
     from ..speculative.interface import SpecMetadata
@@ -1419,7 +1422,7 @@ class TrtllmAttentionMetadata(AttentionMetadata):
 
     def update_spec_dec_param(
         self,
-        batch_size,
+        scheduled_requests: ScheduledRequests,
         is_spec_decoding_enabled,
         is_spec_dec_tree,
         is_spec_dec_dynamic_tree,
@@ -1433,7 +1436,7 @@ class TrtllmAttentionMetadata(AttentionMetadata):
         '''
         Update the spec-dec parameters for the TRTLLM attention layer.
         Args:
-            batch_size: int, the number of requests in the batch.
+            scheduled_requests: ScheduledRequests, the scheduled requests.
             is_spec_decoding_enabled: bool, whether the attention need to be spec_decoding mode, which is determined by attention_need_spec_dec_mode() function.
             is_spec_dec_tree: bool, whether the spec-dec mode is a tree, i.e., static tree or dynamic tree. For linear-tree, it is always False.
             is_spec_dec_dynamic_tree: bool, whether using dynamic tree.
@@ -1601,7 +1604,11 @@ class TrtllmAttentionMetadata(AttentionMetadata):
             else:
                 assert max_draft_len == max_total_draft_tokens, "max_draft_len should be equal to max_total_draft_tokens for linear tree"
                 # Prepare for the linear-tree.
-                # Populate the mask that won't change during inference phase.
+                seq_lengths = [
+                    1 + get_draft_token_length(request)
+                    for request in scheduled_requests.all_requests()
+                ]
+
                 self.generate_spec_decoding_position_offsets(
                     max_draft_len=max_draft_len)
                 self.generate_spec_decoding_packed_mask(
@@ -1638,11 +1645,12 @@ class TrtllmAttentionMetadata(AttentionMetadata):
                 spec_decoding_packed_mask, non_blocking=True)
             tmp_max_draft_len -= 32
 
-    def generate_spec_decoding_generation_length(self, max_draft_len):
-        spec_decoding_generation_length = torch.full((self.max_num_requests, ),
-                                                     max_draft_len + 1)
-        self.spec_decoding_generation_lengths[:self.max_num_requests].copy_(
-            spec_decoding_generation_length, non_blocking=True)
+    def generate_spec_decoding_generation_length(self, seq_lengths: List[int]):
+        spec_decoding_generation_lengths = torch.tensor(seq_lengths,
+                                                        dtype=torch.int,
+                                                        pin_memory=True)
+        self.spec_decoding_generation_lengths[:len(seq_lengths)].copy_(
+            spec_decoding_generation_lengths, non_blocking=True)
 
     def is_sm_version_trtllm_gen_kernel(self, sm):
         return not (sm < 100 or sm in [120, 121])
