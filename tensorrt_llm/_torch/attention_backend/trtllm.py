@@ -1518,6 +1518,14 @@ class TrtllmAttentionMetadata(AttentionMetadata):
                     self.generate_spec_decoding_generation_length(
                         max_draft_len=max_total_draft_tokens)
 
+                print(f"Case 1: dynamic tree: {batch_size=}")
+                print(
+                    f"{self.spec_decoding_position_offsets.to(device='cpu')=}")
+                print(f"{self.spec_decoding_packed_mask.to(device='cpu')=}")
+                print(
+                    f"{self.spec_decoding_generation_lengths.to(device='cpu')=}"
+                )
+
             # Case 2/3: static tree
             elif self.is_spec_dec_tree and not self.is_spec_dec_dynamic_tree and spec_metadata is not None:
                 assert spec_metadata.spec_dec_mode.is_eagle3(
@@ -1537,6 +1545,16 @@ class TrtllmAttentionMetadata(AttentionMetadata):
                         non_blocking=True)
                     self.spec_decoding_generation_lengths[:batch_size].fill_(
                         spec_tree_manager.max_total_draft_tokens + 1)
+
+                    print(
+                        f"Case 2: static tree and target model: {batch_size=}")
+                    print(
+                        f"{self.spec_decoding_position_offsets.to(device='cpu')=}"
+                    )
+                    print(f"{self.spec_decoding_packed_mask.to(device='cpu')=}")
+                    print(
+                        f"{self.spec_decoding_generation_lengths.to(device='cpu')=}"
+                    )
 
                 # Case 3: static tree and the first drafter layer
                 else:
@@ -1568,6 +1586,17 @@ class TrtllmAttentionMetadata(AttentionMetadata):
                     self.generate_spec_decoding_generation_length(
                         max_draft_len=max_draft_len)
 
+                    print(
+                        f"Case 3: static tree and the first drafter layer: {batch_size=}"
+                    )
+                    print(
+                        f"{self.spec_decoding_position_offsets.to(device='cpu')=}"
+                    )
+                    print(f"{self.spec_decoding_packed_mask.to(device='cpu')=}")
+                    print(
+                        f"{self.spec_decoding_generation_lengths.to(device='cpu')=}"
+                    )
+
             # Case 4: linear tree
             else:
                 assert max_draft_len == max_total_draft_tokens, "max_draft_len should be equal to max_total_draft_tokens for linear tree"
@@ -1578,7 +1607,15 @@ class TrtllmAttentionMetadata(AttentionMetadata):
                 self.generate_spec_decoding_packed_mask(
                     max_draft_len=max_draft_len)
                 self.generate_spec_decoding_generation_length(
-                    max_draft_len=max_draft_len)
+                    seq_lengths=seq_lengths)
+
+                print(f"Case 4: linear tree: {scheduled_requests.batch_size=}")
+                print(
+                    f"{self.spec_decoding_position_offsets.to(device='cpu')=}")
+                print(f"{self.spec_decoding_packed_mask.to(device='cpu')=}")
+                print(
+                    f"{self.spec_decoding_generation_lengths.to(device='cpu')=}"
+                )
 
     def generate_spec_decoding_position_offsets(self, max_draft_len):
         position_offset = torch.arange(max_draft_len + 1,

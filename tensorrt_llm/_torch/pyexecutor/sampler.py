@@ -597,6 +597,7 @@ def add_token(
     seq_slot = request.py_seq_slot
     assert seq_slot is not None
     new_token = new_tokens[step][seq_slot][beam_idx]
+    print(f"{request.request_id=} {new_token=}")
     request.add_new_token(new_token, beam_idx)
     return new_token
 
@@ -1531,6 +1532,7 @@ class TorchSampler(Sampler[SampleStateTorch], AsyncWorkerMixin):
         new_tokens: list[list[list[int]]],
         finish_reasons: FinishReasonsList,
     ) -> int:
+        print("greedy first add_token")
         new_token = add_token(request, new_tokens, beam_idx=DEFAULT_BEAM_IDX)
         stop = self.finish_if_reason(request, finish_reasons, step=0, beam_idx=DEFAULT_BEAM_IDX)
         if stop or get_draft_token_length(request) == 0:
@@ -1542,6 +1544,7 @@ class TorchSampler(Sampler[SampleStateTorch], AsyncWorkerMixin):
             force_limit = min(self._force_num_accepted_tokens, len(request.py_draft_tokens))
             for _ in request.py_draft_tokens[:force_limit]:
                 num_accepted += 1
+                print("greedy force add_token")
                 new_token = add_token(
                     request, new_tokens, beam_idx=DEFAULT_BEAM_IDX, step=num_accepted
                 )
@@ -1556,6 +1559,7 @@ class TorchSampler(Sampler[SampleStateTorch], AsyncWorkerMixin):
                     break
 
                 num_accepted += 1
+                print("greedy request add_token")
                 new_token = add_token(
                     request, new_tokens, beam_idx=DEFAULT_BEAM_IDX, step=num_accepted
                 )
@@ -2299,6 +2303,7 @@ class TorchSampler(Sampler[SampleStateTorch], AsyncWorkerMixin):
                 self._finalize_beam(req, beam_history)
             else:
                 for beam_idx in range(req.sampling_config.beam_width):
+                    print("context request add_token")
                     add_token(req, new_tokens_list, beam_idx=beam_idx)
                 self.handle_logprobs(req, logprobs_state_list=logprobs_state_list, count=1)
             self._handle_finish_reasons(req, state.host.finish_reasons, finish_reasons)
@@ -3437,6 +3442,8 @@ class TorchSampler(Sampler[SampleStateTorch], AsyncWorkerMixin):
         seq_slots[:] = seq_slots_int64
 
         raw_logits_cuda = model_outputs["logits"]
+
+        print(f"{raw_logits_cuda=}")
 
         requests = scheduled_requests.all_requests()
         cuda_device = raw_logits_cuda.device

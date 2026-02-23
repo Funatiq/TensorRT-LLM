@@ -869,7 +869,11 @@ def is_supported(
         kv_cache_manager=kv_cache_manager,
     )
 
-    return FlashInferTrtllmGenAttention().is_supported(config, phase)
+    is_supported, reason_if_not_supported = FlashInferTrtllmGenAttention().is_supported(
+        config, phase
+    )
+    print(f"{is_supported=} {reason_if_not_supported=}")
+    return is_supported, reason_if_not_supported
 
 
 def trtllm_gen_attention(
@@ -1221,12 +1225,14 @@ def trtllm_gen_attention(
 
         # KV sequence lengths for generation
         gen_kv_lens = sequence_length[num_contexts : num_contexts + num_generations].to(torch.int32)
+        print(f"{gen_kv_lens=}")
         # Use CPU lengths to avoid GPU sync and match C++ behavior.
         # host_past_key_value_lengths already includes cached + input tokens.
         if num_generations > 0:
             host_gen_lens = host_past_key_value_lengths[
                 num_contexts : num_contexts + num_generations
             ]
+            print(f"{host_gen_lens=}")
             max_kv_len = int(host_gen_lens.max())
         else:
             max_kv_len = 0

@@ -203,6 +203,7 @@ class NGramDrafter(Drafter):
                 request.py_max_new_tokens,
             )
             request.py_draft_tokens = draft_tokens
+            print(f"{request.request_id=} {len(draft_tokens)=}")
 
     def update_max_total_draft_tokens(self,
                                       new_max_total_draft_tokens: int) -> None:
