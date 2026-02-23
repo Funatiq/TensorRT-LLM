@@ -18,6 +18,7 @@
 
 #include "tensorrt_llm/common/config.h"
 #include "tensorrt_llm/common/cublasMMWrapper.h"
+#include "tensorrt_llm/common/cudaUtils.h"
 #include "tensorrt_llm/common/opUtils.h"
 #include "tensorrt_llm/common/quantization.h"
 #include "tensorrt_llm/kernels/contextFusedMultiHeadAttention/fused_multihead_attention_common.h"
@@ -119,6 +120,47 @@ public:
         // this is a buffer of size [num_tokens, num_heads_q] with each element
         // representing the max and LSE/denominator of the softmax values
         float2* softmax_stats = nullptr;
+
+        std::string enqueueParamsToString() const
+        {
+            auto constexpr indentation = "  ";
+            std::stringstream ss;
+            ss << indentation << "EnqueueParams ====================" << '\n';
+            ss << indentation << "attention_input: " << this->attention_input << '\n';
+            ss << indentation << "qkv_bias: " << this->qkv_bias << '\n';
+            ss << indentation << "attention_mask: " << this->attention_mask << '\n';
+            ss << indentation << "rotary_inv_freq: " << this->rotary_inv_freq << '\n';
+            ss << indentation << "rotary_cos_sin: " << this->rotary_cos_sin << '\n';
+            ss << indentation << "input_seq_length: " << this->input_seq_length << '\n';
+            ss << indentation << "max_past_kv_length: " << this->max_past_kv_length << '\n';
+            ss << indentation << "max_attention_window_size: " << this->max_attention_window_size << '\n';
+            ss << indentation << "cyclic_attention_window_size: " << this->cyclic_attention_window_size << '\n';
+            ss << indentation << "max_cyclic_attention_window_size: " << this->max_cyclic_attention_window_size << '\n';
+            ss << indentation << "can_use_one_more_block: " << (this->can_use_one_more_block ? "true" : "false")
+               << '\n';
+            ss << indentation << "sink_token_length: " << this->sink_token_length << '\n';
+            ss << indentation << "kv_scale_orig_quant: " << this->kv_scale_orig_quant << '\n';
+            ss << indentation << "kv_scale_quant_orig: " << this->kv_scale_quant_orig << '\n';
+            ss << indentation << "attention_output_orig_quant: " << this->attention_output_orig_quant << '\n';
+            ss << indentation << "alibi_slopes: " << this->alibi_slopes << '\n';
+            ss << indentation << "context_buf: " << this->context_buf << '\n';
+            ss << indentation << "context_buf_sf: " << this->context_buf_sf << '\n';
+            ss << indentation << "key_value_cache: " << (half*) this->key_value_cache << '\n';
+            ss << indentation << "block_offsets: " << this->block_offsets << '\n';
+            ss << indentation << "host_primary_pool_pointer: " << this->host_primary_pool_pointer << '\n';
+            ss << indentation << "host_secondary_pool_pointer: " << this->host_secondary_pool_pointer << '\n';
+            ss << indentation << "num_tokens: " << this->num_tokens << '\n';
+            ss << indentation << "total_kv_len: " << this->total_kv_len << '\n';
+            ss << indentation << "max_blocks_per_sequence: " << this->max_blocks_per_sequence << '\n';
+            ss << indentation << "workspace: " << this->workspace << '\n';
+            ss << indentation << "logn_scaling_ptr: " << this->logn_scaling_ptr << '\n';
+            ss << indentation << "relative_attention_bias: " << this->relative_attention_bias << '\n';
+            ss << indentation << "relative_attention_bias_stride: " << this->relative_attention_bias_stride << '\n';
+            ss << indentation << "encoder_input_lengths: " << this->encoder_input_lengths << '\n';
+            ss << indentation << "softmaxStatsPtr: " << this->softmax_stats << '\n';
+
+            return ss.str();
+        }
     };
 
     template <typename T>
@@ -144,60 +186,34 @@ public:
         {
             // variables from the params coming from the runtime
             std::stringstream ss;
-            ss << "EnqueueContextParams ====================" << std::endl;
+            ss << "EnqueueContextParams ====================" << '\n';
+            ss << EnqueueParams<T>::enqueueParamsToString() << '\n';
 
-            ss << "attention_input: " << this->attention_input << std::endl;
-            ss << "qkv_bias: " << this->qkv_bias << std::endl;
-            ss << "attention_mask: " << this->attention_mask << std::endl;
-            ss << "attention_packed_mask: " << this->attention_packed_mask << std::endl;
-            ss << "rotary_inv_freq: " << this->rotary_inv_freq << std::endl;
-            ss << "rotary_cos_sin: " << this->rotary_cos_sin << std::endl;
-            ss << "input_seq_length: " << this->input_seq_length << std::endl;
-            ss << "max_past_kv_length: " << this->max_past_kv_length << std::endl;
-            ss << "max_attention_window_size: " << this->max_attention_window_size << std::endl;
-            ss << "cyclic_attention_window_size: " << this->cyclic_attention_window_size << std::endl;
-            ss << "max_cyclic_attention_window_size: " << this->max_cyclic_attention_window_size << std::endl;
-            ss << "can_use_one_more_block: " << (this->can_use_one_more_block ? "true" : "false") << std::endl;
-            ss << "sink_token_length: " << this->sink_token_length << std::endl;
-            if (this->context_lengths && batch_size > 0)
+            ss << "batch_size: " << this->batch_size << '\n';
+
+            if (this->context_lengths && this->batch_size > 0)
             {
                 ss << "context_lengths: "
                    << *(runtime::ITensor::wrap((void*) this->context_lengths, nvinfer1::DataType::kINT32,
-                          runtime::ITensor::makeShape({batch_size})))
-                   << std::endl;
+                          runtime::ITensor::makeShape({this->batch_size})))
+                   << '\n';
             }
-            if (this->sequence_lengths && batch_size > 0)
+            if (this->sequence_lengths && this->batch_size > 0)
             {
                 ss << "sequence_lengths: "
                    << *(runtime::ITensor::wrap((void*) this->sequence_lengths, nvinfer1::DataType::kINT32,
-                          runtime::ITensor::makeShape({batch_size})))
-                   << std::endl;
+                          runtime::ITensor::makeShape({this->batch_size})))
+                   << '\n';
             }
-            ss << "kv_scale_orig_quant: " << this->kv_scale_orig_quant << std::endl;
-            ss << "kv_scale_quant_orig: " << this->kv_scale_quant_orig << std::endl;
-            ss << "attention_output_orig_quant: " << this->attention_output_orig_quant << std::endl;
-            ss << "alibi_slopes: " << this->alibi_slopes << std::endl;
-            ss << "context_buf: " << this->context_buf << std::endl;
-            ss << "context_buf_sf: " << this->context_buf_sf << std::endl;
-            ss << "key_value_cache: " << (half*) this->key_value_cache << std::endl;
-            ss << "block_offsets: " << this->block_offsets << std::endl;
-            ss << "host_primary_pool_pointer: " << this->host_primary_pool_pointer << std::endl;
-            ss << "host_secondary_pool_pointer: " << this->host_secondary_pool_pointer << std::endl;
-            ss << "batch_size: " << this->batch_size << std::endl;
-            ss << "num_tokens: " << this->num_tokens << std::endl;
-            ss << "total_kv_len: " << this->total_kv_len << std::endl;
-            ss << "max_blocks_per_sequence: " << this->max_blocks_per_sequence << std::endl;
-            ss << "workspace: " << this->workspace << std::endl;
-            ss << "logn_scaling_ptr: " << this->logn_scaling_ptr << std::endl;
-            ss << "relative_attention_bias: " << this->relative_attention_bias << std::endl;
-            ss << "relative_attention_bias_stride: " << this->relative_attention_bias_stride << std::endl;
-            ss << "cross_kv: " << this->cross_kv << std::endl;
-            ss << "cross_kv_length: " << this->cross_kv_length << std::endl;
-            ss << "encoder_input_lengths: " << this->encoder_input_lengths << std::endl;
-            ss << "num_encoder_tokens: " << this->num_encoder_tokens << std::endl;
-            ss << "softmaxStatsPtr: " << this->softmax_stats << std::endl;
-            ss << "k_ptr: " << this->k_ptr << std::endl;
-            ss << "v_ptr: " << this->v_ptr << std::endl;
+
+            ss << "attention_packed_mask: " << this->attention_packed_mask << '\n';
+            ss << "k_ptr: " << this->k_ptr << '\n';
+            ss << "v_ptr: " << this->v_ptr << '\n';
+
+            ss << "cross_kv: " << this->cross_kv << '\n';
+            ss << "cross_kv_length: " << this->cross_kv_length << '\n';
+            ss << "num_encoder_tokens: " << this->num_encoder_tokens << '\n';
+
             return ss.str();
         }
     };
@@ -231,6 +247,61 @@ public:
         // optional when fuse_fp4_quant is enabled
         int32_t start_token_idx_sf = 0;
         int32_t layer_idx = 0;
+
+        std::string enqueueGenerationParamsToString() const
+        {
+            std::stringstream ss;
+            ss << "EnqueueGenerationParams ====================" << '\n';
+            ss << EnqueueParams<T>::enqueueParamsToString() << '\n';
+
+            ss << "beam_width: " << this->beam_width << '\n';
+            ss << "attention_mask_stride: " << this->attention_mask_stride << '\n';
+            ss << "num_requests: " << this->num_requests << '\n';
+            ss << "cache_indir: " << this->cache_indir << '\n';
+            ss << "semaphores: " << this->semaphores << '\n';
+            if (this->host_past_key_value_lengths && this->num_requests > 0)
+            {
+                ss << "host_past_key_value_lengths: "
+                   << *(runtime::ITensor::wrap((void*) this->host_past_key_value_lengths, nvinfer1::DataType::kINT32,
+                          runtime::ITensor::makeShape({this->num_requests})))
+                   << '\n';
+            }
+            ss << "mrope_position_deltas: " << this->mrope_position_deltas << '\n';
+
+            ss << "spec_decoding_is_generation_length_variable: " << this->spec_decoding_is_generation_length_variable
+               << '\n';
+            ss << "spec_decoding_max_generation_length: " << this->spec_decoding_max_generation_length << '\n';
+            ss << "spec_decoding_mask: " << this->spec_decoding_mask << '\n';
+            if (this->spec_decoding_packed_mask && this->num_requests > 0)
+            {
+                ss << "spec_decoding_packed_mask: "
+                   << *(runtime::ITensor::wrap((void*) this->spec_decoding_packed_mask, nvinfer1::DataType::kINT32,
+                          runtime::ITensor::makeShape({this->num_requests, this->spec_decoding_max_generation_length,
+                              ceilDiv(this->spec_decoding_max_generation_length, 32)})))
+                   << '\n';
+            }
+            if (this->spec_decoding_position_offsets && this->num_requests > 0)
+            {
+                ss << "spec_decoding_position_offsets: "
+                   << *(runtime::ITensor::wrap((void*) this->spec_decoding_position_offsets, nvinfer1::DataType::kINT32,
+                          runtime::ITensor::makeShape({this->num_requests, this->spec_decoding_max_generation_length})))
+                   << '\n';
+            }
+            if (this->spec_decoding_generation_lengths && this->num_requests > 0)
+            {
+                ss << "spec_decoding_generation_lengths: "
+                   << *(runtime::ITensor::wrap((void*) this->spec_decoding_generation_lengths,
+                          nvinfer1::DataType::kINT32, runtime::ITensor::makeShape({this->num_requests})))
+                   << '\n';
+            }
+            ss << "spec_decoding_bl_tree_mask_offset: " << this->spec_decoding_bl_tree_mask_offset << '\n';
+            ss << "spec_decoding_bl_tree_mask: " << this->spec_decoding_bl_tree_mask << '\n';
+            ss << "spec_bl_tree_first_sparse_mask_offset_kv: " << this->spec_bl_tree_first_sparse_mask_offset_kv
+               << '\n';
+            ss << "start_token_idx_sf: " << this->start_token_idx_sf << '\n';
+            ss << "layer_idx: " << this->layer_idx << '\n';
+            return ss.str();
+        }
     };
 
     template <typename T, typename KVCacheBuffer>

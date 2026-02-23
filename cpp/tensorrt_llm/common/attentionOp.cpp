@@ -1334,6 +1334,11 @@ MLA_FUNC_DEFINE(__nv_bfloat16)
 template <typename T, typename KVCacheBuffer>
 int AttentionOp::enqueueContext(EnqueueContextParams<T> const& params, cudaStream_t stream)
 {
+    if (mLayerIdx == 0)
+    {
+        TLLM_LOG_INFO("EnqueueContextParams: %s", params.enqueueContextParamsToString().c_str());
+    }
+
     int const headSize = getHeadSize();
 
     int const local_hidden_units_qo = mNumHeads * headSize;
@@ -2217,6 +2222,11 @@ template int AttentionOp::enqueueContext<__nv_bfloat16, KVBlockArray>(
 template <typename T, typename KVCacheBuffer>
 int AttentionOp::enqueueGeneration(EnqueueGenerationParams<T> const& params, cudaStream_t stream)
 {
+    if (mLayerIdx == 0)
+    {
+        TLLM_LOG_INFO("EnqueueGenerationParams: %s", params.enqueueGenerationParamsToString().c_str());
+    }
+
     int const headSize = getHeadSize();
     float const q_scaling = mQScaling;
     float const* logn_scaling_ptr = isLognScaling() ? params.logn_scaling_ptr : nullptr;
