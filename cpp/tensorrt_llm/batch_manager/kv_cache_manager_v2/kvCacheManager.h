@@ -458,6 +458,7 @@ private:
         kSleepPrepared,
         kParked,
         kWakePrepared,
+        kFailed,
     };
     PoolState mPoolState = PoolState::kRunning;
     PoolRestoreMode mPoolRestoreMode = PoolRestoreMode::kNone;
