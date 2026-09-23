@@ -13,6 +13,7 @@ l0_a100:
       stage: pre_merge
       backend: "pytorch"
   tests:
+    - kv_cache/test_kv_cache_v2_sleep.py
     - unittest/llmapi/test_llm_pytorch.py -m "part0"
     - unittest/llmapi/test_llm_pytorch.py -m "part1"
     - unittest/llmapi/test_llm_pytorch.py -m "part2"
