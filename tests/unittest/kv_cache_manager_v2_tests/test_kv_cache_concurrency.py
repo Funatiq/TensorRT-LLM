@@ -43,6 +43,7 @@ from tensorrt_llm.runtime.kv_cache_manager_v2 import (
     GpuCacheTierConfig,
     KVCacheManager,
     KVCacheManagerConfig,
+    PoolRestoreMode,
 )
 
 KV_CACHE_MANAGER_V2_BACKEND = os.environ.get("TLLM_KV_CACHE_MANAGER_V2_BACKEND", "cpp").lower()
@@ -521,3 +522,66 @@ def test_priority_callback_under_the_lock_does_not_deadlock_stats_queries() -> N
         assert stats_polls["n"] > 0
     finally:
         manager.shutdown()
+
+
+@pytest.mark.parametrize(
+    "mode,preserve_reuse",
+    [
+        ("NONE", False),
+        ("MEMSET", False),
+        ("CPU", True),
+        ("PINNED", True),
+    ],
+)
+def test_native_pool_sleep_releases_gpu_memory_and_preserves_addresses(
+    mode: str, preserve_reuse: bool
+) -> None:
+    manager = KVCacheManager(_make_config(quota=8 << 20))
+    stream = torch.cuda.current_stream().cuda_stream
+    tokens = list(range(manager.tokens_per_block * 2))
+    seed = manager.create_kv_cache(None, tokens)
+    try:
+        seed.resume(CudaStream(stream))
+        assert seed.resize(len(tokens))
+        seed.commit(tokens, is_end=True)
+    finally:
+        seed.close()
+    assert manager.probe_reuse(None, tokens) > 0
+    base = manager.get_mem_pool_base_address(0, "key")
+
+    torch.cuda.synchronize()
+    free_running, _ = torch.cuda.mem_get_info()
+    sleep_token = manager.prepare_pool_sleep(getattr(PoolRestoreMode, mode), stream)
+    manager.commit_pool_sleep(sleep_token)
+    free_parked, _ = torch.cuda.mem_get_info()
+    assert free_parked - free_running >= 4 << 20
+    assert manager.get_mem_pool_base_address(0, "key") == base
+    with pytest.raises(RuntimeError, match="parked"):
+        manager.resize(GPU_LEVEL, 8 << 20)
+
+    wake_token = manager.prepare_pool_wakeup(stream)
+    manager.commit_pool_wakeup(wake_token, stream)
+    assert manager.get_mem_pool_base_address(0, "key") == base
+    assert (manager.probe_reuse(None, tokens) > 0) is preserve_reuse
+    manager.shutdown()
+
+
+def test_native_pool_sleep_prepare_can_abort_without_changing_mappings() -> None:
+    manager = KVCacheManager(_make_config())
+    stream = torch.cuda.current_stream().cuda_stream
+    base = manager.get_mem_pool_base_address(0, "key")
+
+    prepared_sleep = manager.prepare_pool_sleep(PoolRestoreMode.CPU, stream)
+    manager.abort_pool_sleep(prepared_sleep)
+    assert manager.get_mem_pool_base_address(0, "key") == base
+    cache = manager.create_kv_cache(None, [])
+    cache.close()
+
+    prepared_sleep = manager.prepare_pool_sleep(PoolRestoreMode.CPU, stream)
+    manager.commit_pool_sleep(prepared_sleep)
+    prepared_wake = manager.prepare_pool_wakeup(stream)
+    manager.abort_pool_wakeup(prepared_wake)
+    prepared_wake = manager.prepare_pool_wakeup(stream)
+    manager.commit_pool_wakeup(prepared_wake, stream)
+    assert manager.get_mem_pool_base_address(0, "key") == base
+    manager.shutdown()

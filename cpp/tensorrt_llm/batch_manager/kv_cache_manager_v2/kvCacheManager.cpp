@@ -139,6 +139,25 @@ KvCacheManager::~KvCacheManager()
     KVCM2_POISON_ON_EXCEPT([this]() { shutdown(); });
 }
 
+PoolSleepToken::PoolSleepToken(PoolSleepToken&& other) noexcept
+    : states(std::move(other.states))
+    , mode(other.mode)
+    , owner(other.owner)
+    , valid(other.valid)
+{
+    other.owner = nullptr;
+    other.valid = false;
+}
+
+PoolWakeToken::PoolWakeToken(PoolWakeToken&& other) noexcept
+    : states(std::move(other.states))
+    , owner(other.owner)
+    , valid(other.valid)
+{
+    other.owner = nullptr;
+    other.valid = false;
+}
+
 PoolSleepToken::~PoolSleepToken() noexcept
 {
     if (valid && owner)
@@ -184,14 +203,10 @@ PoolSleepToken KvCacheManager::preparePoolSleep(PoolRestoreMode mode, CudaStream
     auto const apiLock = lockExclusive();
     TLLM_CHECK_WITH_INFO(mPoolState == PoolState::kRunning, "KV pools are not running");
     TLLM_CHECK_WITH_INFO(supportsPoolSleep(), "This V2 storage configuration cannot park all GPU pools");
-    if (mode == PoolRestoreMode::kNone || mode == PoolRestoreMode::kMemset)
-    {
-        _checkNoLivingKvCaches("destructive pool sleep");
-    }
     PoolSleepToken token;
     token.states = mStorage->preparePoolSleep(mode, reinterpret_cast<CUstream>(stream));
     token.mode = mode;
-    token.owner = shared_from_this();
+    token.owner = this;
     token.valid = true;
     mPoolState = PoolState::kSleepPrepared;
     return token;
@@ -201,8 +216,8 @@ void KvCacheManager::commitPoolSleep(PoolSleepToken& token)
 {
     KVCM2_API_GUARD();
     auto const apiLock = lockExclusive();
-    TLLM_CHECK_WITH_INFO(mPoolState == PoolState::kSleepPrepared && token.valid && token.owner.get() == this,
-        "Invalid V2 pool sleep token");
+    TLLM_CHECK_WITH_INFO(
+        mPoolState == PoolState::kSleepPrepared && token.valid && token.owner == this, "Invalid V2 pool sleep token");
     if (token.mode == PoolRestoreMode::kNone || token.mode == PoolRestoreMode::kMemset)
     {
         _checkNoLivingKvCaches("destructive pool sleep");
@@ -221,7 +236,7 @@ void KvCacheManager::abortPoolSleep(PoolSleepToken& token) noexcept
         [this, &token]()
         {
             auto const apiLock = lockExclusive();
-            if (mPoolState == PoolState::kSleepPrepared && token.valid && token.owner.get() == this)
+            if (mPoolState == PoolState::kSleepPrepared && token.valid && token.owner == this)
             {
                 token.states.clear();
                 token.valid = false;
@@ -236,7 +251,7 @@ PoolWakeToken KvCacheManager::preparePoolWakeup(CudaStream stream)
     auto const apiLock = lockExclusive();
     TLLM_CHECK_WITH_INFO(mPoolState == PoolState::kParked, "KV pools are not parked");
     PoolWakeToken token;
-    token.owner = shared_from_this();
+    token.owner = this;
     token.states = std::move(mPoolSleepStates);
     try
     {
@@ -257,8 +272,8 @@ void KvCacheManager::commitPoolWakeup(PoolWakeToken& token, CudaStream stream)
 {
     KVCM2_API_GUARD();
     auto const apiLock = lockExclusive();
-    TLLM_CHECK_WITH_INFO(mPoolState == PoolState::kWakePrepared && token.valid && token.owner.get() == this,
-        "Invalid V2 pool wakeup token");
+    TLLM_CHECK_WITH_INFO(
+        mPoolState == PoolState::kWakePrepared && token.valid && token.owner == this, "Invalid V2 pool wakeup token");
     mStorage->commitPoolWakeup(token.states, mPoolRestoreMode, reinterpret_cast<CUstream>(stream));
     token.states.clear();
     token.valid = false;
@@ -271,7 +286,7 @@ void KvCacheManager::abortPoolWakeup(PoolWakeToken& token) noexcept
         [this, &token]()
         {
             auto const apiLock = lockExclusive();
-            if (mPoolState == PoolState::kWakePrepared && token.valid && token.owner.get() == this)
+            if (mPoolState == PoolState::kWakePrepared && token.valid && token.owner == this)
             {
                 mStorage->abortPoolWakeup(token.states);
                 mPoolSleepStates = std::move(token.states);

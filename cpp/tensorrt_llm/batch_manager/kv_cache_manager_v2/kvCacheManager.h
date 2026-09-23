@@ -105,12 +105,12 @@ struct PoolSleepToken
 {
     StorageManager::PoolSleepStates states;
     PoolRestoreMode mode = PoolRestoreMode::kNone;
-    std::shared_ptr<KvCacheManager> owner;
+    KvCacheManager* owner = nullptr;
     bool valid = false;
 
     PoolSleepToken() = default;
     ~PoolSleepToken() noexcept;
-    PoolSleepToken(PoolSleepToken&&) = default;
+    PoolSleepToken(PoolSleepToken&& other) noexcept;
     PoolSleepToken& operator=(PoolSleepToken&&) = delete;
     PoolSleepToken(PoolSleepToken const&) = delete;
     PoolSleepToken& operator=(PoolSleepToken const&) = delete;
@@ -120,12 +120,12 @@ struct PoolSleepToken
 struct PoolWakeToken
 {
     StorageManager::PoolSleepStates states;
-    std::shared_ptr<KvCacheManager> owner;
+    KvCacheManager* owner = nullptr;
     bool valid = false;
 
     PoolWakeToken() = default;
     ~PoolWakeToken() noexcept;
-    PoolWakeToken(PoolWakeToken&&) = default;
+    PoolWakeToken(PoolWakeToken&& other) noexcept;
     PoolWakeToken& operator=(PoolWakeToken&&) = delete;
     PoolWakeToken(PoolWakeToken const&) = delete;
     PoolWakeToken& operator=(PoolWakeToken const&) = delete;

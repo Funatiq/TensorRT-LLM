@@ -2292,13 +2292,13 @@ void KvCacheManagerV2Bindings::initBindings(nb::module_& m)
         .def("shutdown", &kv::KvCacheManager::shutdown, nb::call_guard<nb::gil_scoped_release>())
         .def("supports_pool_sleep", &kv::KvCacheManager::supportsPoolSleep, nb::call_guard<nb::gil_scoped_release>())
         .def("prepare_pool_sleep", &kv::KvCacheManager::preparePoolSleep, nb::arg("mode"), nb::arg("stream"),
-            nb::call_guard<nb::gil_scoped_release>())
+            nb::call_guard<nb::gil_scoped_release>(), nb::keep_alive<0, 1>())
         .def("commit_pool_sleep", &kv::KvCacheManager::commitPoolSleep, nb::arg("token"),
             nb::call_guard<nb::gil_scoped_release>())
         .def("abort_pool_sleep", &kv::KvCacheManager::abortPoolSleep, nb::arg("token"),
             nb::call_guard<nb::gil_scoped_release>())
         .def("prepare_pool_wakeup", &kv::KvCacheManager::preparePoolWakeup, nb::arg("stream"),
-            nb::call_guard<nb::gil_scoped_release>())
+            nb::call_guard<nb::gil_scoped_release>(), nb::keep_alive<0, 1>())
         .def("commit_pool_wakeup", &kv::KvCacheManager::commitPoolWakeup, nb::arg("token"), nb::arg("stream"),
             nb::call_guard<nb::gil_scoped_release>())
         .def("abort_pool_wakeup", &kv::KvCacheManager::abortPoolWakeup, nb::arg("token"),
