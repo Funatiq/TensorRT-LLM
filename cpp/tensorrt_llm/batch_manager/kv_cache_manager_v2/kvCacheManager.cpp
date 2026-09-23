@@ -218,12 +218,22 @@ void KvCacheManager::commitPoolSleep(PoolSleepToken& token)
     auto const apiLock = lockExclusive();
     TLLM_CHECK_WITH_INFO(
         mPoolState == PoolState::kSleepPrepared && token.valid && token.owner == this, "Invalid V2 pool sleep token");
-    if (token.mode == PoolRestoreMode::kNone || token.mode == PoolRestoreMode::kMemset)
+    try
     {
-        _checkNoLivingKvCaches("destructive pool sleep");
-        mRadixTree->clear();
+        if (token.mode == PoolRestoreMode::kNone || token.mode == PoolRestoreMode::kMemset)
+        {
+            _checkNoLivingKvCaches("destructive pool sleep");
+            mRadixTree->clear();
+        }
+        mStorage->commitPoolSleep(token.states);
     }
-    mStorage->commitPoolSleep(token.states);
+    catch (...)
+    {
+        // A failure after unmapping begins cannot be rolled back reliably.
+        mPoolState = PoolState::kFailed;
+        token.valid = false;
+        throw;
+    }
     mPoolSleepStates = std::move(token.states);
     mPoolRestoreMode = token.mode;
     mPoolState = PoolState::kParked;
@@ -274,7 +284,17 @@ void KvCacheManager::commitPoolWakeup(PoolWakeToken& token, CudaStream stream)
     auto const apiLock = lockExclusive();
     TLLM_CHECK_WITH_INFO(
         mPoolState == PoolState::kWakePrepared && token.valid && token.owner == this, "Invalid V2 pool wakeup token");
-    mStorage->commitPoolWakeup(token.states, mPoolRestoreMode, reinterpret_cast<CUstream>(stream));
+    try
+    {
+        mStorage->commitPoolWakeup(token.states, mPoolRestoreMode, reinterpret_cast<CUstream>(stream));
+    }
+    catch (...)
+    {
+        // Some pools may already be mapped; refuse further cache operations.
+        mPoolState = PoolState::kFailed;
+        token.valid = false;
+        throw;
+    }
     token.states.clear();
     token.valid = false;
     mPoolState = PoolState::kRunning;
