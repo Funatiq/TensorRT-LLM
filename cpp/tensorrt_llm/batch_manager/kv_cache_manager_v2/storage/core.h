@@ -26,6 +26,7 @@
 #include "kv_cache_manager_v2/utils/math.h"
 #include "tensorrt_llm/common/assert.h"
 
+#include <cstddef>
 #include <deque>
 #include <memory>
 #include <optional>
@@ -241,6 +242,14 @@ protected:
     size_t mSlotSize;
 };
 
+enum class PoolRestoreMode
+{
+    kNone,
+    kMemset,
+    kCpu,
+    kPinned,
+};
+
 // ---------------------------------------------------------------------------
 // GpuSlotPool — GPU virtual memory pool.
 // ---------------------------------------------------------------------------
@@ -248,6 +257,28 @@ class GpuSlotPool : public SlotPoolBase
 {
 public:
     GpuSlotPool(size_t slotSize, size_t vmSize, PooledPhysMemAllocator& physMemAllocator, SlotCount numSlots);
+
+    struct SleepState
+    {
+        GpuSlotPool* pool = nullptr;
+        size_t mappedBytes = 0;
+        MemAddress baseAddress = 0;
+        std::unique_ptr<std::byte[]> pageableBackup;
+        std::unique_ptr<HostMem> pinnedBackup;
+        VirtMem::PreparedMapping replacement;
+
+        [[nodiscard]] void const* backupAddress() const noexcept;
+    };
+
+    [[nodiscard]] SleepState prepareSleep(PoolRestoreMode mode, CUstream stream);
+    void commitSleep(SleepState const& state);
+    void prepareWakeup(SleepState& state);
+    void commitWakeup(SleepState& state, PoolRestoreMode mode, CUstream stream);
+
+    [[nodiscard]] bool isParked() const noexcept
+    {
+        return mVirtMem.isParked();
+    }
 
     SlotCount numSlots() const noexcept override;
     void destroy() override;
@@ -396,6 +427,8 @@ class GpuPoolGroup : public PoolGroupBase
 public:
     GpuPoolGroup(
         SlotCount numSlots, TypedVec<PoolIndex, size_t> const& slotSizeList, PooledPhysMemAllocator& physMemAllocator);
+
+    [[nodiscard]] std::vector<GpuSlotPool*> gpuPools() const;
 };
 
 class HostPoolGroup : public PoolGroupBase
@@ -566,6 +599,13 @@ public:
     size_t poolSizeGranularity() const noexcept override
     {
         return mPhysMemAllocator.physMemSize();
+    }
+
+    [[nodiscard]] std::vector<GpuSlotPool*> gpuPools() const;
+
+    void clearCachedPhysicalMemory()
+    {
+        mPhysMemAllocator.clear();
     }
 
 private:
