@@ -122,6 +122,27 @@ public:
     // Adjust mapped bytes to exactly numBytes (extend or shrink).
     void realloc(size_t numBytes);
 
+    using PreparedMapping = std::vector<PooledPhysMemAllocator::PooledPhysMem>;
+
+    //! Allocate replacement handles while the original mapping remains intact.
+    [[nodiscard]] PreparedMapping prepareResume() const;
+
+    //! Unmap physical memory while retaining the reserved virtual address.
+    void park();
+
+    //! Map replacement handles at the original addresses.
+    void resume(PreparedMapping&& mapping);
+
+    [[nodiscard]] bool isParked() const noexcept
+    {
+        return mParked;
+    }
+
+    [[nodiscard]] size_t logicalNumPhysMem() const noexcept
+    {
+        return mParked ? mParkedNumPhysMem : numPhysMem();
+    }
+
     void destroy();
 
     [[nodiscard]] MemAddress address() const noexcept
@@ -158,6 +179,8 @@ private:
     PooledPhysMemAllocator& mPhysMemAllocator;
     std::vector<PooledPhysMemAllocator::PooledPhysMem> mPhysHandles;
     CUmemAccessDesc mAccessDesc{};
+    size_t mParkedNumPhysMem = 0;
+    bool mParked = false;
 };
 
 } // namespace tensorrt_llm::batch_manager::kv_cache_manager_v2
