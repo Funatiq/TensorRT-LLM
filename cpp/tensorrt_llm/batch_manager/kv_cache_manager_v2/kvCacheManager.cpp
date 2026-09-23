@@ -22,6 +22,8 @@
 #include "kv_cache_manager_v2/storage/core.h"
 #include "kv_cache_manager_v2/utils/math.h"
 
+#include <typeinfo>
+
 #include "tensorrt_llm/common/assert.h"
 #include "tensorrt_llm/common/logger.h"
 #include <algorithm>
@@ -137,6 +139,148 @@ KvCacheManager::~KvCacheManager()
     KVCM2_POISON_ON_EXCEPT([this]() { shutdown(); });
 }
 
+PoolSleepToken::~PoolSleepToken() noexcept
+{
+    if (valid && owner)
+    {
+        owner->abortPoolSleep(*this);
+    }
+}
+
+PoolWakeToken::~PoolWakeToken() noexcept
+{
+    if (valid && owner)
+    {
+        owner->abortPoolWakeup(*this);
+    }
+}
+
+bool KvCacheManager::supportsPoolSleep() const
+{
+    auto const apiLock = lockShared();
+    if (!mStorage)
+    {
+        return false;
+    }
+    bool hasGpuPool = false;
+    for (auto const& level : mStorage->mLevels)
+    {
+        if (level.cacheTier != CacheTier::GPU_MEM)
+        {
+            continue;
+        }
+        if (!level.storage || typeid(*level.storage) != typeid(GpuCacheLevelStorage))
+        {
+            return false;
+        }
+        hasGpuPool = true;
+    }
+    return hasGpuPool;
+}
+
+PoolSleepToken KvCacheManager::preparePoolSleep(PoolRestoreMode mode, CudaStream stream)
+{
+    KVCM2_API_GUARD();
+    auto const apiLock = lockExclusive();
+    TLLM_CHECK_WITH_INFO(mPoolState == PoolState::kRunning, "KV pools are not running");
+    TLLM_CHECK_WITH_INFO(supportsPoolSleep(), "This V2 storage configuration cannot park all GPU pools");
+    if (mode == PoolRestoreMode::kNone || mode == PoolRestoreMode::kMemset)
+    {
+        _checkNoLivingKvCaches("destructive pool sleep");
+    }
+    PoolSleepToken token;
+    token.states = mStorage->preparePoolSleep(mode, reinterpret_cast<CUstream>(stream));
+    token.mode = mode;
+    token.owner = shared_from_this();
+    token.valid = true;
+    mPoolState = PoolState::kSleepPrepared;
+    return token;
+}
+
+void KvCacheManager::commitPoolSleep(PoolSleepToken& token)
+{
+    KVCM2_API_GUARD();
+    auto const apiLock = lockExclusive();
+    TLLM_CHECK_WITH_INFO(mPoolState == PoolState::kSleepPrepared && token.valid && token.owner.get() == this,
+        "Invalid V2 pool sleep token");
+    if (token.mode == PoolRestoreMode::kNone || token.mode == PoolRestoreMode::kMemset)
+    {
+        _checkNoLivingKvCaches("destructive pool sleep");
+        mRadixTree->clear();
+    }
+    mStorage->commitPoolSleep(token.states);
+    mPoolSleepStates = std::move(token.states);
+    mPoolRestoreMode = token.mode;
+    mPoolState = PoolState::kParked;
+    token.valid = false;
+}
+
+void KvCacheManager::abortPoolSleep(PoolSleepToken& token) noexcept
+{
+    KVCM2_POISON_ON_EXCEPT(
+        [this, &token]()
+        {
+            auto const apiLock = lockExclusive();
+            if (mPoolState == PoolState::kSleepPrepared && token.valid && token.owner.get() == this)
+            {
+                token.states.clear();
+                token.valid = false;
+                mPoolState = PoolState::kRunning;
+            }
+        });
+}
+
+PoolWakeToken KvCacheManager::preparePoolWakeup(CudaStream stream)
+{
+    KVCM2_API_GUARD();
+    auto const apiLock = lockExclusive();
+    TLLM_CHECK_WITH_INFO(mPoolState == PoolState::kParked, "KV pools are not parked");
+    PoolWakeToken token;
+    token.owner = shared_from_this();
+    token.states = std::move(mPoolSleepStates);
+    try
+    {
+        mStorage->preparePoolWakeup(token.states);
+    }
+    catch (...)
+    {
+        mStorage->abortPoolWakeup(token.states);
+        mPoolSleepStates = std::move(token.states);
+        throw;
+    }
+    token.valid = true;
+    mPoolState = PoolState::kWakePrepared;
+    return token;
+}
+
+void KvCacheManager::commitPoolWakeup(PoolWakeToken& token, CudaStream stream)
+{
+    KVCM2_API_GUARD();
+    auto const apiLock = lockExclusive();
+    TLLM_CHECK_WITH_INFO(mPoolState == PoolState::kWakePrepared && token.valid && token.owner.get() == this,
+        "Invalid V2 pool wakeup token");
+    mStorage->commitPoolWakeup(token.states, mPoolRestoreMode, reinterpret_cast<CUstream>(stream));
+    token.states.clear();
+    token.valid = false;
+    mPoolState = PoolState::kRunning;
+}
+
+void KvCacheManager::abortPoolWakeup(PoolWakeToken& token) noexcept
+{
+    KVCM2_POISON_ON_EXCEPT(
+        [this, &token]()
+        {
+            auto const apiLock = lockExclusive();
+            if (mPoolState == PoolState::kWakePrepared && token.valid && token.owner.get() == this)
+            {
+                mStorage->abortPoolWakeup(token.states);
+                mPoolSleepStates = std::move(token.states);
+                token.valid = false;
+                mPoolState = PoolState::kParked;
+            }
+        });
+}
+
 void KvCacheManager::_checkNoLivingKvCaches(char const* api) const
 {
     TLLM_CHECK_WITH_INFO(mLivingKvCaches.empty(),
@@ -157,6 +301,8 @@ void KvCacheManager::shutdown()
     {
         return;
     }
+    TLLM_CHECK_WITH_INFO(mPoolState != PoolState::kSleepPrepared && mPoolState != PoolState::kWakePrepared,
+        "Cannot shut down with a prepared pool sleep token");
     _checkNoLivingKvCaches("shutdown()");
     clearReusableBlocks();
     TLLM_CHECK_DEBUG(mStorage);
@@ -189,6 +335,7 @@ std::shared_ptr<KvCache> KvCacheManager::createKvCache(ReuseScope reuseScope, To
 {
     KVCM2_API_GUARD();
     auto const apiLock = lockExclusive();
+    TLLM_CHECK_WITH_INFO(mPoolState == PoolState::kRunning, "KV pools are parked or changing state");
     if (!priorityCb)
     {
         priorityCb = [](BlockOrdinal, LifeCycleId) { return kPriorityDefault; };
@@ -446,6 +593,7 @@ bool KvCacheManager::resize(CacheLevel level, size_t quota, bool bestEfforts)
 {
     KVCM2_API_GUARD();
     auto const apiLock = lockExclusive();
+    TLLM_CHECK_WITH_INFO(mPoolState == PoolState::kRunning, "KV pools are parked or changing state");
     // Same precondition as adjust(): _adjustLevel may defragment, invalidating any page index an
     // ACTIVE cache holds.
     for (KvCache* kvc : mLivingKvCaches)
@@ -1041,6 +1189,7 @@ void KvCacheManager::adjust()
 {
     KVCM2_API_GUARD();
     auto const apiLock = lockExclusive();
+    TLLM_CHECK_WITH_INFO(mPoolState == PoolState::kRunning, "KV pools are parked or changing state");
     for (KvCache* kvc : mLivingKvCaches)
         TLLM_CHECK_WITH_INFO(kvc->status() == KvCache::Status::SUSPENDED,
             "level adjustment requires every KvCache to be SUSPENDED: _adjustLevel may "

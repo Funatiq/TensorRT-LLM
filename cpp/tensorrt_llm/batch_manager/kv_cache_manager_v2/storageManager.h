@@ -146,6 +146,7 @@ public:
     [[nodiscard]] PoolSleepStates preparePoolSleep(PoolRestoreMode mode, CUstream stream);
     void commitPoolSleep(PoolSleepStates const& states);
     void preparePoolWakeup(PoolSleepStates& states);
+    void abortPoolWakeup(PoolSleepStates& states) noexcept;
     void commitPoolWakeup(PoolSleepStates& states, PoolRestoreMode mode, CUstream stream);
 
     [[nodiscard]] bool poolsParked() const noexcept

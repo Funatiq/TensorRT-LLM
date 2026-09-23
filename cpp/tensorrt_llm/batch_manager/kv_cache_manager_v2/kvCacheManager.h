@@ -98,6 +98,39 @@ struct PageIndexConverter
     std::vector<int> operator()(int baseIndex) const;
 };
 
+class KvCacheManager;
+
+//! Move-only prepared sleep resources. Valid only with the manager that created them.
+struct PoolSleepToken
+{
+    StorageManager::PoolSleepStates states;
+    PoolRestoreMode mode = PoolRestoreMode::kNone;
+    std::shared_ptr<KvCacheManager> owner;
+    bool valid = false;
+
+    PoolSleepToken() = default;
+    ~PoolSleepToken() noexcept;
+    PoolSleepToken(PoolSleepToken&&) = default;
+    PoolSleepToken& operator=(PoolSleepToken&&) = delete;
+    PoolSleepToken(PoolSleepToken const&) = delete;
+    PoolSleepToken& operator=(PoolSleepToken const&) = delete;
+};
+
+//! Move-only replacement handles and saved host backups for wakeup.
+struct PoolWakeToken
+{
+    StorageManager::PoolSleepStates states;
+    std::shared_ptr<KvCacheManager> owner;
+    bool valid = false;
+
+    PoolWakeToken() = default;
+    ~PoolWakeToken() noexcept;
+    PoolWakeToken(PoolWakeToken&&) = default;
+    PoolWakeToken& operator=(PoolWakeToken&&) = delete;
+    PoolWakeToken(PoolWakeToken const&) = delete;
+    PoolWakeToken& operator=(PoolWakeToken const&) = delete;
+};
+
 // ---------------------------------------------------------------------------
 // KvCacheManager — top-level KV cache manager.
 // Mirrors Python's KVCacheManager.
@@ -117,6 +150,14 @@ public:
     // ---- Lifecycle --------------------------------------------------------
 
     void shutdown();
+
+    [[nodiscard]] bool supportsPoolSleep() const;
+    [[nodiscard]] PoolSleepToken preparePoolSleep(PoolRestoreMode mode, CudaStream stream);
+    void commitPoolSleep(PoolSleepToken& token);
+    void abortPoolSleep(PoolSleepToken& token) noexcept;
+    [[nodiscard]] PoolWakeToken preparePoolWakeup(CudaStream stream);
+    void commitPoolWakeup(PoolWakeToken& token, CudaStream stream);
+    void abortPoolWakeup(PoolWakeToken& token) noexcept;
 
     // Number of not-yet-destroyed managers in this process. A manager counts from the start of its
     // construction, so one whose constructor throws is counted for the duration of that attempt.
@@ -410,6 +451,17 @@ private:
     LifeCycleRegistry mLifeCycles;
     std::shared_ptr<EventSink> mEventSink;
     std::shared_ptr<StorageManager> mStorage;
+
+    enum class PoolState
+    {
+        kRunning,
+        kSleepPrepared,
+        kParked,
+        kWakePrepared,
+    };
+    PoolState mPoolState = PoolState::kRunning;
+    PoolRestoreMode mPoolRestoreMode = PoolRestoreMode::kNone;
+    StorageManager::PoolSleepStates mPoolSleepStates;
     std::shared_ptr<BlockRadixTree> mRadixTree;
 
     // Weak references to all living KvCaches.

@@ -2235,6 +2235,14 @@ void KvCacheManagerV2Bindings::initBindings(nb::module_& m)
         "native codec factory exposes an owning IKvCacheColdPageCodec object for transfer into KVCacheManager. Any "
         "KVCacheManager construction attempt consumes an explicitly supplied codec, including an attempt that fails.");
 
+    nb::enum_<kv::PoolRestoreMode>(m, "PoolRestoreMode")
+        .value("NONE", kv::PoolRestoreMode::kNone)
+        .value("MEMSET", kv::PoolRestoreMode::kMemset)
+        .value("CPU", kv::PoolRestoreMode::kCpu)
+        .value("PINNED", kv::PoolRestoreMode::kPinned);
+    nb::class_<kv::PoolSleepToken>(m, "PoolSleepToken");
+    nb::class_<kv::PoolWakeToken>(m, "PoolWakeToken");
+
     // ---- KvCacheManager ----------------------------------------------------
     nb::class_<kv::KvCacheManager>(m, "KVCacheManager")
         .def(
@@ -2282,6 +2290,19 @@ void KvCacheManagerV2Bindings::initBindings(nb::module_& m)
             nb::arg("config"), nb::arg("event_manager").none() = nb::none(),
             nb::arg("cold_page_codec").none() = nb::none())
         .def("shutdown", &kv::KvCacheManager::shutdown, nb::call_guard<nb::gil_scoped_release>())
+        .def("supports_pool_sleep", &kv::KvCacheManager::supportsPoolSleep, nb::call_guard<nb::gil_scoped_release>())
+        .def("prepare_pool_sleep", &kv::KvCacheManager::preparePoolSleep, nb::arg("mode"), nb::arg("stream"),
+            nb::call_guard<nb::gil_scoped_release>())
+        .def("commit_pool_sleep", &kv::KvCacheManager::commitPoolSleep, nb::arg("token"),
+            nb::call_guard<nb::gil_scoped_release>())
+        .def("abort_pool_sleep", &kv::KvCacheManager::abortPoolSleep, nb::arg("token"),
+            nb::call_guard<nb::gil_scoped_release>())
+        .def("prepare_pool_wakeup", &kv::KvCacheManager::preparePoolWakeup, nb::arg("stream"),
+            nb::call_guard<nb::gil_scoped_release>())
+        .def("commit_pool_wakeup", &kv::KvCacheManager::commitPoolWakeup, nb::arg("token"), nb::arg("stream"),
+            nb::call_guard<nb::gil_scoped_release>())
+        .def("abort_pool_wakeup", &kv::KvCacheManager::abortPoolWakeup, nb::arg("token"),
+            nb::call_guard<nb::gil_scoped_release>())
         .def(
             "clear_reusable_blocks", &kv::KvCacheManager::clearReusableBlocks, nb::call_guard<nb::gil_scoped_release>())
         .def(

@@ -497,6 +497,18 @@ void StorageManager::preparePoolWakeup(PoolSleepStates& states)
     }
 }
 
+void StorageManager::abortPoolWakeup(PoolSleepStates& states) noexcept
+{
+    for (auto& state : states)
+    {
+        state.replacement.clear();
+    }
+    if (mGpuPhysMemAllocator)
+    {
+        mGpuPhysMemAllocator->clear();
+    }
+}
+
 void StorageManager::commitPoolWakeup(PoolSleepStates& states, PoolRestoreMode mode, CUstream stream)
 {
     TLLM_CHECK_WITH_INFO(mPoolsParked, "GPU pools are not parked");
