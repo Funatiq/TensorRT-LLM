@@ -97,6 +97,26 @@ class TestV2KvCacheSleepCapability:
             else:
                 executor.validate_sleep_tags(parsed_tags)
 
+    def test_connector_registration_is_rejected(self):
+        from unittest.mock import patch
+
+        from tensorrt_llm._torch.pyexecutor.py_executor import PyExecutor
+        from tensorrt_llm.llmapi.llm_args import ExecutorMemoryType
+
+        executor = object.__new__(PyExecutor)
+        executor.kv_connector_manager = object()
+        executor.kv_cache_transceiver = None
+        manager = SimpleNamespace(impl=SimpleNamespace(supports_pool_sleep=lambda: True))
+        with (
+            patch(
+                "tensorrt_llm._torch.pyexecutor.py_executor.KV_CACHE_MANAGER_V2_BACKEND",
+                "cpp",
+            ),
+            patch.object(PyExecutor, "_kv_pool_sleep_managers", return_value=[manager]),
+            pytest.raises(ValueError, match="registration lifecycle support"),
+        ):
+            executor.validate_sleep_tags([ExecutorMemoryType.KV_CACHE])
+
     def test_rejected_before_transition_or_mpi_dispatch(self):
         worker = _make_worker(world_size=2)
         worker.engine.validate_sleep_tags.side_effect = ValueError(

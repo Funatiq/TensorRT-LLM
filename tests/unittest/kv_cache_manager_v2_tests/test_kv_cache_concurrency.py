@@ -585,3 +585,25 @@ def test_native_pool_sleep_prepare_can_abort_without_changing_mappings() -> None
     manager.commit_pool_wakeup(prepared_wake, stream)
     assert manager.get_mem_pool_base_address(0, "key") == base
     manager.shutdown()
+
+
+def test_pool_sleep_repairs_persistent_device_metadata_in_place() -> None:
+    from tensorrt_llm._torch.pyexecutor.kv_cache.kv_cache_manager_v2 import KVCacheManagerV2
+
+    manager = object.__new__(KVCacheManagerV2)
+    manager.kv_cache_pool_pointers = torch.tensor([17, 23], device="cuda")
+    manager.kv_cache_pool_mapping = torch.tensor([3, 5], device="cuda")
+    pointers = manager.kv_cache_pool_pointers
+    mapping = manager.kv_cache_pool_mapping
+    pointer_address = pointers.data_ptr()
+    mapping_address = mapping.data_ptr()
+
+    manager.snapshot_pool_sleep_metadata()
+    pointers.zero_()
+    mapping.zero_()
+    manager.restore_pool_sleep_metadata()
+
+    assert pointers.data_ptr() == pointer_address
+    assert mapping.data_ptr() == mapping_address
+    assert pointers.cpu().tolist() == [17, 23]
+    assert mapping.cpu().tolist() == [3, 5]
