@@ -50,6 +50,11 @@ add_gtest(kvCacheManagerV2TypedIndexTest
 target_include_directories(
   kvCacheManagerV2TypedIndexTest
   PRIVATE ${PROJECT_SOURCE_DIR}/tensorrt_llm/batch_manager)
+add_gtest(kvCacheManagerV2VirtMemTest
+          "kvCacheManagerV2VirtMemTest.cpp;kvCacheManagerV2PoisonCheck.cpp")
+target_include_directories(
+  kvCacheManagerV2VirtMemTest
+  PRIVATE ${PROJECT_SOURCE_DIR}/tensorrt_llm/batch_manager)
 add_gtest(kvCacheManagerV2HostMemTest
           "kvCacheManagerV2HostMemTest.cpp;kvCacheManagerV2PoisonCheck.cpp")
 target_include_directories(

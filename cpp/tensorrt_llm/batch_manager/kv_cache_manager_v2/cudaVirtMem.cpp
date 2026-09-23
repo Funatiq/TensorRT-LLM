@@ -145,7 +145,15 @@ void VirtMem::push(PooledPhysMemAllocator::PooledPhysMem handle)
     TLLM_CHECK_DEBUG(physSize * (mPhysHandles.size() + 1) <= mVmSize);
 
     cuCheck(cuMemMap(offset, physSize, 0, handle->handle(), 0));
-    cuCheck(cuMemSetAccess(offset, physSize, &mAccessDesc, 1));
+    try
+    {
+        cuCheck(cuMemSetAccess(offset, physSize, &mAccessDesc, 1));
+    }
+    catch (...)
+    {
+        cuMemUnmap(offset, physSize);
+        throw;
+    }
     mPhysHandles.push_back(std::move(handle));
 }
 
@@ -160,6 +168,7 @@ void VirtMem::pop()
 
 void VirtMem::extend(size_t numToAdd)
 {
+    TLLM_CHECK_WITH_INFO(!mParked, "Cannot extend a parked GPU pool");
     size_t old = numPhysMem();
     try
     {
@@ -181,6 +190,7 @@ void VirtMem::extend(size_t numToAdd)
 
 void VirtMem::shrink(size_t numToRemove)
 {
+    TLLM_CHECK_WITH_INFO(!mParked, "Cannot shrink a parked GPU pool");
     cuCheck(cuCtxSynchronize());
     for (size_t i = 0; i < numToRemove; ++i)
     {
@@ -190,6 +200,7 @@ void VirtMem::shrink(size_t numToRemove)
 
 void VirtMem::realloc(size_t numBytes)
 {
+    TLLM_CHECK_WITH_INFO(!mParked, "Cannot resize a parked GPU pool");
     size_t physSize = mPhysMemAllocator.physMemSize();
     size_t required = divUp(numBytes, physSize);
     size_t current = numPhysMem();
@@ -201,6 +212,54 @@ void VirtMem::realloc(size_t numBytes)
     {
         shrink(current - required);
     }
+}
+
+VirtMem::PreparedMapping VirtMem::prepareResume() const
+{
+    TLLM_CHECK_WITH_INFO(mParked, "Cannot prepare replacement memory for a running GPU pool");
+    PreparedMapping mapping;
+    mapping.reserve(mParkedNumPhysMem);
+    for (size_t i = 0; i < mParkedNumPhysMem; ++i)
+    {
+        mapping.push_back(mPhysMemAllocator.acquire());
+    }
+    return mapping;
+}
+
+void VirtMem::park()
+{
+    TLLM_CHECK_WITH_INFO(!mParked, "GPU pool is already parked");
+    cuCheck(cuCtxSynchronize());
+    mParkedNumPhysMem = numPhysMem();
+    while (!mPhysHandles.empty())
+    {
+        pop();
+    }
+    mPhysMemAllocator.clear();
+    mParked = true;
+}
+
+void VirtMem::resume(PreparedMapping&& mapping)
+{
+    TLLM_CHECK_WITH_INFO(mParked, "GPU pool is not parked");
+    TLLM_CHECK_WITH_INFO(mapping.size() == mParkedNumPhysMem, "Replacement GPU pool has the wrong size");
+    try
+    {
+        for (auto& handle : mapping)
+        {
+            push(std::move(handle));
+        }
+    }
+    catch (...)
+    {
+        while (!mPhysHandles.empty())
+        {
+            pop();
+        }
+        throw;
+    }
+    mParked = false;
+    mParkedNumPhysMem = 0;
 }
 
 void VirtMem::destroy()
@@ -217,6 +276,8 @@ void VirtMem::destroy()
     cuCheck(cuMemAddressFree(mAddr, mVmSize));
     mAddr = 0;
     mVmSize = 0;
+    mParked = false;
+    mParkedNumPhysMem = 0;
 }
 
 } // namespace tensorrt_llm::batch_manager::kv_cache_manager_v2

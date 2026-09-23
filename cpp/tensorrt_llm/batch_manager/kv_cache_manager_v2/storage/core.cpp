@@ -323,7 +323,7 @@ SlotCount GpuSlotPool::computeNumSlots(size_t slotSize, size_t numPhysMem, size_
 
 SlotCount GpuSlotPool::numSlots() const noexcept
 {
-    return computeNumSlots(mSlotSize, mVirtMem.numPhysMem(), mVirtMem.physMemSize());
+    return computeNumSlots(mSlotSize, mVirtMem.logicalNumPhysMem(), mVirtMem.physMemSize());
 }
 
 void GpuSlotPool::destroy()
