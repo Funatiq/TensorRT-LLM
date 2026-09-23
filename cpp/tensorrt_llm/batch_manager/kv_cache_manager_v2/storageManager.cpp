@@ -456,6 +456,58 @@ StorageManager::StorageManager(LifeCycleRegistry const& lifeCycles, StorageConfi
     mCopyEngine = std::make_unique<CopyEngine>(mPageStagingManager.get());
 }
 
+StorageManager::PoolSleepStates StorageManager::preparePoolSleep(PoolRestoreMode mode, CUstream stream)
+{
+    TLLM_CHECK_WITH_INFO(!mPoolsParked, "GPU pools are already parked");
+    cuCheck(cuCtxSynchronize());
+    PoolSleepStates states;
+    for (auto& level : mLevels)
+    {
+        if (level.cacheTier != CacheTier::GPU_MEM)
+        {
+            continue;
+        }
+        auto* storage = dynamic_cast<GpuCacheLevelStorage*>(level.storage.get());
+        TLLM_CHECK_WITH_INFO(storage != nullptr, "Unsupported GPU cache storage for pool sleep");
+        for (auto* pool : storage->gpuPools())
+        {
+            states.push_back(pool->prepareSleep(mode, stream));
+        }
+    }
+    return states;
+}
+
+void StorageManager::commitPoolSleep(PoolSleepStates const& states)
+{
+    TLLM_CHECK_WITH_INFO(!mPoolsParked, "GPU pools are already parked");
+    cuCheck(cuCtxSynchronize());
+    for (auto const& state : states)
+    {
+        state.pool->commitSleep(state);
+    }
+    mPoolsParked = true;
+}
+
+void StorageManager::preparePoolWakeup(PoolSleepStates& states)
+{
+    TLLM_CHECK_WITH_INFO(mPoolsParked, "GPU pools are not parked");
+    for (auto& state : states)
+    {
+        state.pool->prepareWakeup(state);
+    }
+}
+
+void StorageManager::commitPoolWakeup(PoolSleepStates& states, PoolRestoreMode mode, CUstream stream)
+{
+    TLLM_CHECK_WITH_INFO(mPoolsParked, "GPU pools are not parked");
+    for (auto& state : states)
+    {
+        state.pool->commitWakeup(state, mode, stream);
+    }
+    cuCheck(cuStreamSynchronize(stream));
+    mPoolsParked = false;
+}
+
 StorageManager::~StorageManager()
 {
     KVCM2_POISON_ON_EXCEPT([this]() { destroy(); });
@@ -469,6 +521,7 @@ void StorageManager::destroy()
         lvl.storage->destroy();
     }
     mLevels.clear();
+    mPoolsParked = false;
     mGpuPhysMemAllocator.reset();
 
     mIndexStagingManager.reset();

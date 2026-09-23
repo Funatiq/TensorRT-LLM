@@ -140,6 +140,19 @@ public:
 
     void destroy();
 
+    using PoolSleepStates = std::vector<GpuSlotPool::SleepState>;
+
+    //! Snapshot every GPU pool without changing its mappings.
+    [[nodiscard]] PoolSleepStates preparePoolSleep(PoolRestoreMode mode, CUstream stream);
+    void commitPoolSleep(PoolSleepStates const& states);
+    void preparePoolWakeup(PoolSleepStates& states);
+    void commitPoolWakeup(PoolSleepStates& states, PoolRestoreMode mode, CUstream stream);
+
+    [[nodiscard]] bool poolsParked() const noexcept
+    {
+        return mPoolsParked;
+    }
+
     // ---- Allocation -------------------------------------------------------
 
     // Allocate slots for all life cycles at the given cache level.
@@ -444,6 +457,7 @@ private:
     // All GPU cache levels borrow this allocator. It must outlive mLevels.
     std::unique_ptr<PooledPhysMemAllocator> mGpuPhysMemAllocator;
     TypedVec<CacheLevel, CacheLevelManager> mLevels;
+    bool mPoolsParked = false;
 
     static constexpr size_t kDefaultPageStagingBytes = 64u << 20u;
     static constexpr size_t kPageStagingDepth = 3;

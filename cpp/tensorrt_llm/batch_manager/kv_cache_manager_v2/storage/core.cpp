@@ -311,6 +311,78 @@ GpuSlotPool::GpuSlotPool(size_t slotSize, size_t vmSize, PooledPhysMemAllocator&
     resize(numSlots);
 }
 
+void const* GpuSlotPool::SleepState::backupAddress() const noexcept
+{
+    if (pinnedBackup)
+    {
+        return reinterpret_cast<void const*>(pinnedBackup->address());
+    }
+    return pageableBackup.get();
+}
+
+GpuSlotPool::SleepState GpuSlotPool::prepareSleep(PoolRestoreMode mode, CUstream stream)
+{
+    TLLM_CHECK_WITH_INFO(!isParked(), "Cannot prepare sleep for a parked GPU pool");
+    SleepState state;
+    state.pool = this;
+    state.mappedBytes = mVirtMem.mappedBytes();
+    state.baseAddress = mVirtMem.address();
+    if (state.mappedBytes == 0 || (mode != PoolRestoreMode::kCpu && mode != PoolRestoreMode::kPinned))
+    {
+        return state;
+    }
+    if (mode == PoolRestoreMode::kPinned)
+    {
+        state.pinnedBackup = std::make_unique<HostMem>(state.mappedBytes);
+        cuCheck(cuMemcpyDtoHAsync(
+            reinterpret_cast<void*>(state.pinnedBackup->address()), state.baseAddress, state.mappedBytes, stream));
+        cuCheck(cuStreamSynchronize(stream));
+    }
+    else
+    {
+        state.pageableBackup = std::make_unique<std::byte[]>(state.mappedBytes);
+        cuCheck(cuMemcpyDtoH(state.pageableBackup.get(), state.baseAddress, state.mappedBytes));
+    }
+    return state;
+}
+
+void GpuSlotPool::commitSleep(SleepState const& state)
+{
+    TLLM_CHECK_WITH_INFO(
+        state.pool == this && state.baseAddress == mVirtMem.address() && state.mappedBytes == mVirtMem.mappedBytes(),
+        "GPU pool changed after sleep preparation");
+    mVirtMem.park();
+}
+
+void GpuSlotPool::prepareWakeup(SleepState& state)
+{
+    TLLM_CHECK_WITH_INFO(state.pool == this && isParked(), "GPU pool is not prepared for wakeup");
+    state.replacement = mVirtMem.prepareResume();
+}
+
+void GpuSlotPool::commitWakeup(SleepState& state, PoolRestoreMode mode, CUstream stream)
+{
+    TLLM_CHECK_WITH_INFO(
+        state.pool == this && state.baseAddress == mVirtMem.address(), "GPU pool address changed during sleep");
+    mVirtMem.resume(std::move(state.replacement));
+    if (state.mappedBytes == 0)
+    {
+        return;
+    }
+    if (mode == PoolRestoreMode::kMemset)
+    {
+        cuCheck(cuMemsetD8Async(state.baseAddress, 0, state.mappedBytes, stream));
+    }
+    else if (mode == PoolRestoreMode::kCpu)
+    {
+        cuCheck(cuMemcpyHtoD(state.baseAddress, state.backupAddress(), state.mappedBytes));
+    }
+    else if (mode == PoolRestoreMode::kPinned)
+    {
+        cuCheck(cuMemcpyHtoDAsync(state.baseAddress, state.backupAddress(), state.mappedBytes, stream));
+    }
+}
+
 size_t GpuSlotPool::computeNumPhysMem(size_t slotSize, SlotCount numSlots, size_t physMemSize) noexcept
 {
     return divUp(slotCountToSizeT(numSlots) * slotSize, physMemSize);
@@ -583,6 +655,17 @@ GpuPoolGroup::GpuPoolGroup(
 // HostPoolGroup
 // ---------------------------------------------------------------------------
 
+std::vector<GpuSlotPool*> GpuPoolGroup::gpuPools() const
+{
+    std::vector<GpuSlotPool*> pools;
+    pools.reserve(static_cast<size_t>(mPools.size().value()));
+    for (auto const& pool : mPools)
+    {
+        pools.push_back(static_cast<GpuSlotPool*>(pool.get()));
+    }
+    return pools;
+}
+
 HostPoolGroup::HostPoolGroup(SlotCount numSlots, TypedVec<PoolIndex, size_t> const& slotSizeList)
     : PoolGroupBase(numSlots)
 {
@@ -650,6 +733,17 @@ GpuCacheLevelStorage::GpuCacheLevelStorage(TypedVec<PoolGroupIndex, SlotDesc> co
         mPoolGroups.push_back(std::make_unique<GpuPoolGroup>(
             slotCountList[pgIdx], slotDescList[pgIdx].slotSizeList(), mPhysMemAllocator));
     }
+}
+
+std::vector<GpuSlotPool*> GpuCacheLevelStorage::gpuPools() const
+{
+    std::vector<GpuSlotPool*> pools;
+    for (auto const& group : mPoolGroups)
+    {
+        auto groupPools = static_cast<GpuPoolGroup*>(group.get())->gpuPools();
+        pools.insert(pools.end(), groupPools.begin(), groupPools.end());
+    }
+    return pools;
 }
 
 // ---------------------------------------------------------------------------
