@@ -553,6 +553,7 @@ TypedVec<LifeCycleId, std::vector<Slot>> StorageManager::newSlots(CacheLevel lev
     TypedVec<LifeCycleId, SlotCount> const& numSlotsPerLc, MigrationRecorder const& migrationRecorder,
     DropRecorder const& dropRecorder)
 {
+    checkPoolsRunning();
     auto const& grouping = lifeCycleGrouping(level);
     TLLM_CHECK_DEBUG(numSlotsPerLc.size() == numLifeCycles());
     auto& storage = *mLevels.at(level).storage;
@@ -619,12 +620,14 @@ TypedVec<LifeCycleId, std::vector<Slot>> StorageManager::newGpuSlots(
     TypedVec<LifeCycleId, SlotCount> const& numSlotsPerLc, MigrationRecorder const& migrationRecorder,
     DropRecorder const& dropRecorder)
 {
+    checkPoolsRunning();
     return newSlots(kHotLevel, numSlotsPerLc, migrationRecorder, dropRecorder);
 }
 
 std::vector<Slot> StorageManager::newSlotsForPoolGroup(CacheLevel level, PoolGroupIndex pgIdx, SlotCount numSlots,
     MigrationRecorder const& migrationRecorder, DropRecorder const& dropRecorder)
 {
+    checkPoolsRunning();
     if (numSlots < 0)
     {
         throw LogicError("StorageManager::newSlotsForPoolGroup: numSlots must be non-negative");
@@ -788,6 +791,7 @@ void StorageManager::submitMigrationBatch(CacheLevel dstLevel, CacheLevel srcLev
 void StorageManager::copySlotData(LifeCycleId lifeCycle, CacheLevel dstLevel, CacheLevel srcLevel, SlotId dstSlotId,
     SlotId srcSlotId, CUstream stream)
 {
+    checkPoolsRunning();
     LayerGroupId const batchingLayerGroupId = getMigrationBatchingLayerGroupId(dstLevel, srcLevel, lifeCycle);
     PageIndexPair const pageIndex{slotIdToPageIndexValue(dstSlotId), slotIdToPageIndexValue(srcSlotId)};
     submitMigrationBatch(dstLevel, srcLevel, batchingLayerGroupId, &pageIndex, 1, stream);
@@ -1319,6 +1323,7 @@ std::optional<std::vector<Slot>> StorageManager::_batchedMigrate(CacheLevel dstL
 void StorageManager::batchedMigrate(
     CacheLevel dstLevel, std::vector<SharedPtr<Page>> const& pages, MigrationRecorder const& migrationRecorder)
 {
+    checkPoolsRunning();
     std::map<MigrationBatchKey, std::vector<SharedPtr<Page>>> groups;
     std::set<Page*> seen;
     for (auto const& page : pages)
@@ -1529,6 +1534,7 @@ void StorageManager::_migrateLockedSparsePages(CUstream stream, CacheLevel dstLe
 int64_t StorageManager::prefetch(
     CacheLevel dstLevel, TypedVec<LifeCycleId, TypedVec<CacheLevel, std::vector<SharedPtr<Page>>>> const& pages)
 {
+    checkPoolsRunning();
     TypedVec<PoolGroupIndex, SlotCount> numSlotsToMigrate(numPoolGroups(dstLevel), 0);
     int64_t diskBlocksMigrated = 0;
     std::vector<SharedPtr<Page>> scheduled;
@@ -1765,6 +1771,7 @@ float StorageManager::getOverallUtilization(CacheLevel level) const
 
 void StorageManager::expandPoolGroup(CacheLevel level, PoolGroupIndex pgIdx, SlotCount newNumSlots)
 {
+    checkPoolsRunning();
     auto& pg = poolGroup(level, pgIdx);
     TLLM_CHECK_DEBUG(newNumSlots > pg.numSlots());
     pg.resizePools(newNumSlots);
@@ -1778,6 +1785,7 @@ void StorageManager::expandPoolGroup(CacheLevel level, PoolGroupIndex pgIdx, Slo
 void StorageManager::shrinkPoolGroup(
     CacheLevel level, PoolGroupIndex pgIdx, SlotCount newNumSlots, std::vector<SharedPtr<Page>> const& persistentPages)
 {
+    checkPoolsRunning();
     auto& pg = poolGroup(level, pgIdx);
     auto& allocator = pg.slotAllocator();
     auto& ctrl = mLevels.at(level).controller;
@@ -1890,6 +1898,7 @@ void StorageManager::adjustCacheLevel(CacheLevel level, std::optional<size_t> ne
     TypedVec<PoolGroupIndex, float> const& ratioList,
     TypedVec<PoolGroupIndex, std::vector<SharedPtr<Page>>> const* persistentPages)
 {
+    checkPoolsRunning();
     auto& lvlStorage = *mLevels.at(level).storage;
     auto oldNumSlots = lvlStorage.slotCountList();
     size_t quota = newQuota.has_value()
