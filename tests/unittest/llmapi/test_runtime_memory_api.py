@@ -38,6 +38,23 @@ def _make_async_llm() -> AsyncLLM:
     return llm
 
 
+def test_local_worker_dispatches_runtime_memory_calls():
+    from tensorrt_llm.executor.worker import GenerationExecutorWorker
+
+    llm = object.__new__(LLM)
+    llm._encode_only = False
+    llm._executor = object.__new__(GenerationExecutorWorker)
+    llm._executor.get_memory_status = MagicMock(return_value={"state": "running"})
+    llm._executor.sleep = MagicMock(return_value=None)
+    llm._executor.wakeup = MagicMock(return_value=None)
+
+    assert llm._collective_rpc("get_memory_status") == [{"state": "running"}]
+    assert llm._collective_rpc("sleep", (["kv_cache"],)) == [None]
+    assert llm._collective_rpc("wakeup", (["kv_cache"],)) == [None]
+    llm._executor.sleep.assert_called_once_with(["kv_cache"])
+    llm._executor.wakeup.assert_called_once_with(["kv_cache"])
+
+
 @pytest.mark.asyncio
 async def test_async_release_defaults_to_all_usable_tags():
     llm = _make_async_llm()
