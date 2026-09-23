@@ -637,6 +637,12 @@ class BaseWorker(GenerationExecutor):
         if invalidator is not None:
             invalidator(tags)
 
+    def _run_kv_pool_hook(self, name: str,
+                          tags: list[ExecutorMemoryType]) -> None:
+        hook = getattr(self.engine, name, None)
+        if hook is not None:
+            hook(tags)
+
     def _multi_rank_sleep_wakeup(
         self,
         action: Literal["sleep", "wakeup"],
@@ -816,6 +822,10 @@ class BaseWorker(GenerationExecutor):
                 return sent_ranks
 
             try:
+                if action == _SleepWakeupAction.SLEEP:
+                    self._run_kv_pool_hook("prepare_kv_pool_sleep", tags)
+                else:
+                    self._run_kv_pool_hook("prepare_kv_pool_wakeup", tags)
                 # Phase 1: prepare peers.  A prepared peer has reached the
                 # control barrier and synchronized CUDA, but has not modified
                 # VMM state yet.  This keeps send/local failures from leaving
@@ -865,12 +875,14 @@ class BaseWorker(GenerationExecutor):
                         if run_mnnvl is not None:
                             run_mnnvl(target_action, tags)
                         self._invalidate_v1_prefix_cache_for_sleep(tags)
+                        self._run_kv_pool_hook("commit_kv_pool_sleep", tags)
                         release_with_tag(*tags)
                         torch.cuda.synchronize()
                         gc.collect()
                         torch.cuda.empty_cache()
                     else:
                         materialize_with_tag(*tags)
+                        self._run_kv_pool_hook("commit_kv_pool_wakeup", tags)
                         torch.cuda.synchronize()
                         run_mnnvl = (getattr(
                             self.engine, "_run_mnnvl_checkpoint_resources",
@@ -897,6 +909,11 @@ class BaseWorker(GenerationExecutor):
                     drain_acks(commit_ranks, _SleepWakeupAction.COMMIT)
 
                 if errors:
+                    if not local_commit_started:
+                        abort_hook = ("abort_kv_pool_sleep"
+                                      if action == _SleepWakeupAction.SLEEP else
+                                      "abort_kv_pool_wakeup")
+                        self._run_kv_pool_hook(abort_hook, tags)
                     operation_error = RuntimeError(
                         f"{action}() failed on {len(errors)} rank(s):\n" +
                         "\n".join(errors))
@@ -1028,8 +1045,10 @@ class BaseWorker(GenerationExecutor):
                 with self.engine._sleep_wakeup_lock, self.engine.control_action(
                 ):
                     torch.cuda.synchronize()
+                    self._run_kv_pool_hook("prepare_kv_pool_sleep", tags)
                     local_mutation_started = True
                     self._invalidate_v1_prefix_cache_for_sleep(tags)
+                    self._run_kv_pool_hook("commit_kv_pool_sleep", tags)
                     release_with_tag(*tags)
                     torch.cuda.synchronize()
                     gc.collect()
@@ -1037,6 +1056,8 @@ class BaseWorker(GenerationExecutor):
         except Exception:
             if local_mutation_started:
                 self.engine.fail_sleep_wakeup_transition()
+            else:
+                self._run_kv_pool_hook("abort_kv_pool_sleep", tags)
             self.engine.abort_sleep_transition()
             raise
         try:
@@ -1086,12 +1107,16 @@ class BaseWorker(GenerationExecutor):
                 with self.engine._sleep_wakeup_lock, self.engine.control_action(
                 ):
                     torch.cuda.synchronize()
+                    self._run_kv_pool_hook("prepare_kv_pool_wakeup", tags)
                     local_mutation_started = True
                     materialize_with_tag(*tags)
+                    self._run_kv_pool_hook("commit_kv_pool_wakeup", tags)
                     torch.cuda.synchronize()
         except Exception:
             if local_mutation_started:
                 self.engine.fail_sleep_wakeup_transition()
+            else:
+                self._run_kv_pool_hook("abort_kv_pool_wakeup", tags)
             self.engine.abort_wakeup_transition()
             raise
         try:

@@ -5696,6 +5696,52 @@ class KVCacheManagerV2(BaseResourceManager):
                 kv_cache.close()
         return success
 
+    def snapshot_pool_sleep_metadata(self) -> None:
+        """Save persistent device constants before tagged helper allocations are released."""
+        names = (
+            "kv_cache_pool_pointers",
+            "kv_cache_pool_mapping",
+            "_device_attention_op_pool_ids",
+            "_device_attention_op_scales",
+            "_device_attention_op_layer_offsets",
+            "_device_attention_op_scratch_pages",
+            "_device_block_positions",
+        )
+        self._pool_sleep_metadata = {
+            name: tensor.detach().cpu().clone()
+            for name in names
+            if isinstance((tensor := getattr(self, name, None)), torch.Tensor) and tensor.is_cuda
+        }
+
+    def restore_pool_sleep_metadata(self) -> None:
+        """Restore device constants in place so captured CUDA graphs keep valid pointers."""
+        for name, saved in self._pool_sleep_metadata.items():
+            getattr(self, name).copy_(saved, non_blocking=False)
+        self._pool_sleep_metadata.clear()
+
+    def release_pool_sleep_internal_caches(self, destructive: bool) -> None:
+        """Close the guard for destructive sleep after checking the drain."""
+        unexpected = set(self.kv_cache_map) - _RESERVED_REQUEST_IDS
+        if unexpected:
+            raise RuntimeError(f"KV pool sleep still has request caches: {sorted(unexpected)[:8]}")
+        if not destructive:
+            return
+        if self.conversation_manager is not None:
+            self.conversation_manager.clear()
+        self._fresh_pages_filled.clear()
+        self._early_freed_index_requests.clear()
+        guard = self.kv_cache_map.pop(_GUARD_PAGE_REQUEST_ID, None)
+        if guard is not None:
+            guard.close()
+            self.index_mapper.remove_sequence(_GUARD_PAGE_REQUEST_ID)
+            self.impl.clear_stats_excluded(_GUARD_PAGE_REQUEST_ID)
+            self._guard_page_by_layer.clear()
+
+    def restore_pool_sleep_guard(self, destructive: bool) -> None:
+        """Recreate a diagnostic guard after fresh or zeroed pool mappings wake."""
+        if destructive and self._guard_page_value is not None:
+            self._reserve_guard_page()
+
     def reset_reuse_state(self):
         self.impl.clear_reusable_blocks()
         if self.conversation_manager is not None:

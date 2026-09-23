@@ -195,9 +195,9 @@ else:
     KVCacheEventManager = _cpp.KVCacheEventManager
     KVCacheIterationStatsDelta = _cpp.KVCacheIterationStatsDelta
     KVCacheManager = _cpp.KVCacheManager
-    PoolRestoreMode = _cpp.PoolRestoreMode
-    PoolSleepToken = _cpp.PoolSleepToken
-    PoolWakeToken = _cpp.PoolWakeToken
+    PoolRestoreMode = getattr(_cpp, "PoolRestoreMode", None)
+    PoolSleepToken = getattr(_cpp, "PoolSleepToken", None)
+    PoolWakeToken = getattr(_cpp, "PoolWakeToken", None)
     KVCacheManagerConfig = _cpp.KVCacheManagerConfig
     IKvCacheColdPageCodec = _cpp.IKvCacheColdPageCodec
     create_default_kv_cache_cold_page_codec = _cpp.create_default_kv_cache_cold_page_codec

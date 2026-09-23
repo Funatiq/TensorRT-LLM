@@ -326,8 +326,10 @@ class RayGPUWorker(RpcWorkerMixin, BaseWorker):
         mutation_started = False
         try:
             torch.cuda.synchronize()
+            self._run_kv_pool_hook("prepare_kv_pool_sleep", tags)
             mutation_started = True
             self._invalidate_v1_prefix_cache_for_sleep(tags)
+            self._run_kv_pool_hook("commit_kv_pool_sleep", tags)
             release_with_tag(*tags)
             torch.cuda.synchronize()
             gc.collect()
@@ -335,6 +337,8 @@ class RayGPUWorker(RpcWorkerMixin, BaseWorker):
         except Exception:
             if mutation_started:
                 self.engine.fail_sleep_wakeup_transition()
+            else:
+                self._run_kv_pool_hook("abort_kv_pool_sleep", tags)
             self.engine.abort_sleep_transition()
             logger.exception("Encountered an error in sleep")
             raise
@@ -363,12 +367,16 @@ class RayGPUWorker(RpcWorkerMixin, BaseWorker):
         mutation_started = False
         try:
             torch.cuda.synchronize()
+            self._run_kv_pool_hook("prepare_kv_pool_wakeup", tags)
             mutation_started = True
             materialize_with_tag(*tags)
+            self._run_kv_pool_hook("commit_kv_pool_wakeup", tags)
             torch.cuda.synchronize()
         except Exception:
             if mutation_started:
                 self.engine.fail_sleep_wakeup_transition()
+            else:
+                self._run_kv_pool_hook("abort_kv_pool_wakeup", tags)
             self.engine.abort_wakeup_transition()
             logger.exception("Encountered an error in wakeup")
             raise

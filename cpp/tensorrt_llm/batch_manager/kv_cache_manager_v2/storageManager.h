@@ -341,6 +341,11 @@ public:
     friend class KvCacheIntrospection;
 
 private:
+    void checkPoolsRunning() const
+    {
+        TLLM_CHECK_WITH_INFO(!mPoolsParked, "GPU pools are parked");
+    }
+
     using PageQueue = std::deque<SharedPtr<Page>>;
     using PagesByLifeCycle = TypedVec<LifeCycleId, PageQueue>;
     using MigrationBatchKey = std::pair<CacheLevel, LayerGroupId>;

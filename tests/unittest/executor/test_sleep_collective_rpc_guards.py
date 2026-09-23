@@ -64,46 +64,96 @@ def _make_worker(backend="pytorch", world_size=1, sleep_config=_SLEEP_CONFIG_DEF
     return w
 
 
-class TestV2KvCacheSleepRejection:
+class TestV2KvCacheSleepCapability:
     @pytest.mark.parametrize(
-        "use_v2,tags,should_raise",
+        "backend,supported,tags,should_raise",
         [
-            (True, ["kv_cache"], True),
-            (True, ["model", "kv_cache"], True),
-            (True, ["model"], False),
-            (False, ["kv_cache"], False),
+            ("cpp", True, ["kv_cache"], False),
+            ("cpp", True, ["model", "kv_cache"], False),
+            ("cpp", False, ["kv_cache"], True),
+            ("python", True, ["kv_cache"], True),
+            ("python", True, ["model"], False),
         ],
     )
-    def test_validation_conditions(self, use_v2, tags, should_raise):
+    def test_validation_conditions(self, backend, supported, tags, should_raise):
+        from unittest.mock import patch
+
         from tensorrt_llm._torch.pyexecutor.py_executor import PyExecutor
         from tensorrt_llm.llmapi.llm_args import ExecutorMemoryType
 
         executor = object.__new__(PyExecutor)
-        executor._is_kv_manager_v2 = use_v2
+        executor.kv_connector_manager = None
+        executor.kv_cache_transceiver = None
+        manager = SimpleNamespace(impl=SimpleNamespace(supports_pool_sleep=lambda: supported))
         parsed_tags = [ExecutorMemoryType(tag) for tag in tags]
-
-        if should_raise:
-            with pytest.raises(
-                ValueError,
-                match="KV_CACHE sleep is not supported with KVCacheManagerV2",
-            ):
+        module = "tensorrt_llm._torch.pyexecutor.py_executor"
+        with (
+            patch(f"{module}.KV_CACHE_MANAGER_V2_BACKEND", backend),
+            patch.object(PyExecutor, "_kv_pool_sleep_managers", return_value=[manager]),
+        ):
+            if should_raise:
+                with pytest.raises(ValueError, match="KV_CACHE sleep requires"):
+                    executor.validate_sleep_tags(parsed_tags)
+            else:
                 executor.validate_sleep_tags(parsed_tags)
-        else:
-            executor.validate_sleep_tags(parsed_tags)
 
     def test_rejected_before_transition_or_mpi_dispatch(self):
         worker = _make_worker(world_size=2)
         worker.engine.validate_sleep_tags.side_effect = ValueError(
-            "KV_CACHE sleep is not supported with KVCacheManagerV2"
+            "KV_CACHE sleep requires the C++ KVCacheManagerV2 backend"
         )
 
-        with pytest.raises(
-            ValueError,
-            match="KV_CACHE sleep is not supported with KVCacheManagerV2",
-        ):
+        with pytest.raises(ValueError, match="KV_CACHE sleep requires"):
             worker.sleep(["kv_cache"])
 
         worker.engine.begin_sleep_transition.assert_not_called()
+
+
+class TestNativePoolHookOrdering:
+    @pytest.mark.parametrize(
+        "method,expected",
+        [
+            ("sleep", ["prepare", "commit", "tagged"]),
+            ("wakeup", ["prepare", "tagged", "commit"]),
+        ],
+    )
+    def test_single_rank_orders_pool_and_tagged_memory(self, method, expected):
+        import threading
+        from contextlib import nullcontext
+        from unittest.mock import patch
+
+        events = []
+        worker = _make_worker()
+        worker.engine._sleep_wakeup_lock = threading.Lock()
+        worker.engine.control_action = nullcontext
+        worker.engine.get_memory_status = MagicMock(
+            return_value={
+                "state": "running" if method == "sleep" else "parked",
+                "parked_tags": [] if method == "sleep" else ["kv_cache"],
+            }
+        )
+        setattr(
+            worker.engine,
+            f"prepare_kv_pool_{method}",
+            lambda _tags: events.append("prepare"),
+        )
+        setattr(
+            worker.engine,
+            f"commit_kv_pool_{method}",
+            lambda _tags: events.append("commit"),
+        )
+        tagged = "release_with_tag" if method == "sleep" else "materialize_with_tag"
+        with (
+            patch(
+                f"tensorrt_llm._torch.virtual_memory.{tagged}",
+                side_effect=lambda *_tags: events.append("tagged"),
+            ),
+            patch("torch.cuda.synchronize"),
+            patch("gc.collect"),
+            patch("torch.cuda.empty_cache"),
+        ):
+            getattr(worker, method)(["kv_cache"])
+        assert events == expected
 
 
 class TestV1PrefixCacheInvalidation:
@@ -558,6 +608,56 @@ def _make_proto_worker(recv_responses, world_size=3):
         control_action=_noop_control_action,
     )
     return w, recv_calls
+
+
+class TestMultiRankPoolHookOrdering:
+    @pytest.mark.parametrize(
+        "action,expected",
+        [
+            ("sleep", ["prepare", "commit", "tagged"]),
+            ("wakeup", ["prepare", "tagged", "commit"]),
+        ],
+    )
+    def test_rank_zero_orders_native_pool_and_tagged_memory(self, action, expected):
+        from unittest.mock import patch
+
+        from tensorrt_llm.llmapi.llm_args import ExecutorMemoryType
+
+        worker, _ = _make_proto_worker([{"status": "ok"}, {"status": "ok"}], world_size=2)
+        events = []
+        setattr(worker.engine, f"prepare_kv_pool_{action}", lambda _tags: events.append("prepare"))
+        setattr(worker.engine, f"commit_kv_pool_{action}", lambda _tags: events.append("commit"))
+        tagged = "release_with_tag" if action == "sleep" else "materialize_with_tag"
+        with (
+            patch(
+                f"tensorrt_llm._torch.virtual_memory.{tagged}",
+                side_effect=lambda *_tags: events.append("tagged"),
+            ),
+            patch("torch.cuda.synchronize"),
+            patch("gc.collect"),
+            patch("torch.cuda.empty_cache"),
+        ):
+            worker._multi_rank_sleep_wakeup(action, [ExecutorMemoryType.KV_CACHE])
+        assert events == expected
+
+    def test_prepare_error_aborts_local_native_pool(self):
+        from unittest.mock import patch
+
+        from tensorrt_llm.llmapi.llm_args import ExecutorMemoryType
+
+        worker, _ = _make_proto_worker(
+            [{"status": "error", "error": "peer prepare failed"}, {"status": "ok"}],
+            world_size=2,
+        )
+        events = []
+        worker.engine.prepare_kv_pool_sleep = lambda _tags: events.append("prepare")
+        worker.engine.abort_kv_pool_sleep = lambda _tags: events.append("abort")
+        with (
+            patch("torch.cuda.synchronize"),
+            pytest.raises(RuntimeError, match="peer prepare failed"),
+        ):
+            worker._multi_rank_sleep_wakeup("sleep", [ExecutorMemoryType.KV_CACHE])
+        assert events == ["prepare", "abort"]
 
 
 class TestMultiRankAckErrorPropagation:

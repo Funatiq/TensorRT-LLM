@@ -49,6 +49,8 @@ from tensorrt_llm.llmapi.utils import \
     _reapply_current_thread_affinity_to_all_threads
 from tensorrt_llm.logger import logger
 from tensorrt_llm.mapping import CpType, Mapping
+from tensorrt_llm.runtime.kv_cache_manager_v2 import \
+    BACKEND as KV_CACHE_MANAGER_V2_BACKEND
 from tensorrt_llm.runtime.kv_cache_manager_v2 import OutOfPagesError
 from tensorrt_llm.tools.profiler.host_profile_tools.host_profiler import \
     host_profiler_context
@@ -1666,7 +1668,8 @@ class PyExecutor:
         # empty_cache), the subsequent CUDA graph teardown can trigger a
         # device-wide cudaErrorIllegalAddress when the driver touches metadata
         # for the now-freed memory regions.
-        for engine in (self.model_engine, self.draft_model_engine):
+        for engine in (self.model_engine,
+                       getattr(self, "draft_model_engine", None)):
             if engine is not None and hasattr(engine, '_release_cuda_graphs'):
                 engine._release_cuda_graphs()
         # Ensure graph destruction has fully completed on device before
@@ -3174,6 +3177,11 @@ class PyExecutor:
                                 release_control_request = False
                             abort_acknowledged = True
                         logger.warning(f"Sleep/wakeup listener: {error_msg}")
+                        if op_id == getattr(self, "_kv_pool_prepared_op_id",
+                                            None):
+                            self.abort_kv_pool_sleep(tags)
+                            self.abort_kv_pool_wakeup(tags)
+                            self._kv_pool_prepared_op_id = None
                     elif action in (_SleepWakeupAction.PREPARE,
                                     _SleepWakeupAction.COMMIT,
                                     _SleepWakeupAction.SLEEP,
@@ -3195,20 +3203,29 @@ class PyExecutor:
                                 # ready to commit, but VMM state is unchanged.
                                 has_mnnvl_resources = (
                                     self._has_mnnvl_checkpoint_resources(tags))
+                                if target_action == _SleepWakeupAction.SLEEP:
+                                    self.prepare_kv_pool_sleep(tags)
+                                else:
+                                    self.prepare_kv_pool_wakeup(tags)
+                                self._kv_pool_prepared_op_id = op_id
                                 release_control_request = False
                             elif target_action == _SleepWakeupAction.SLEEP:
                                 self._run_mnnvl_checkpoint_resources(
                                     target_action, tags)
                                 self.invalidate_v1_prefix_cache_for_sleep(tags)
+                                self.commit_kv_pool_sleep(tags)
                                 release_with_tag(*tags)
                                 torch.cuda.synchronize()
                                 gc.collect()
                                 torch.cuda.empty_cache()
+                                self._kv_pool_prepared_op_id = None
                             elif target_action == _SleepWakeupAction.WAKEUP:
                                 materialize_with_tag(*tags)
+                                self.commit_kv_pool_wakeup(tags)
                                 torch.cuda.synchronize()
                                 self._run_mnnvl_checkpoint_resources(
                                     target_action, tags)
+                                self._kv_pool_prepared_op_id = None
                             else:
                                 error_msg = (
                                     f"unknown target action '{target_action}'")
@@ -8395,12 +8412,137 @@ class PyExecutor:
         if self.enable_joint_kv_cache_reuse:
             self.draft_kv_cache_manager.reset_reuse_state()
 
+    def _kv_pool_sleep_managers(self) -> List[KVCacheManagerV2]:
+        """Return each native V2 manager once, including draft and cross KV."""
+        resource_manager = getattr(self, "resource_manager", None)
+        if resource_manager is None:
+            return []
+        managers = []
+        for manager in resource_manager.resource_managers.values():
+            if isinstance(manager,
+                          KVCacheManagerV2) and not any(manager is seen
+                                                        for seen in managers):
+                managers.append(manager)
+        return managers
+
     def validate_sleep_tags(self, tags: List[ExecutorMemoryType]) -> None:
-        """Reject runtime-memory tags unsupported by the active KV manager."""
-        if (self._is_kv_manager_v2 and ExecutorMemoryType.KV_CACHE in tags):
+        """Require complete native pool coverage before allowing V2 KV sleep."""
+        if ExecutorMemoryType.KV_CACHE not in tags:
+            return
+        managers = self._kv_pool_sleep_managers()
+        if not managers:
+            return
+        if KV_CACHE_MANAGER_V2_BACKEND != "cpp":
             raise ValueError(
-                "KV_CACHE sleep is not supported with KVCacheManagerV2 because "
-                "its main pools are not managed by tagged virtual memory.")
+                "KV_CACHE sleep requires the C++ KVCacheManagerV2 backend; "
+                "the deprecated Python V2 backend does not support pool parking."
+            )
+        if self.kv_connector_manager is not None or self.kv_cache_transceiver is not None:
+            raise ValueError(
+                "KV_CACHE sleep with V2 requires connector and transfer registration lifecycle support"
+            )
+        for manager in managers:
+            if not callable(
+                    getattr(manager.impl, "supports_pool_sleep",
+                            None)) or not manager.impl.supports_pool_sleep():
+                raise ValueError(
+                    "KV_CACHE sleep requires a C++ KVCacheManagerV2 with complete pool parking support"
+                )
+
+    def prepare_kv_pool_sleep(self, tags: List[ExecutorMemoryType]) -> None:
+        """Snapshot all native pools while the executor is quiesced."""
+        self._kv_pool_sleep_tokens = []
+        if ExecutorMemoryType.KV_CACHE not in tags:
+            return
+        managers = self._kv_pool_sleep_managers()
+        if not managers:
+            return
+        self.validate_sleep_tags(tags)
+        from tensorrt_llm.runtime.kv_cache_manager_v2 import PoolRestoreMode
+
+        mode = self.llm_args.sleep_config.restore_modes[
+            ExecutorMemoryType.KV_CACHE]
+        native_mode = getattr(PoolRestoreMode, mode.name)
+        try:
+            for manager in managers:
+                manager.snapshot_pool_sleep_metadata()
+                token = manager.impl.prepare_pool_sleep(
+                    native_mode,
+                    torch.cuda.current_stream().cuda_stream)
+                self._kv_pool_sleep_tokens.append((manager, token))
+        except Exception:
+            self.abort_kv_pool_sleep(tags)
+            for manager in self._kv_pool_sleep_managers():
+                if hasattr(manager, "_pool_sleep_metadata"):
+                    manager._pool_sleep_metadata.clear()
+            raise
+
+    def _release_kv_padding_dummies_for_sleep(self) -> None:
+        for engine in (self.model_engine, self.draft_model_engine):
+            runner = getattr(engine, "cuda_graph_runner", None)
+            if runner is None:
+                continue
+            for draft_len in list(runner.padding_dummy_requests):
+                runner.release_padding_dummy(self.resource_manager, draft_len)
+
+    def commit_kv_pool_sleep(self, tags: List[ExecutorMemoryType]) -> None:
+        """Release internal caches, then unmap every prepared native pool."""
+        if ExecutorMemoryType.KV_CACHE not in tags or not getattr(
+                self, "_kv_pool_sleep_tokens", []):
+            return
+        from tensorrt_llm._torch.virtual_memory import RestoreMode
+
+        mode = self.llm_args.sleep_config.restore_modes[
+            ExecutorMemoryType.KV_CACHE]
+        destructive = mode in (RestoreMode.NONE, RestoreMode.MEMSET)
+        self._release_kv_padding_dummies_for_sleep()
+        for manager, token in self._kv_pool_sleep_tokens:
+            manager.release_pool_sleep_internal_caches(destructive)
+            manager.impl.commit_pool_sleep(token)
+        self._kv_pool_sleep_tokens = []
+        self._kv_pool_sleep_destructive = destructive
+
+    def abort_kv_pool_sleep(self, tags: List[ExecutorMemoryType]) -> None:
+        for manager, token in getattr(self, "_kv_pool_sleep_tokens", []):
+            manager.impl.abort_pool_sleep(token)
+            manager._pool_sleep_metadata.clear()
+        self._kv_pool_sleep_tokens = []
+
+    def prepare_kv_pool_wakeup(self, tags: List[ExecutorMemoryType]) -> None:
+        """Allocate replacement handles before distributed wakeup commit."""
+        self._kv_pool_wake_tokens = []
+        if ExecutorMemoryType.KV_CACHE not in tags:
+            return
+        managers = self._kv_pool_sleep_managers()
+        if not managers:
+            return
+        try:
+            for manager in managers:
+                token = manager.impl.prepare_pool_wakeup(
+                    torch.cuda.current_stream().cuda_stream)
+                self._kv_pool_wake_tokens.append((manager, token))
+        except Exception:
+            self.abort_kv_pool_wakeup(tags)
+            raise
+
+    def commit_kv_pool_wakeup(self, tags: List[ExecutorMemoryType]) -> None:
+        """Remap pools, restore persistent metadata, and recreate guards."""
+        if ExecutorMemoryType.KV_CACHE not in tags or not getattr(
+                self, "_kv_pool_wake_tokens", []):
+            return
+        for manager, token in self._kv_pool_wake_tokens:
+            manager.impl.commit_pool_wakeup(
+                token,
+                torch.cuda.current_stream().cuda_stream)
+            manager.restore_pool_sleep_metadata()
+            manager.restore_pool_sleep_guard(self._kv_pool_sleep_destructive)
+        torch.cuda.synchronize()
+        self._kv_pool_wake_tokens = []
+
+    def abort_kv_pool_wakeup(self, tags: List[ExecutorMemoryType]) -> None:
+        for manager, token in getattr(self, "_kv_pool_wake_tokens", []):
+            manager.impl.abort_pool_wakeup(token)
+        self._kv_pool_wake_tokens = []
 
     def invalidate_v1_prefix_cache_for_sleep(
             self, tags: List[ExecutorMemoryType]) -> None:
