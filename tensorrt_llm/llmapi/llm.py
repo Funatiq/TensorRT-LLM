@@ -1969,10 +1969,15 @@ class _TorchLLM(BaseLLM):
             return self._executor.collective_rpc(method, args, kwargs,
                                                  non_block, unique_reply_rank,
                                                  target_ranks)
-        else:
-            raise ValueError(
-                f"Executor type {type(self._executor)} does not support collective RPC."
-            )
+        from tensorrt_llm.executor.worker import GenerationExecutorWorker
+        if (isinstance(self._executor, GenerationExecutorWorker)
+                and method in ("get_memory_status", "sleep", "wakeup")
+                and not non_block and unique_reply_rank is None
+                and target_ranks is None):
+            return [getattr(self._executor, method)(*args, **(kwargs or {}))]
+        raise ValueError(
+            f"Executor type {type(self._executor)} does not support collective RPC."
+        )
 
     def _check_runtime_memory_enabled(self) -> None:
         if self.args.sleep_config is None:
