@@ -98,6 +98,53 @@
         "source/micro_benchmarks",
         "source/micro_benchmarks/*"
       ]
+    },
+    {
+      "name": "Focused Torch families must remain component-local",
+      "from": [
+        "th_common_sequence",
+        "th_common_visual_gen",
+        "torchSequenceRegistrationTest",
+        "torchVisualGenRegistrationTest"
+      ],
+      "to": [
+        "tensorrt_llm",
+        "bindings",
+        "th_common",
+        "th_common_attention",
+        "th_common_gemm_quant",
+        "th_common_moe",
+        "th_common_distributed",
+        "th_common_decoding",
+        "pg_utils",
+        "kernels_src",
+        "cutlass_src",
+        "context_attention_src",
+        "_context_attention_kernels_*",
+        "decoder_attention_src",
+        "decoder_masked_multihead_attention*",
+        "flash_mla_src",
+        "trtllm_gen_*",
+        "*gemm*",
+        "*moe*",
+        "tllm_kernel_ulysses",
+        "tllm_kernel_communication",
+        "tllm_common_nccl*",
+        "tllm_runtime_distributed",
+        "tensorrt_llm_*_wrapper",
+        "*attention*",
+        "*fmha*",
+        "*mla*",
+        "tllm_runtime_nccl",
+        "tllm_runtime_ipc*",
+        "tllm_runtime_locality",
+        "tllm_runtime_multicast",
+        "tllm_runtime_nvls_buffers",
+        "deep_ep*",
+        "nvshmem*"
+      ],
+      "forbid_facade_libraries": true,
+      "include_tests": true
     }
   ],
   "component_test_forbidden": [
@@ -132,5 +179,9 @@
   "duplicate_owner_directories": [
     "source/tensorrt_llm/kernels",
     "source/tensorrt_llm/kernels/*"
+  ],
+  "component_test_allowed": [
+    "th_common_sequence",
+    "th_common_visual_gen"
   ]
 }

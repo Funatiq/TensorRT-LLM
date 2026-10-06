@@ -671,3 +671,70 @@ def test_generated_kernel_duplicates_outside_kernel_build_directory_are_errors(
     assert len(errors) == 1
     assert source in errors[0]
     assert not warnings
+
+
+@pytest.mark.parametrize("family", ["th_common_sequence", "th_common_visual_gen"])
+@pytest.mark.parametrize(
+    "dependency",
+    [
+        "tensorrt_llm",
+        "th_common_attention",
+        "pg_utils",
+        "tllm_kernel_grouped_gemm",
+        "tllm_kernel_attention_decode",
+        "tllm_runtime_nccl",
+        "tllm_kernel_ulysses",
+        "tensorrt_llm_ucx_wrapper",
+    ],
+)
+def test_focused_torch_families_reject_broad_transitive_links(
+    policy: dict, family: str, dependency: str
+) -> None:
+    build = graph(
+        target(family, ("helper",), directory="source/tensorrt_llm/thop"),
+        target("helper", (dependency,), directory="source/tensorrt_llm/thop"),
+        target(dependency, directory="source/tensorrt_llm/thop"),
+    )
+    assert any(
+        f"{family} -> helper -> {dependency}" in error for error in checker.audit(build, policy)[0]
+    )
+
+
+@pytest.mark.parametrize(
+    ("family", "kernel"),
+    [("th_common_sequence", "tllm_kernel_recurrent"), ("th_common_visual_gen", "tllm_kernel_dit")],
+)
+def test_component_test_can_consume_narrow_torch_family(
+    policy: dict, family: str, kernel: str
+) -> None:
+    build = graph(
+        target("focusedTest", (family,), directory="source/tests/unit_tests/thop"),
+        target(family, (kernel, "th_utils"), directory="source/tensorrt_llm/thop"),
+        target(kernel, directory="source/tensorrt_llm/kernels"),
+        target("th_utils", directory="source/tensorrt_llm/thop", torch_link=True),
+        tests={"focusedTest": "component"},
+    )
+    assert checker.audit(build, policy) == ([], [])
+
+
+@pytest.mark.parametrize("family", ["th_common_new_family", "th_common_attention"])
+def test_unmigrated_torch_family_still_requires_full_stack(policy: dict, family: str) -> None:
+    build = graph(
+        target("focusedTest", (family,), directory="source/tests/unit_tests/thop"),
+        target(family, directory="source/tensorrt_llm/thop"),
+        tests={"focusedTest": "component"},
+    )
+    assert any("requires FULL_STACK" in error for error in checker.audit(build, policy)[0])
+
+
+def test_focused_torch_test_cannot_add_unrelated_kernel_directly(policy: dict) -> None:
+    build = graph(
+        target(
+            "torchSequenceRegistrationTest",
+            ("tllm_kernel_grouped_gemm",),
+            directory="source/tests/unit_tests/thop",
+        ),
+        target("tllm_kernel_grouped_gemm", directory="source/tensorrt_llm/kernels"),
+        tests={"torchSequenceRegistrationTest": "component"},
+    )
+    assert any("Focused Torch" in error for error in checker.audit(build, policy)[0])

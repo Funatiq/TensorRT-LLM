@@ -317,14 +317,18 @@ def audit(graph: BuildGraph, policy: dict) -> tuple[list[str], list[str]]:
                     errors.append(
                         f"Component test links a facade/operator library: {' -> '.join(path)}"
                     )
-                if dependency != name and matches(dependency, forbidden_test):
+                if (
+                    dependency != name
+                    and matches(dependency, forbidden_test)
+                    and not matches(dependency, policy.get("component_test_allowed", []))
+                ):
                     errors.append(f"Component test requires FULL_STACK: {' -> '.join(path)}")
     for rule in policy["boundaries"]:
         starts = sorted(
             name
             for name, target in graph.targets.items()
             if target.owned
-            and name not in graph.tests
+            and (rule.get("include_tests") or name not in graph.tests)
             and (
                 matches(name, rule["from"])
                 or matches(target.directory, rule.get("from_directories", []))
