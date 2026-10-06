@@ -136,8 +136,8 @@ def build_google_tests(request, build_type):
 def build_kv_cache_compression_tests(request, build_type):
     """Build only the standalone NVFP4 cold-page kernel gtest.
 
-    The binary uses NO_TLLM_LINKAGE, so this skips the full-library
-    build that build_google_tests pays for.
+    The binary links focused kernel, common and KV-cache components,
+    so this builds without the full TensorRT-LLM shared library.
     """
     cuda_arch = f"{request.param}-real"
 

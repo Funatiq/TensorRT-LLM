@@ -97,39 +97,4 @@ function(add_tllm_gtest test_name)
   endif()
 endfunction()
 
-function(add_gtest test_name test_src)
-  set(options NO_GTEST_MAIN)
-  set(oneValueArgs TIMEOUT)
-  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}"
-                        ${ARGN})
-  add_executable(${test_name} ${test_src})
-
-  target_link_libraries(${test_name} PUBLIC gmock_main)
-  if(NOT ARGS_NO_GTEST_MAIN)
-    target_link_libraries(${test_name} PUBLIC gtest_main)
-  endif()
-  if(ENABLE_MULTI_DEVICE)
-    target_compile_definitions(${test_name} PUBLIC ENABLE_MULTI_DEVICE)
-  endif()
-
-  target_compile_features(${test_name} PRIVATE cxx_std_20)
-  target_compile_definitions(${test_name}
-                             PUBLIC TOP_LEVEL_DIR="${TOP_LEVEL_DIR}")
-
-  set(test_properties ENVIRONMENT "CUDA_MODULE_LOADING=LAZY")
-  if(ARGS_TIMEOUT)
-    list(APPEND test_properties TIMEOUT "${ARGS_TIMEOUT}")
-  endif()
-
-  gtest_discover_tests(
-    ${test_name}
-    PROPERTIES ${test_properties}
-               DISCOVERY_MODE
-               PRE_TEST # WAR for DLL discovery on windows.
-               DISCOVERY_TIMEOUT
-               30) # Longer timeout needed because discovery can be slow on
-                   # Windows
-  add_dependencies(google-tests ${test_name})
-endfunction()
-
 add_subdirectory(unit_tests)
