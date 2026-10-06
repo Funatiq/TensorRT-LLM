@@ -96,6 +96,14 @@ add_library(tllm::executor_request_utils ALIAS tllm_executor_request_utils)
 target_link_libraries(tllm_executor_request_utils PUBLIC tllm::executor_values
                                                          tllm::kv_cache_legacy)
 
+add_library(tllm_executor_cache_routing STATIC
+            cache_transmission/cacheRouting.cpp)
+add_library(tllm::executor_cache_routing ALIAS tllm_executor_cache_routing)
+target_link_libraries(
+  tllm_executor_cache_routing
+  PUBLIC tllm::common_logging
+  PRIVATE tllm::runtime_distributed)
+
 add_library(tllm_executor_transfer_agent STATIC
             cache_transmission/transferAgent.cpp)
 add_library(tllm::executor_transfer_agent ALIAS tllm_executor_transfer_agent)
@@ -122,7 +130,8 @@ target_link_libraries(
 foreach(
   component
   tllm_executor_values tllm_executor_transfer_agent tllm_executor_request_utils
-  tllm_executor_agent_name tllm_executor_memory_desc)
+  tllm_executor_agent_name tllm_executor_memory_desc
+  tllm_executor_cache_routing)
   target_compile_features(${component} PUBLIC cxx_std_20)
   set_target_properties(${component} PROPERTIES CXX_EXTENSIONS OFF
                                                 POSITION_INDEPENDENT_CODE ON)
@@ -133,7 +142,7 @@ target_link_libraries(
   ${EXECUTOR_STATIC_TARGET}
   PUBLIC tllm::executor_values tllm::executor_transfer_agent
          tllm::executor_request_utils tllm::executor_agent_name
-         tllm::executor_memory_desc)
+         tllm::executor_memory_desc tllm::executor_cache_routing)
 set_target_properties(
   ${EXECUTOR_STATIC_TARGET}
   PROPERTIES CXX_STANDARD "20" CXX_STANDARD_REQUIRED "YES" CXX_EXTENSIONS "NO"
