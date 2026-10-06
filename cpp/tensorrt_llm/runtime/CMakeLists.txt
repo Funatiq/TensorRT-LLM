@@ -31,8 +31,7 @@ set(SRCS
     moeLoadBalancer/hostAccessibleDeviceAllocator.cpp
     moeLoadBalancer/moeLoadBalancer.cpp
     moeLoadBalancer/topologyDetector.cpp
-    ncclCommunicator.cpp
-    workerPool.cpp)
+    ncclCommunicator.cpp)
 
 include_directories(${API_INCLUDE_DIR}/tensorrt_llm/runtime)
 
@@ -80,8 +79,15 @@ if(ENABLE_MULTI_DEVICE)
   target_link_libraries(tllm_runtime_distributed PUBLIC MPI::MPI_C)
 endif()
 
+add_library(tllm_runtime_worker_pool STATIC workerPool.cpp)
+add_library(tllm::runtime_worker_pool ALIAS tllm_runtime_worker_pool)
+target_link_libraries(
+  tllm_runtime_worker_pool
+  PUBLIC tllm::common_headers Threads::Threads
+  PRIVATE tllm::common_logging CUDA::cudart)
+
 foreach(component tllm_runtime_memory tllm_runtime_buffers
-                  tllm_runtime_distributed)
+                  tllm_runtime_distributed tllm_runtime_worker_pool)
   target_compile_features(${component} PUBLIC cxx_std_20)
   set_target_properties(${component} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endforeach()
