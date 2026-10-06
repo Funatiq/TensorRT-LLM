@@ -124,5 +124,13 @@
     "decoder_masked_multihead_attention*",
     "flash_mla_src"
   ],
-  "duplicate_source_allowlist": []
+  "duplicate_source_allowlist": [],
+  "duplicate_source_errors": [
+    "source/tensorrt_llm/kernels/*",
+    "build/tensorrt_llm/kernels/*"
+  ],
+  "duplicate_owner_directories": [
+    "source/tensorrt_llm/kernels",
+    "source/tensorrt_llm/kernels/*"
+  ]
 }

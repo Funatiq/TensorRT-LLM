@@ -721,20 +721,19 @@
       "tllm_executor_types"
     ],
     "source/tensorrt_llm/kernels/arcquantFP4.cu": [
-      "kernels_src"
+      "tllm_kernel_activation_quantization"
     ],
     "source/tensorrt_llm/kernels/attentionMask.cu": [
       "tllm_kernel_rope"
     ],
     "source/tensorrt_llm/kernels/buildRelativeAttentionBiasKernel.cu": [
-      "kernels_src"
+      "tllm_kernel_attention_utilities"
     ],
     "source/tensorrt_llm/kernels/causalConv1d/causalConv1d.cu": [
-      "causalConv1d_src",
-      "kernels_src"
+      "causalConv1d_src"
     ],
     "source/tensorrt_llm/kernels/communicationKernels/MiniMaxReduceRMSKernel.cu": [
-      "kernels_src"
+      "tllm_kernel_communication"
     ],
     "source/tensorrt_llm/kernels/communicationKernels/allReduceFusionKernels.cu": [
       "tllm_kernel_all_reduce_fusion"
@@ -743,10 +742,10 @@
       "tllm_kernel_all_reduce_fusion"
     ],
     "source/tensorrt_llm/kernels/communicationKernels/customLowPrecisionAllReduceKernels.cu": [
-      "kernels_src"
+      "tllm_kernel_communication"
     ],
     "source/tensorrt_llm/kernels/communicationKernels/mnnvlAllreduceKernels.cu": [
-      "kernels_src"
+      "tllm_kernel_communication"
     ],
     "source/tensorrt_llm/kernels/compressorKernels/compressorKernels.cu": [
       "compressorKernels_src"
@@ -1376,13 +1375,13 @@
       "context_attention_src"
     ],
     "source/tensorrt_llm/kernels/convertReqIndexToGlobal.cu": [
-      "kernels_src"
+      "tllm_kernel_tensor_operations"
     ],
     "source/tensorrt_llm/kernels/cuda_graph_grouped_gemm.cu": [
-      "kernels_src"
+      "tllm_kernel_grouped_gemm"
     ],
     "source/tensorrt_llm/kernels/cumsumLastDim.cu": [
-      "kernels_src"
+      "tllm_kernel_tensor_operations"
     ],
     "source/tensorrt_llm/kernels/customAllReduceKernels.cu": [
       "tllm_kernel_custom_all_reduce"
@@ -1610,24 +1609,22 @@
       "decoder_attention_src"
     ],
     "source/tensorrt_llm/kernels/deepseekV4BlockTable.cu": [
-      "kernels_src"
+      "tllm_kernel_cache_indexing"
     ],
     "source/tensorrt_llm/kernels/deepseekV4QNormKernel.cu": [
-      "kernels_src"
+      "tllm_kernel_normalization"
     ],
     "source/tensorrt_llm/kernels/delayStream.cu": [
-      "kernels_src"
+      "tllm_kernel_stream"
     ],
     "source/tensorrt_llm/kernels/doraScaling.cu": [
       "tllm_kernel_lora"
     ],
     "source/tensorrt_llm/kernels/dsv3MinLatencyKernels/dsv3FusedAGemm.cu": [
-      "dsv3_min_latency_kernels",
-      "kernels_src"
+      "dsv3_min_latency_kernels"
     ],
     "source/tensorrt_llm/kernels/dsv3MinLatencyKernels/dsv3RouterGemm.cu": [
-      "dsv3_min_latency_kernels",
-      "kernels_src"
+      "dsv3_min_latency_kernels"
     ],
     "source/tensorrt_llm/kernels/flashMLA/flash_fwd_mla_bf16_sm90.cu": [
       "flash_mla_src"
@@ -1645,31 +1642,31 @@
       "tllm_kernel_attention_dispatch"
     ],
     "source/tensorrt_llm/kernels/fp8PerTokenQuant/fp8_per_token_quant.cu": [
-      "kernels_src"
+      "tllm_kernel_activation_quantization"
     ],
     "source/tensorrt_llm/kernels/fusedActivationQuant.cu": [
-      "kernels_src"
+      "tllm_kernel_activation_quantization"
     ],
     "source/tensorrt_llm/kernels/fusedAdaptiveLayerNormKernel.cu": [
-      "kernels_src"
+      "tllm_kernel_dit"
     ],
     "source/tensorrt_llm/kernels/fusedCatFp4.cu": [
-      "kernels_src"
+      "tllm_kernel_activation_quantization"
     ],
     "source/tensorrt_llm/kernels/fusedCatFp8.cu": [
-      "kernels_src"
+      "tllm_kernel_activation_quantization"
     ],
     "source/tensorrt_llm/kernels/fusedDiTGateResidNormShiftScaleKernel.cu": [
-      "kernels_src"
+      "tllm_kernel_dit"
     ],
     "source/tensorrt_llm/kernels/fusedDiTQKNormRopeKernel.cu": [
-      "kernels_src"
+      "tllm_kernel_dit"
     ],
     "source/tensorrt_llm/kernels/fusedDiTSplitNormKernel.cu": [
-      "kernels_src"
+      "tllm_kernel_dit"
     ],
     "source/tensorrt_llm/kernels/fusedDiTSplitQKNormRopeKernel.cu": [
-      "kernels_src"
+      "tllm_kernel_dit"
     ],
     "source/tensorrt_llm/kernels/fusedGatedRMSNormQuant/fusedGatedRMSNormQuant.cu": [
       "fusedGatedRMSNormQuant_src"
@@ -1678,7 +1675,7 @@
       "ws_layernorm_src"
     ],
     "source/tensorrt_llm/kernels/fusedQKNormRopeKernel.cu": [
-      "kernels_src"
+      "tllm_kernel_attention_utilities"
     ],
     "source/tensorrt_llm/kernels/fusedSampling/fusedSamplingKernels.cu": [
       "fusedSamplingKernels_src"
@@ -1690,7 +1687,7 @@
       "fusedSamplingKernels_src"
     ],
     "source/tensorrt_llm/kernels/globalTimerKernel.cu": [
-      "kernels_src"
+      "tllm_kernel_stream"
     ],
     "source/tensorrt_llm/kernels/gptKernels.cu": [
       "tllm_kernel_rope"
@@ -1699,26 +1696,25 @@
       "tllm_kernel_lora"
     ],
     "source/tensorrt_llm/kernels/groupRmsNormKernels/groupRmsNormKernels.cu": [
-      "groupRmsNormKernels_src",
-      "kernels_src"
+      "groupRmsNormKernels_src"
     ],
     "source/tensorrt_llm/kernels/helixAllToAll.cu": [
-      "kernels_src"
+      "tllm_kernel_communication"
     ],
     "source/tensorrt_llm/kernels/helixKernels.cu": [
-      "kernels_src"
+      "tllm_kernel_communication"
     ],
     "source/tensorrt_llm/kernels/indexerKCacheGather.cu": [
-      "kernels_src"
+      "tllm_kernel_cache_indexing"
     ],
     "source/tensorrt_llm/kernels/indexerKCacheScatter.cu": [
-      "kernels_src"
+      "tllm_kernel_cache_indexing"
     ],
     "source/tensorrt_llm/kernels/indexerTopK.cu": [
-      "kernels_src"
+      "tllm_kernel_indexer"
     ],
     "source/tensorrt_llm/kernels/inverseRopeFp8QuantKernel.cu": [
-      "kernels_src"
+      "tllm_kernel_attention_utilities"
     ],
     "source/tensorrt_llm/kernels/kdaDecode/kdaDecodeDispatcher.cpp": [
       "kda_decode_src"
@@ -1739,29 +1735,25 @@
       "tllm_kernel_kv_cache_copy"
     ],
     "source/tensorrt_llm/kernels/layernormKernels.cu": [
-      "kernels_src"
+      "tllm_kernel_normalization"
     ],
     "source/tensorrt_llm/kernels/llama4MinLatencyKernels/llama4Bf16Bf16Gemm.cu": [
-      "kernels_src",
       "llama4_min_latency_kernels"
     ],
     "source/tensorrt_llm/kernels/llama4MinLatencyKernels/llama4Fp8Bf16Gemm.cu": [
-      "kernels_src",
       "llama4_min_latency_kernels"
     ],
     "source/tensorrt_llm/kernels/llama4MinLatencyKernels/llama4Fp8Fp8GemmSwiGLU.cu": [
-      "kernels_src",
       "llama4_min_latency_kernels"
     ],
     "source/tensorrt_llm/kernels/llama4MinLatencyKernels/llama4MinLatencyMoEOp.cu": [
-      "kernels_src",
       "llama4_min_latency_kernels"
     ],
     "source/tensorrt_llm/kernels/logitsBitmask.cu": [
       "tllm_kernel_logits"
     ],
     "source/tensorrt_llm/kernels/lookupKernels.cu": [
-      "kernels_src"
+      "tllm_kernel_tensor_operations"
     ],
     "source/tensorrt_llm/kernels/lora/dora.cpp": [
       "tllm_kernel_lora"
@@ -1773,7 +1765,7 @@
       "tllm_kernel_lora"
     ],
     "source/tensorrt_llm/kernels/lruKernel.cu": [
-      "kernels_src"
+      "tllm_kernel_recurrent"
     ],
     "source/tensorrt_llm/kernels/mamba2MTPSSMCache/mamba2MTPSSMCache.cu": [
       "mamba2_mtp_ssm_cache_src"
@@ -1788,7 +1780,7 @@
       "mamba2_mtp_ssm_cache_src"
     ],
     "source/tensorrt_llm/kernels/mambaConv1dKernels.cu": [
-      "kernels_src"
+      "tllm_kernel_recurrent"
     ],
     "source/tensorrt_llm/kernels/marlin/marlin_nvfp4_dispatch_utils.cpp": [
       "marlin_src"
@@ -1809,10 +1801,10 @@
       "mhcKernels_src"
     ],
     "source/tensorrt_llm/kernels/minimaxM3Fp8IndexerKernel.cu": [
-      "kernels_src"
+      "tllm_kernel_indexer"
     ],
     "source/tensorrt_llm/kernels/minimaxM3SelectBlocks.cu": [
-      "kernels_src"
+      "tllm_kernel_indexer"
     ],
     "source/tensorrt_llm/kernels/mlaChunkedPrefill.cu": [
       "tllm_kernel_mla_chunked_prefill"
@@ -1824,16 +1816,16 @@
       "tllm_kernel_moe_communication"
     ],
     "source/tensorrt_llm/kernels/moe/communication/megaMoePrepareKernel.cu": [
-      "kernels_src"
+      "tllm_kernel_moe_prepare"
     ],
     "source/tensorrt_llm/kernels/moe/communication/moeAllReduceFusionKernels.cu": [
-      "kernels_src"
+      "tllm_kernel_moe_prepare"
     ],
     "source/tensorrt_llm/kernels/moe/communication/moeAlltoAllKernels.cu": [
-      "kernels_src"
+      "tllm_kernel_moe_prepare"
     ],
     "source/tensorrt_llm/kernels/moe/communication/moePrepareKernels.cu": [
-      "kernels_src"
+      "tllm_kernel_moe_prepare"
     ],
     "source/tensorrt_llm/kernels/moe/cuteDsl/moeUtils.cu": [
       "cute_dsl_src"
@@ -1899,7 +1891,7 @@
       "tllm_kernel_moe_load_balance"
     ],
     "source/tensorrt_llm/kernels/moe/routing/customMoeRoutingKernels.cu": [
-      "kernels_src"
+      "tllm_kernel_moe_custom_routing"
     ],
     "source/tensorrt_llm/kernels/moe/trtllmGen/DevKernel.cu": [
       "tllm_kernel_moe_block_scale"
@@ -1932,40 +1924,40 @@
       "trtllm_gen_fp8_block_scale_moe"
     ],
     "source/tensorrt_llm/kernels/moe/utils/moeAlignKernels.cu": [
-      "kernels_src"
+      "tllm_kernel_moe_prepare"
     ],
     "source/tensorrt_llm/kernels/noAuxTcKernels.cu": [
-      "kernels_src"
+      "tllm_kernel_moe_custom_routing"
     ],
     "source/tensorrt_llm/kernels/nvfp4ColdPageKernels.cu": [
       "tllm_kernel_nvfp4_cold_page"
     ],
     "source/tensorrt_llm/kernels/nvfp4MlaKvCacheGather.cu": [
-      "kernels_src"
+      "tllm_kernel_cache_indexing"
     ],
     "source/tensorrt_llm/kernels/preQuantScaleKernel.cu": [
       "tllm_kernel_pre_quant_scale"
     ],
     "source/tensorrt_llm/kernels/qserveGemmPerChannel.cu": [
-      "kernels_src"
+      "tllm_kernel_qserve_gemm"
     ],
     "source/tensorrt_llm/kernels/qserveGemmPerGroup.cu": [
-      "kernels_src"
+      "tllm_kernel_qserve_gemm"
     ],
     "source/tensorrt_llm/kernels/quantization.cu": [
       "tllm_kernel_quantization"
     ],
     "source/tensorrt_llm/kernels/recoverFromRingAtten.cu": [
-      "kernels_src"
+      "tllm_kernel_attention_utilities"
     ],
     "source/tensorrt_llm/kernels/rmsNormFp4QuantKernels.cu": [
-      "kernels_src"
+      "tllm_kernel_normalization"
     ],
     "source/tensorrt_llm/kernels/rmsnormKernels.cu": [
       "tllm_kernel_rms_norm"
     ],
     "source/tensorrt_llm/kernels/sageAttentionKernels.cu": [
-      "kernels_src"
+      "tllm_kernel_attention_utilities"
     ],
     "source/tensorrt_llm/kernels/selectiveScan/instantiation/bmmchunk_bf16.cu": [
       "selective_scan_src"
@@ -2016,22 +2008,22 @@
       "tllm_kernel_sparse_attention"
     ],
     "source/tensorrt_llm/kernels/speculativeDecoding/dynamicTreeKernels.cu": [
-      "kernels_src"
+      "tllm_kernel_speculative_decoding"
     ],
     "source/tensorrt_llm/kernels/speculativeDecoding/kvCacheUpdateKernels.cu": [
-      "kernels_src"
+      "tllm_kernel_speculative_decoding"
     ],
     "source/tensorrt_llm/kernels/speculativeDecoding/mtpKernels.cu": [
-      "kernels_src"
+      "tllm_kernel_speculative_decoding"
     ],
     "source/tensorrt_llm/kernels/speculativeDecoding/suffixAutomaton/suffixAutomatonKernels.cu": [
-      "kernels_src"
+      "tllm_kernel_speculative_decoding"
     ],
     "source/tensorrt_llm/kernels/splitkGroupGemm.cu": [
       "tllm_kernel_lora"
     ],
     "source/tensorrt_llm/kernels/tinygemm2/tinygemm2_cuda.cu": [
-      "kernels_src"
+      "tllm_kernel_tiny_gemm"
     ],
     "source/tensorrt_llm/kernels/trtllmGenKernels/batchedGemm/KernelRunner.cpp": [
       "trtllm_gen_batched_gemm"
@@ -2052,10 +2044,10 @@
       "trtllm_gen_gemm_gated_act"
     ],
     "source/tensorrt_llm/kernels/ulyssesPermuteScatterKernel.cu": [
-      "kernels_src"
+      "tllm_kernel_dit"
     ],
     "source/tensorrt_llm/kernels/ulyssesPostUnscatterKernel.cu": [
-      "kernels_src"
+      "tllm_kernel_dit"
     ],
     "source/tensorrt_llm/kernels/unfusedAttentionKernels.cu": [
       "tllm_kernel_rope"
@@ -2115,7 +2107,7 @@
       "tllm_kernel_cuda_core_gemm"
     ],
     "source/tensorrt_llm/kernels/weightOnlyBatchedGemv/cudaCoreGemmNVFP4.cu": [
-      "kernels_src"
+      "tllm_kernel_cuda_core_gemm_nvfp4"
     ],
     "source/tensorrt_llm/kernels/weightOnlyBatchedGemv/int8SQ.cu": [
       "tllm_kernel_smooth_quant"
@@ -3637,14 +3629,31 @@
         "tllm_common_environment",
         "tllm_common_error",
         "tllm_common_logging",
+        "tllm_kernel_activation_quantization",
         "tllm_kernel_attention_mask",
+        "tllm_kernel_attention_utilities",
+        "tllm_kernel_cache_indexing",
         "tllm_kernel_cascade_attention",
+        "tllm_kernel_communication",
+        "tllm_kernel_cuda_core_gemm_nvfp4",
+        "tllm_kernel_dit",
         "tllm_kernel_gemm_utilities",
+        "tllm_kernel_grouped_gemm",
+        "tllm_kernel_indexer",
         "tllm_kernel_int8_gemm",
         "tllm_kernel_lora",
         "tllm_kernel_moe_block_scale",
+        "tllm_kernel_moe_custom_routing",
         "tllm_kernel_moe_lora",
+        "tllm_kernel_moe_prepare",
+        "tllm_kernel_normalization",
         "tllm_kernel_pre_quant_scale",
+        "tllm_kernel_qserve_gemm",
+        "tllm_kernel_recurrent",
+        "tllm_kernel_speculative_decoding",
+        "tllm_kernel_stream",
+        "tllm_kernel_tensor_operations",
+        "tllm_kernel_tiny_gemm",
         "tllm_runtime_buffers",
         "tllm_runtime_distributed",
         "tllm_runtime_memory",
@@ -3682,8 +3691,8 @@
         "source/tensorrt_llm/nanobind/userbuffers/bindings.cpp",
         "source/tensorrt_llm/nanobind/visual_gen/coordinatorWatchdog.cpp"
       ],
-      "transitive_dependency_count": 147,
-      "transitive_dependency_hash": "6fd912b3f32a05f0",
+      "transitive_dependency_count": 168,
+      "transitive_dependency_hash": "9ee04f90e60c3448",
       "type": "MODULE_LIBRARY"
     },
     "blockKeyTest": {
@@ -3993,8 +4002,8 @@
       "directory": "source/.",
       "reverse_fan_in": 0,
       "sources": [],
-      "transitive_dependency_count": 152,
-      "transitive_dependency_hash": "52c21f3b64fac84c",
+      "transitive_dependency_count": 173,
+      "transitive_dependency_hash": "a298152a6f04865c",
       "type": "UTILITY"
     },
     "cacheTransBufferTest": {
@@ -4140,7 +4149,7 @@
       "compile_units": 1,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/causalConv1d",
-      "reverse_fan_in": 0,
+      "reverse_fan_in": 13,
       "sources": [
         "source/tensorrt_llm/kernels/causalConv1d/causalConv1d.cu"
       ],
@@ -4552,7 +4561,7 @@
       "compile_units": 2,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/dsv3MinLatencyKernels",
-      "reverse_fan_in": 0,
+      "reverse_fan_in": 13,
       "sources": [
         "source/tensorrt_llm/kernels/dsv3MinLatencyKernels/dsv3FusedAGemm.cu",
         "source/tensorrt_llm/kernels/dsv3MinLatencyKernels/dsv3RouterGemm.cu"
@@ -5141,7 +5150,7 @@
       "compile_units": 1,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/groupRmsNormKernels",
-      "reverse_fan_in": 0,
+      "reverse_fan_in": 13,
       "sources": [
         "source/tensorrt_llm/kernels/groupRmsNormKernels/groupRmsNormKernels.cu"
       ],
@@ -5301,79 +5310,44 @@
       "type": "UTILITY"
     },
     "kernels_src": {
-      "compile_units": 63,
+      "compile_units": 0,
       "dependencies": [
-        "marlin_src"
+        "causalConv1d_src",
+        "dsv3_min_latency_kernels",
+        "groupRmsNormKernels_src",
+        "llama4_min_latency_kernels",
+        "marlin_src",
+        "tllm_common_cublas",
+        "tllm_common_cuda",
+        "tllm_common_environment",
+        "tllm_common_error",
+        "tllm_common_logging",
+        "tllm_kernel_activation_quantization",
+        "tllm_kernel_attention_utilities",
+        "tllm_kernel_cache_indexing",
+        "tllm_kernel_communication",
+        "tllm_kernel_cuda_core_gemm_nvfp4",
+        "tllm_kernel_dit",
+        "tllm_kernel_grouped_gemm",
+        "tllm_kernel_indexer",
+        "tllm_kernel_lora",
+        "tllm_kernel_moe_custom_routing",
+        "tllm_kernel_moe_prepare",
+        "tllm_kernel_normalization",
+        "tllm_kernel_qserve_gemm",
+        "tllm_kernel_recurrent",
+        "tllm_kernel_speculative_decoding",
+        "tllm_kernel_stream",
+        "tllm_kernel_tensor_operations",
+        "tllm_kernel_tiny_gemm",
+        "tllm_runtime_buffers",
+        "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/kernels",
       "reverse_fan_in": 12,
-      "sources": [
-        "source/tensorrt_llm/kernels/arcquantFP4.cu",
-        "source/tensorrt_llm/kernels/buildRelativeAttentionBiasKernel.cu",
-        "source/tensorrt_llm/kernels/causalConv1d/causalConv1d.cu",
-        "source/tensorrt_llm/kernels/communicationKernels/MiniMaxReduceRMSKernel.cu",
-        "source/tensorrt_llm/kernels/communicationKernels/customLowPrecisionAllReduceKernels.cu",
-        "source/tensorrt_llm/kernels/communicationKernels/mnnvlAllreduceKernels.cu",
-        "source/tensorrt_llm/kernels/convertReqIndexToGlobal.cu",
-        "source/tensorrt_llm/kernels/cuda_graph_grouped_gemm.cu",
-        "source/tensorrt_llm/kernels/cumsumLastDim.cu",
-        "source/tensorrt_llm/kernels/deepseekV4BlockTable.cu",
-        "source/tensorrt_llm/kernels/deepseekV4QNormKernel.cu",
-        "source/tensorrt_llm/kernels/delayStream.cu",
-        "source/tensorrt_llm/kernels/dsv3MinLatencyKernels/dsv3FusedAGemm.cu",
-        "source/tensorrt_llm/kernels/dsv3MinLatencyKernels/dsv3RouterGemm.cu",
-        "source/tensorrt_llm/kernels/fp8PerTokenQuant/fp8_per_token_quant.cu",
-        "source/tensorrt_llm/kernels/fusedActivationQuant.cu",
-        "source/tensorrt_llm/kernels/fusedAdaptiveLayerNormKernel.cu",
-        "source/tensorrt_llm/kernels/fusedCatFp4.cu",
-        "source/tensorrt_llm/kernels/fusedCatFp8.cu",
-        "source/tensorrt_llm/kernels/fusedDiTGateResidNormShiftScaleKernel.cu",
-        "source/tensorrt_llm/kernels/fusedDiTQKNormRopeKernel.cu",
-        "source/tensorrt_llm/kernels/fusedDiTSplitNormKernel.cu",
-        "source/tensorrt_llm/kernels/fusedDiTSplitQKNormRopeKernel.cu",
-        "source/tensorrt_llm/kernels/fusedQKNormRopeKernel.cu",
-        "source/tensorrt_llm/kernels/globalTimerKernel.cu",
-        "source/tensorrt_llm/kernels/groupRmsNormKernels/groupRmsNormKernels.cu",
-        "source/tensorrt_llm/kernels/helixAllToAll.cu",
-        "source/tensorrt_llm/kernels/helixKernels.cu",
-        "source/tensorrt_llm/kernels/indexerKCacheGather.cu",
-        "source/tensorrt_llm/kernels/indexerKCacheScatter.cu",
-        "source/tensorrt_llm/kernels/indexerTopK.cu",
-        "source/tensorrt_llm/kernels/inverseRopeFp8QuantKernel.cu",
-        "source/tensorrt_llm/kernels/layernormKernels.cu",
-        "source/tensorrt_llm/kernels/llama4MinLatencyKernels/llama4Bf16Bf16Gemm.cu",
-        "source/tensorrt_llm/kernels/llama4MinLatencyKernels/llama4Fp8Bf16Gemm.cu",
-        "source/tensorrt_llm/kernels/llama4MinLatencyKernels/llama4Fp8Fp8GemmSwiGLU.cu",
-        "source/tensorrt_llm/kernels/llama4MinLatencyKernels/llama4MinLatencyMoEOp.cu",
-        "source/tensorrt_llm/kernels/lookupKernels.cu",
-        "source/tensorrt_llm/kernels/lruKernel.cu",
-        "source/tensorrt_llm/kernels/mambaConv1dKernels.cu",
-        "source/tensorrt_llm/kernels/minimaxM3Fp8IndexerKernel.cu",
-        "source/tensorrt_llm/kernels/minimaxM3SelectBlocks.cu",
-        "source/tensorrt_llm/kernels/moe/communication/megaMoePrepareKernel.cu",
-        "source/tensorrt_llm/kernels/moe/communication/moeAllReduceFusionKernels.cu",
-        "source/tensorrt_llm/kernels/moe/communication/moeAlltoAllKernels.cu",
-        "source/tensorrt_llm/kernels/moe/communication/moePrepareKernels.cu",
-        "source/tensorrt_llm/kernels/moe/routing/customMoeRoutingKernels.cu",
-        "source/tensorrt_llm/kernels/moe/utils/moeAlignKernels.cu",
-        "source/tensorrt_llm/kernels/noAuxTcKernels.cu",
-        "source/tensorrt_llm/kernels/nvfp4MlaKvCacheGather.cu",
-        "source/tensorrt_llm/kernels/qserveGemmPerChannel.cu",
-        "source/tensorrt_llm/kernels/qserveGemmPerGroup.cu",
-        "source/tensorrt_llm/kernels/recoverFromRingAtten.cu",
-        "source/tensorrt_llm/kernels/rmsNormFp4QuantKernels.cu",
-        "source/tensorrt_llm/kernels/sageAttentionKernels.cu",
-        "source/tensorrt_llm/kernels/speculativeDecoding/dynamicTreeKernels.cu",
-        "source/tensorrt_llm/kernels/speculativeDecoding/kvCacheUpdateKernels.cu",
-        "source/tensorrt_llm/kernels/speculativeDecoding/mtpKernels.cu",
-        "source/tensorrt_llm/kernels/speculativeDecoding/suffixAutomaton/suffixAutomatonKernels.cu",
-        "source/tensorrt_llm/kernels/tinygemm2/tinygemm2_cuda.cu",
-        "source/tensorrt_llm/kernels/ulyssesPermuteScatterKernel.cu",
-        "source/tensorrt_llm/kernels/ulyssesPostUnscatterKernel.cu",
-        "source/tensorrt_llm/kernels/weightOnlyBatchedGemv/cudaCoreGemmNVFP4.cu"
-      ],
-      "transitive_dependency_count": 1,
-      "transitive_dependency_hash": "9ed5d8e438b7f409",
+      "sources": [],
+      "transitive_dependency_count": 30,
+      "transitive_dependency_hash": "e3347ba3af5596e6",
       "type": "STATIC_LIBRARY"
     },
     "kimi_k3_attn_res_src": {
@@ -5731,7 +5705,7 @@
       "compile_units": 4,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/llama4MinLatencyKernels",
-      "reverse_fan_in": 0,
+      "reverse_fan_in": 13,
       "sources": [
         "source/tensorrt_llm/kernels/llama4MinLatencyKernels/llama4Bf16Bf16Gemm.cu",
         "source/tensorrt_llm/kernels/llama4MinLatencyKernels/llama4Fp8Bf16Gemm.cu",
@@ -6930,14 +6904,22 @@
         "tllm_executor_transfer_agent",
         "tllm_executor_types",
         "tllm_executor_values",
+        "tllm_kernel_activation_quantization",
         "tllm_kernel_all_reduce_fusion",
         "tllm_kernel_attention_decode",
         "tllm_kernel_attention_dispatch",
         "tllm_kernel_attention_mask",
+        "tllm_kernel_attention_utilities",
+        "tllm_kernel_cache_indexing",
         "tllm_kernel_cascade_attention",
+        "tllm_kernel_communication",
         "tllm_kernel_cuda_core_gemm",
+        "tllm_kernel_cuda_core_gemm_nvfp4",
         "tllm_kernel_custom_all_reduce",
+        "tllm_kernel_dit",
         "tllm_kernel_gemm_utilities",
+        "tllm_kernel_grouped_gemm",
+        "tllm_kernel_indexer",
         "tllm_kernel_int8_gemm",
         "tllm_kernel_kv_cache_copy",
         "tllm_kernel_logits",
@@ -6946,15 +6928,24 @@
         "tllm_kernel_mla_chunked_prefill",
         "tllm_kernel_moe_block_scale",
         "tllm_kernel_moe_communication",
+        "tllm_kernel_moe_custom_routing",
         "tllm_kernel_moe_load_balance",
         "tllm_kernel_moe_lora",
+        "tllm_kernel_moe_prepare",
+        "tllm_kernel_normalization",
         "tllm_kernel_nvfp4_cold_page",
         "tllm_kernel_pre_quant_scale",
+        "tllm_kernel_qserve_gemm",
         "tllm_kernel_quantization",
+        "tllm_kernel_recurrent",
         "tllm_kernel_rms_norm",
         "tllm_kernel_rope",
         "tllm_kernel_smooth_quant",
         "tllm_kernel_sparse_attention",
+        "tllm_kernel_speculative_decoding",
+        "tllm_kernel_stream",
+        "tllm_kernel_tensor_operations",
+        "tllm_kernel_tiny_gemm",
         "tllm_kernel_weight_only",
         "tllm_kv_cache",
         "tllm_kv_cache_host_memory",
@@ -6990,8 +6981,8 @@
       "directory": "source/tensorrt_llm",
       "reverse_fan_in": 11,
       "sources": [],
-      "transitive_dependency_count": 135,
-      "transitive_dependency_hash": "b454266a3548a376",
+      "transitive_dependency_count": 156,
+      "transitive_dependency_hash": "2bc1f0c375356ae9",
       "type": "SHARED_LIBRARY"
     },
     "tensorrt_llm_internal_cutlass_kernels_static_helper": {
@@ -7074,14 +7065,31 @@
         "tllm_common_environment",
         "tllm_common_error",
         "tllm_common_logging",
+        "tllm_kernel_activation_quantization",
         "tllm_kernel_attention_mask",
+        "tllm_kernel_attention_utilities",
+        "tllm_kernel_cache_indexing",
         "tllm_kernel_cascade_attention",
+        "tllm_kernel_communication",
+        "tllm_kernel_cuda_core_gemm_nvfp4",
+        "tllm_kernel_dit",
         "tllm_kernel_gemm_utilities",
+        "tllm_kernel_grouped_gemm",
+        "tllm_kernel_indexer",
         "tllm_kernel_int8_gemm",
         "tllm_kernel_lora",
         "tllm_kernel_moe_block_scale",
+        "tllm_kernel_moe_custom_routing",
         "tllm_kernel_moe_lora",
+        "tllm_kernel_moe_prepare",
+        "tllm_kernel_normalization",
         "tllm_kernel_pre_quant_scale",
+        "tllm_kernel_qserve_gemm",
+        "tllm_kernel_recurrent",
+        "tllm_kernel_speculative_decoding",
+        "tllm_kernel_stream",
+        "tllm_kernel_tensor_operations",
+        "tllm_kernel_tiny_gemm",
         "tllm_runtime_buffers",
         "tllm_runtime_distributed",
         "tllm_runtime_memory",
@@ -7098,8 +7106,8 @@
       "sources": [
         "source/tensorrt_llm/executor/cache_transmission/nixl_utils/agentBindings.cpp"
       ],
-      "transitive_dependency_count": 137,
-      "transitive_dependency_hash": "9587bbbca6881e7f",
+      "transitive_dependency_count": 158,
+      "transitive_dependency_hash": "2e4959a11f769af9",
       "type": "MODULE_LIBRARY"
     },
     "tensorrt_llm_ucx_wrapper": {
@@ -7222,14 +7230,31 @@
         "tllm_common_environment",
         "tllm_common_error",
         "tllm_common_logging",
+        "tllm_kernel_activation_quantization",
         "tllm_kernel_attention_mask",
+        "tllm_kernel_attention_utilities",
+        "tllm_kernel_cache_indexing",
         "tllm_kernel_cascade_attention",
+        "tllm_kernel_communication",
+        "tllm_kernel_cuda_core_gemm_nvfp4",
+        "tllm_kernel_dit",
         "tllm_kernel_gemm_utilities",
+        "tllm_kernel_grouped_gemm",
+        "tllm_kernel_indexer",
         "tllm_kernel_int8_gemm",
         "tllm_kernel_lora",
         "tllm_kernel_moe_block_scale",
+        "tllm_kernel_moe_custom_routing",
         "tllm_kernel_moe_lora",
+        "tllm_kernel_moe_prepare",
+        "tllm_kernel_normalization",
         "tllm_kernel_pre_quant_scale",
+        "tllm_kernel_qserve_gemm",
+        "tllm_kernel_recurrent",
+        "tllm_kernel_speculative_decoding",
+        "tllm_kernel_stream",
+        "tllm_kernel_tensor_operations",
+        "tllm_kernel_tiny_gemm",
         "tllm_runtime_buffers",
         "tllm_runtime_distributed",
         "tllm_runtime_memory",
@@ -7244,8 +7269,8 @@
       "directory": "source/tensorrt_llm/thop",
       "reverse_fan_in": 2,
       "sources": [],
-      "transitive_dependency_count": 144,
-      "transitive_dependency_hash": "8483f30886f56b76",
+      "transitive_dependency_count": 165,
+      "transitive_dependency_hash": "d3905f8d39e04f50",
       "type": "SHARED_LIBRARY"
     },
     "th_common_attention": {
@@ -7286,14 +7311,31 @@
         "tllm_common_environment",
         "tllm_common_error",
         "tllm_common_logging",
+        "tllm_kernel_activation_quantization",
         "tllm_kernel_attention_mask",
+        "tllm_kernel_attention_utilities",
+        "tllm_kernel_cache_indexing",
         "tllm_kernel_cascade_attention",
+        "tllm_kernel_communication",
+        "tllm_kernel_cuda_core_gemm_nvfp4",
+        "tllm_kernel_dit",
         "tllm_kernel_gemm_utilities",
+        "tllm_kernel_grouped_gemm",
+        "tllm_kernel_indexer",
         "tllm_kernel_int8_gemm",
         "tllm_kernel_lora",
         "tllm_kernel_moe_block_scale",
+        "tllm_kernel_moe_custom_routing",
         "tllm_kernel_moe_lora",
+        "tllm_kernel_moe_prepare",
+        "tllm_kernel_normalization",
         "tllm_kernel_pre_quant_scale",
+        "tllm_kernel_qserve_gemm",
+        "tllm_kernel_recurrent",
+        "tllm_kernel_speculative_decoding",
+        "tllm_kernel_stream",
+        "tllm_kernel_tensor_operations",
+        "tllm_kernel_tiny_gemm",
         "tllm_runtime_buffers",
         "tllm_runtime_distributed",
         "tllm_runtime_memory",
@@ -7329,8 +7371,8 @@
         "source/tensorrt_llm/thop/sparseKvCacheCompactOp.cpp",
         "source/tensorrt_llm/thop/trtllmGenQKVProcessOp.cpp"
       ],
-      "transitive_dependency_count": 137,
-      "transitive_dependency_hash": "58e67111dee06abf",
+      "transitive_dependency_count": 158,
+      "transitive_dependency_hash": "02afffd835caeaae",
       "type": "OBJECT_LIBRARY"
     },
     "th_common_decoding": {
@@ -7371,14 +7413,31 @@
         "tllm_common_environment",
         "tllm_common_error",
         "tllm_common_logging",
+        "tllm_kernel_activation_quantization",
         "tllm_kernel_attention_mask",
+        "tllm_kernel_attention_utilities",
+        "tllm_kernel_cache_indexing",
         "tllm_kernel_cascade_attention",
+        "tllm_kernel_communication",
+        "tllm_kernel_cuda_core_gemm_nvfp4",
+        "tllm_kernel_dit",
         "tllm_kernel_gemm_utilities",
+        "tllm_kernel_grouped_gemm",
+        "tllm_kernel_indexer",
         "tllm_kernel_int8_gemm",
         "tllm_kernel_lora",
         "tllm_kernel_moe_block_scale",
+        "tllm_kernel_moe_custom_routing",
         "tllm_kernel_moe_lora",
+        "tllm_kernel_moe_prepare",
+        "tllm_kernel_normalization",
         "tllm_kernel_pre_quant_scale",
+        "tllm_kernel_qserve_gemm",
+        "tllm_kernel_recurrent",
+        "tllm_kernel_speculative_decoding",
+        "tllm_kernel_stream",
+        "tllm_kernel_tensor_operations",
+        "tllm_kernel_tiny_gemm",
         "tllm_runtime_buffers",
         "tllm_runtime_distributed",
         "tllm_runtime_memory",
@@ -7403,8 +7462,8 @@
         "source/tensorrt_llm/thop/parallelDecodeKVCacheUpdateOp.cpp",
         "source/tensorrt_llm/thop/specDecOp.cpp"
       ],
-      "transitive_dependency_count": 137,
-      "transitive_dependency_hash": "58e67111dee06abf",
+      "transitive_dependency_count": 158,
+      "transitive_dependency_hash": "02afffd835caeaae",
       "type": "OBJECT_LIBRARY"
     },
     "th_common_distributed": {
@@ -7445,14 +7504,31 @@
         "tllm_common_environment",
         "tllm_common_error",
         "tllm_common_logging",
+        "tllm_kernel_activation_quantization",
         "tllm_kernel_attention_mask",
+        "tllm_kernel_attention_utilities",
+        "tllm_kernel_cache_indexing",
         "tllm_kernel_cascade_attention",
+        "tllm_kernel_communication",
+        "tllm_kernel_cuda_core_gemm_nvfp4",
+        "tllm_kernel_dit",
         "tllm_kernel_gemm_utilities",
+        "tllm_kernel_grouped_gemm",
+        "tllm_kernel_indexer",
         "tllm_kernel_int8_gemm",
         "tllm_kernel_lora",
         "tllm_kernel_moe_block_scale",
+        "tllm_kernel_moe_custom_routing",
         "tllm_kernel_moe_lora",
+        "tllm_kernel_moe_prepare",
+        "tllm_kernel_normalization",
         "tllm_kernel_pre_quant_scale",
+        "tllm_kernel_qserve_gemm",
+        "tllm_kernel_recurrent",
+        "tllm_kernel_speculative_decoding",
+        "tllm_kernel_stream",
+        "tllm_kernel_tensor_operations",
+        "tllm_kernel_tiny_gemm",
         "tllm_runtime_buffers",
         "tllm_runtime_distributed",
         "tllm_runtime_memory",
@@ -7483,8 +7559,8 @@
         "source/tensorrt_llm/thop/userbuffersTensor.cpp",
         "source/tensorrt_llm/thop/virtualMemoryAllocator.cpp"
       ],
-      "transitive_dependency_count": 137,
-      "transitive_dependency_hash": "58e67111dee06abf",
+      "transitive_dependency_count": 158,
+      "transitive_dependency_hash": "02afffd835caeaae",
       "type": "OBJECT_LIBRARY"
     },
     "th_common_gemm_quant": {
@@ -7525,14 +7601,31 @@
         "tllm_common_environment",
         "tllm_common_error",
         "tllm_common_logging",
+        "tllm_kernel_activation_quantization",
         "tllm_kernel_attention_mask",
+        "tllm_kernel_attention_utilities",
+        "tllm_kernel_cache_indexing",
         "tllm_kernel_cascade_attention",
+        "tllm_kernel_communication",
+        "tllm_kernel_cuda_core_gemm_nvfp4",
+        "tllm_kernel_dit",
         "tllm_kernel_gemm_utilities",
+        "tllm_kernel_grouped_gemm",
+        "tllm_kernel_indexer",
         "tllm_kernel_int8_gemm",
         "tllm_kernel_lora",
         "tllm_kernel_moe_block_scale",
+        "tllm_kernel_moe_custom_routing",
         "tllm_kernel_moe_lora",
+        "tllm_kernel_moe_prepare",
+        "tllm_kernel_normalization",
         "tllm_kernel_pre_quant_scale",
+        "tllm_kernel_qserve_gemm",
+        "tllm_kernel_recurrent",
+        "tllm_kernel_speculative_decoding",
+        "tllm_kernel_stream",
+        "tllm_kernel_tensor_operations",
+        "tllm_kernel_tiny_gemm",
         "tllm_runtime_buffers",
         "tllm_runtime_distributed",
         "tllm_runtime_memory",
@@ -7582,8 +7675,8 @@
         "source/tensorrt_llm/thop/weightOnlyQuantGemm.cpp",
         "source/tensorrt_llm/thop/weightOnlyQuantOp.cpp"
       ],
-      "transitive_dependency_count": 137,
-      "transitive_dependency_hash": "58e67111dee06abf",
+      "transitive_dependency_count": 158,
+      "transitive_dependency_hash": "02afffd835caeaae",
       "type": "OBJECT_LIBRARY"
     },
     "th_common_moe": {
@@ -7624,14 +7717,31 @@
         "tllm_common_environment",
         "tllm_common_error",
         "tllm_common_logging",
+        "tllm_kernel_activation_quantization",
         "tllm_kernel_attention_mask",
+        "tllm_kernel_attention_utilities",
+        "tllm_kernel_cache_indexing",
         "tllm_kernel_cascade_attention",
+        "tllm_kernel_communication",
+        "tllm_kernel_cuda_core_gemm_nvfp4",
+        "tllm_kernel_dit",
         "tllm_kernel_gemm_utilities",
+        "tllm_kernel_grouped_gemm",
+        "tllm_kernel_indexer",
         "tllm_kernel_int8_gemm",
         "tllm_kernel_lora",
         "tllm_kernel_moe_block_scale",
+        "tllm_kernel_moe_custom_routing",
         "tllm_kernel_moe_lora",
+        "tllm_kernel_moe_prepare",
+        "tllm_kernel_normalization",
         "tllm_kernel_pre_quant_scale",
+        "tllm_kernel_qserve_gemm",
+        "tllm_kernel_recurrent",
+        "tllm_kernel_speculative_decoding",
+        "tllm_kernel_stream",
+        "tllm_kernel_tensor_operations",
+        "tllm_kernel_tiny_gemm",
         "tllm_runtime_buffers",
         "tllm_runtime_distributed",
         "tllm_runtime_memory",
@@ -7666,8 +7776,8 @@
         "source/tensorrt_llm/thop/moe/utils/moeUtilOp.cpp",
         "source/tensorrt_llm/thop/noAuxTcOp.cpp"
       ],
-      "transitive_dependency_count": 137,
-      "transitive_dependency_hash": "58e67111dee06abf",
+      "transitive_dependency_count": 158,
+      "transitive_dependency_hash": "02afffd835caeaae",
       "type": "OBJECT_LIBRARY"
     },
     "th_common_sequence": {
@@ -7708,14 +7818,31 @@
         "tllm_common_environment",
         "tllm_common_error",
         "tllm_common_logging",
+        "tllm_kernel_activation_quantization",
         "tllm_kernel_attention_mask",
+        "tllm_kernel_attention_utilities",
+        "tllm_kernel_cache_indexing",
         "tllm_kernel_cascade_attention",
+        "tllm_kernel_communication",
+        "tllm_kernel_cuda_core_gemm_nvfp4",
+        "tllm_kernel_dit",
         "tllm_kernel_gemm_utilities",
+        "tllm_kernel_grouped_gemm",
+        "tllm_kernel_indexer",
         "tllm_kernel_int8_gemm",
         "tllm_kernel_lora",
         "tllm_kernel_moe_block_scale",
+        "tllm_kernel_moe_custom_routing",
         "tllm_kernel_moe_lora",
+        "tllm_kernel_moe_prepare",
+        "tllm_kernel_normalization",
         "tllm_kernel_pre_quant_scale",
+        "tllm_kernel_qserve_gemm",
+        "tllm_kernel_recurrent",
+        "tllm_kernel_speculative_decoding",
+        "tllm_kernel_stream",
+        "tllm_kernel_tensor_operations",
+        "tllm_kernel_tiny_gemm",
         "tllm_runtime_buffers",
         "tllm_runtime_distributed",
         "tllm_runtime_memory",
@@ -7735,8 +7862,8 @@
         "source/tensorrt_llm/thop/mambaConv1dOp.cpp",
         "source/tensorrt_llm/thop/selectiveScanOp.cpp"
       ],
-      "transitive_dependency_count": 137,
-      "transitive_dependency_hash": "58e67111dee06abf",
+      "transitive_dependency_count": 158,
+      "transitive_dependency_hash": "02afffd835caeaae",
       "type": "OBJECT_LIBRARY"
     },
     "th_common_visual_gen": {
@@ -7777,14 +7904,31 @@
         "tllm_common_environment",
         "tllm_common_error",
         "tllm_common_logging",
+        "tllm_kernel_activation_quantization",
         "tllm_kernel_attention_mask",
+        "tllm_kernel_attention_utilities",
+        "tllm_kernel_cache_indexing",
         "tllm_kernel_cascade_attention",
+        "tllm_kernel_communication",
+        "tllm_kernel_cuda_core_gemm_nvfp4",
+        "tllm_kernel_dit",
         "tllm_kernel_gemm_utilities",
+        "tllm_kernel_grouped_gemm",
+        "tllm_kernel_indexer",
         "tllm_kernel_int8_gemm",
         "tllm_kernel_lora",
         "tllm_kernel_moe_block_scale",
+        "tllm_kernel_moe_custom_routing",
         "tllm_kernel_moe_lora",
+        "tllm_kernel_moe_prepare",
+        "tllm_kernel_normalization",
         "tllm_kernel_pre_quant_scale",
+        "tllm_kernel_qserve_gemm",
+        "tllm_kernel_recurrent",
+        "tllm_kernel_speculative_decoding",
+        "tllm_kernel_stream",
+        "tllm_kernel_tensor_operations",
+        "tllm_kernel_tiny_gemm",
         "tllm_runtime_buffers",
         "tllm_runtime_distributed",
         "tllm_runtime_memory",
@@ -7805,8 +7949,8 @@
         "source/tensorrt_llm/thop/fusedDiTSplitNormOp.cpp",
         "source/tensorrt_llm/thop/fusedDiTSplitQKNormRopeOp.cpp"
       ],
-      "transitive_dependency_count": 137,
-      "transitive_dependency_hash": "58e67111dee06abf",
+      "transitive_dependency_count": 158,
+      "transitive_dependency_hash": "02afffd835caeaae",
       "type": "OBJECT_LIBRARY"
     },
     "th_utils": {
@@ -8074,7 +8218,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 20,
+      "reverse_fan_in": 22,
       "sources": [
         "source/tensorrt_llm/common/cublasMMWrapper.cpp"
       ],
@@ -8089,7 +8233,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 196,
+      "reverse_fan_in": 214,
       "sources": [
         "source/tensorrt_llm/common/cudaDriverWrapper.cpp",
         "source/tensorrt_llm/common/memoryUtils.cu",
@@ -8107,7 +8251,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 103,
+      "reverse_fan_in": 114,
       "sources": [
         "source/tensorrt_llm/common/envUtils.cpp"
       ],
@@ -8119,7 +8263,7 @@
       "compile_units": 3,
       "dependencies": [],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 239,
+      "reverse_fan_in": 257,
       "sources": [
         "source/tensorrt_llm/common/assert.cpp",
         "source/tensorrt_llm/common/stringUtils.cpp",
@@ -8167,7 +8311,7 @@
         "tllm_common_error"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 233,
+      "reverse_fan_in": 251,
       "sources": [
         "source/tensorrt_llm/common/logger.cpp",
         "source/tensorrt_llm/common/timestampUtils.cpp"
@@ -8687,6 +8831,27 @@
       "transitive_dependency_hash": "e2dac633af3a774a",
       "type": "STATIC_LIBRARY"
     },
+    "tllm_kernel_activation_quantization": {
+      "compile_units": 5,
+      "dependencies": [
+        "tllm_common_cuda",
+        "tllm_common_environment",
+        "tllm_common_error",
+        "tllm_common_logging"
+      ],
+      "directory": "source/tensorrt_llm/kernels",
+      "reverse_fan_in": 13,
+      "sources": [
+        "source/tensorrt_llm/kernels/arcquantFP4.cu",
+        "source/tensorrt_llm/kernels/fp8PerTokenQuant/fp8_per_token_quant.cu",
+        "source/tensorrt_llm/kernels/fusedActivationQuant.cu",
+        "source/tensorrt_llm/kernels/fusedCatFp4.cu",
+        "source/tensorrt_llm/kernels/fusedCatFp8.cu"
+      ],
+      "transitive_dependency_count": 4,
+      "transitive_dependency_hash": "c9a86bda36a3a0d8",
+      "type": "STATIC_LIBRARY"
+    },
     "tllm_kernel_all_reduce_fusion": {
       "compile_units": 2,
       "dependencies": [
@@ -8759,6 +8924,46 @@
       "transitive_dependency_hash": "5874e224ddef9dbe",
       "type": "STATIC_LIBRARY"
     },
+    "tllm_kernel_attention_utilities": {
+      "compile_units": 5,
+      "dependencies": [
+        "tllm_common_cuda",
+        "tllm_common_environment",
+        "tllm_common_error",
+        "tllm_common_logging"
+      ],
+      "directory": "source/tensorrt_llm/kernels",
+      "reverse_fan_in": 13,
+      "sources": [
+        "source/tensorrt_llm/kernels/buildRelativeAttentionBiasKernel.cu",
+        "source/tensorrt_llm/kernels/fusedQKNormRopeKernel.cu",
+        "source/tensorrt_llm/kernels/inverseRopeFp8QuantKernel.cu",
+        "source/tensorrt_llm/kernels/recoverFromRingAtten.cu",
+        "source/tensorrt_llm/kernels/sageAttentionKernels.cu"
+      ],
+      "transitive_dependency_count": 4,
+      "transitive_dependency_hash": "c9a86bda36a3a0d8",
+      "type": "STATIC_LIBRARY"
+    },
+    "tllm_kernel_cache_indexing": {
+      "compile_units": 4,
+      "dependencies": [
+        "tllm_common_cuda",
+        "tllm_common_error",
+        "tllm_common_logging"
+      ],
+      "directory": "source/tensorrt_llm/kernels",
+      "reverse_fan_in": 13,
+      "sources": [
+        "source/tensorrt_llm/kernels/deepseekV4BlockTable.cu",
+        "source/tensorrt_llm/kernels/indexerKCacheGather.cu",
+        "source/tensorrt_llm/kernels/indexerKCacheScatter.cu",
+        "source/tensorrt_llm/kernels/nvfp4MlaKvCacheGather.cu"
+      ],
+      "transitive_dependency_count": 3,
+      "transitive_dependency_hash": "5874e224ddef9dbe",
+      "type": "STATIC_LIBRARY"
+    },
     "tllm_kernel_cascade_attention": {
       "compile_units": 1,
       "dependencies": [
@@ -8771,6 +8976,27 @@
       "reverse_fan_in": 20,
       "sources": [
         "source/tensorrt_llm/kernels/decoderMaskedMultiheadAttention/cascadeAttentionKernel.cu"
+      ],
+      "transitive_dependency_count": 4,
+      "transitive_dependency_hash": "c9a86bda36a3a0d8",
+      "type": "STATIC_LIBRARY"
+    },
+    "tllm_kernel_communication": {
+      "compile_units": 5,
+      "dependencies": [
+        "tllm_common_cuda",
+        "tllm_common_environment",
+        "tllm_common_error",
+        "tllm_common_logging"
+      ],
+      "directory": "source/tensorrt_llm/kernels",
+      "reverse_fan_in": 13,
+      "sources": [
+        "source/tensorrt_llm/kernels/communicationKernels/MiniMaxReduceRMSKernel.cu",
+        "source/tensorrt_llm/kernels/communicationKernels/customLowPrecisionAllReduceKernels.cu",
+        "source/tensorrt_llm/kernels/communicationKernels/mnnvlAllreduceKernels.cu",
+        "source/tensorrt_llm/kernels/helixAllToAll.cu",
+        "source/tensorrt_llm/kernels/helixKernels.cu"
       ],
       "transitive_dependency_count": 4,
       "transitive_dependency_hash": "c9a86bda36a3a0d8",
@@ -8793,6 +9019,23 @@
       "transitive_dependency_hash": "c9a86bda36a3a0d8",
       "type": "STATIC_LIBRARY"
     },
+    "tllm_kernel_cuda_core_gemm_nvfp4": {
+      "compile_units": 1,
+      "dependencies": [
+        "tllm_common_cuda",
+        "tllm_common_environment",
+        "tllm_common_error",
+        "tllm_common_logging"
+      ],
+      "directory": "source/tensorrt_llm/kernels",
+      "reverse_fan_in": 13,
+      "sources": [
+        "source/tensorrt_llm/kernels/weightOnlyBatchedGemv/cudaCoreGemmNVFP4.cu"
+      ],
+      "transitive_dependency_count": 4,
+      "transitive_dependency_hash": "c9a86bda36a3a0d8",
+      "type": "STATIC_LIBRARY"
+    },
     "tllm_kernel_custom_all_reduce": {
       "compile_units": 1,
       "dependencies": [
@@ -8805,6 +9048,29 @@
       "reverse_fan_in": 18,
       "sources": [
         "source/tensorrt_llm/kernels/customAllReduceKernels.cu"
+      ],
+      "transitive_dependency_count": 4,
+      "transitive_dependency_hash": "c9a86bda36a3a0d8",
+      "type": "STATIC_LIBRARY"
+    },
+    "tllm_kernel_dit": {
+      "compile_units": 7,
+      "dependencies": [
+        "tllm_common_cuda",
+        "tllm_common_environment",
+        "tllm_common_error",
+        "tllm_common_logging"
+      ],
+      "directory": "source/tensorrt_llm/kernels",
+      "reverse_fan_in": 13,
+      "sources": [
+        "source/tensorrt_llm/kernels/fusedAdaptiveLayerNormKernel.cu",
+        "source/tensorrt_llm/kernels/fusedDiTGateResidNormShiftScaleKernel.cu",
+        "source/tensorrt_llm/kernels/fusedDiTQKNormRopeKernel.cu",
+        "source/tensorrt_llm/kernels/fusedDiTSplitNormKernel.cu",
+        "source/tensorrt_llm/kernels/fusedDiTSplitQKNormRopeKernel.cu",
+        "source/tensorrt_llm/kernels/ulyssesPermuteScatterKernel.cu",
+        "source/tensorrt_llm/kernels/ulyssesPostUnscatterKernel.cu"
       ],
       "transitive_dependency_count": 4,
       "transitive_dependency_hash": "c9a86bda36a3a0d8",
@@ -8825,6 +9091,46 @@
       ],
       "transitive_dependency_count": 3,
       "transitive_dependency_hash": "5874e224ddef9dbe",
+      "type": "STATIC_LIBRARY"
+    },
+    "tllm_kernel_grouped_gemm": {
+      "compile_units": 1,
+      "dependencies": [
+        "tllm_common_cublas",
+        "tllm_common_cuda",
+        "tllm_common_environment",
+        "tllm_common_error",
+        "tllm_common_logging",
+        "tllm_kernel_lora",
+        "tllm_runtime_buffers",
+        "tllm_runtime_memory"
+      ],
+      "directory": "source/tensorrt_llm/kernels",
+      "reverse_fan_in": 13,
+      "sources": [
+        "source/tensorrt_llm/kernels/cuda_graph_grouped_gemm.cu"
+      ],
+      "transitive_dependency_count": 8,
+      "transitive_dependency_hash": "fdde59dc925b02f0",
+      "type": "STATIC_LIBRARY"
+    },
+    "tllm_kernel_indexer": {
+      "compile_units": 3,
+      "dependencies": [
+        "tllm_common_cuda",
+        "tllm_common_environment",
+        "tllm_common_error",
+        "tllm_common_logging"
+      ],
+      "directory": "source/tensorrt_llm/kernels",
+      "reverse_fan_in": 13,
+      "sources": [
+        "source/tensorrt_llm/kernels/indexerTopK.cu",
+        "source/tensorrt_llm/kernels/minimaxM3Fp8IndexerKernel.cu",
+        "source/tensorrt_llm/kernels/minimaxM3SelectBlocks.cu"
+      ],
+      "transitive_dependency_count": 4,
+      "transitive_dependency_hash": "c9a86bda36a3a0d8",
       "type": "STATIC_LIBRARY"
     },
     "tllm_kernel_int8_gemm": {
@@ -8891,7 +9197,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 17,
+      "reverse_fan_in": 19,
       "sources": [
         "source/tensorrt_llm/kernels/doraScaling.cu",
         "source/tensorrt_llm/kernels/groupGemm.cu",
@@ -8970,6 +9276,24 @@
       "transitive_dependency_hash": "c9a86bda36a3a0d8",
       "type": "STATIC_LIBRARY"
     },
+    "tllm_kernel_moe_custom_routing": {
+      "compile_units": 2,
+      "dependencies": [
+        "tllm_common_cuda",
+        "tllm_common_environment",
+        "tllm_common_error",
+        "tllm_common_logging"
+      ],
+      "directory": "source/tensorrt_llm/kernels",
+      "reverse_fan_in": 13,
+      "sources": [
+        "source/tensorrt_llm/kernels/moe/routing/customMoeRoutingKernels.cu",
+        "source/tensorrt_llm/kernels/noAuxTcKernels.cu"
+      ],
+      "transitive_dependency_count": 4,
+      "transitive_dependency_hash": "c9a86bda36a3a0d8",
+      "type": "STATIC_LIBRARY"
+    },
     "tllm_kernel_moe_load_balance": {
       "compile_units": 1,
       "dependencies": [
@@ -9005,6 +9329,46 @@
       "transitive_dependency_hash": "5874e224ddef9dbe",
       "type": "STATIC_LIBRARY"
     },
+    "tllm_kernel_moe_prepare": {
+      "compile_units": 5,
+      "dependencies": [
+        "tllm_common_cuda",
+        "tllm_common_environment",
+        "tllm_common_error",
+        "tllm_common_logging"
+      ],
+      "directory": "source/tensorrt_llm/kernels",
+      "reverse_fan_in": 13,
+      "sources": [
+        "source/tensorrt_llm/kernels/moe/communication/megaMoePrepareKernel.cu",
+        "source/tensorrt_llm/kernels/moe/communication/moeAllReduceFusionKernels.cu",
+        "source/tensorrt_llm/kernels/moe/communication/moeAlltoAllKernels.cu",
+        "source/tensorrt_llm/kernels/moe/communication/moePrepareKernels.cu",
+        "source/tensorrt_llm/kernels/moe/utils/moeAlignKernels.cu"
+      ],
+      "transitive_dependency_count": 4,
+      "transitive_dependency_hash": "c9a86bda36a3a0d8",
+      "type": "STATIC_LIBRARY"
+    },
+    "tllm_kernel_normalization": {
+      "compile_units": 3,
+      "dependencies": [
+        "tllm_common_cuda",
+        "tllm_common_environment",
+        "tllm_common_error",
+        "tllm_common_logging"
+      ],
+      "directory": "source/tensorrt_llm/kernels",
+      "reverse_fan_in": 13,
+      "sources": [
+        "source/tensorrt_llm/kernels/deepseekV4QNormKernel.cu",
+        "source/tensorrt_llm/kernels/layernormKernels.cu",
+        "source/tensorrt_llm/kernels/rmsNormFp4QuantKernels.cu"
+      ],
+      "transitive_dependency_count": 4,
+      "transitive_dependency_hash": "c9a86bda36a3a0d8",
+      "type": "STATIC_LIBRARY"
+    },
     "tllm_kernel_nvfp4_cold_page": {
       "compile_units": 1,
       "dependencies": [
@@ -9038,6 +9402,23 @@
       "transitive_dependency_hash": "5874e224ddef9dbe",
       "type": "STATIC_LIBRARY"
     },
+    "tllm_kernel_qserve_gemm": {
+      "compile_units": 2,
+      "dependencies": [
+        "tllm_common_cuda",
+        "tllm_common_error",
+        "tllm_common_logging"
+      ],
+      "directory": "source/tensorrt_llm/kernels",
+      "reverse_fan_in": 13,
+      "sources": [
+        "source/tensorrt_llm/kernels/qserveGemmPerChannel.cu",
+        "source/tensorrt_llm/kernels/qserveGemmPerGroup.cu"
+      ],
+      "transitive_dependency_count": 3,
+      "transitive_dependency_hash": "5874e224ddef9dbe",
+      "type": "STATIC_LIBRARY"
+    },
     "tllm_kernel_quantization": {
       "compile_units": 1,
       "dependencies": [
@@ -9053,6 +9434,23 @@
       ],
       "transitive_dependency_count": 4,
       "transitive_dependency_hash": "c9a86bda36a3a0d8",
+      "type": "STATIC_LIBRARY"
+    },
+    "tllm_kernel_recurrent": {
+      "compile_units": 2,
+      "dependencies": [
+        "tllm_common_cuda",
+        "tllm_common_error",
+        "tllm_common_logging"
+      ],
+      "directory": "source/tensorrt_llm/kernels",
+      "reverse_fan_in": 13,
+      "sources": [
+        "source/tensorrt_llm/kernels/lruKernel.cu",
+        "source/tensorrt_llm/kernels/mambaConv1dKernels.cu"
+      ],
+      "transitive_dependency_count": 3,
+      "transitive_dependency_hash": "5874e224ddef9dbe",
       "type": "STATIC_LIBRARY"
     },
     "tllm_kernel_rms_norm": {
@@ -9128,6 +9526,76 @@
       "reverse_fan_in": 16,
       "sources": [
         "source/tensorrt_llm/kernels/sparseAttentionKernels.cu"
+      ],
+      "transitive_dependency_count": 3,
+      "transitive_dependency_hash": "5874e224ddef9dbe",
+      "type": "STATIC_LIBRARY"
+    },
+    "tllm_kernel_speculative_decoding": {
+      "compile_units": 4,
+      "dependencies": [
+        "tllm_common_cuda",
+        "tllm_common_error",
+        "tllm_common_logging"
+      ],
+      "directory": "source/tensorrt_llm/kernels",
+      "reverse_fan_in": 13,
+      "sources": [
+        "source/tensorrt_llm/kernels/speculativeDecoding/dynamicTreeKernels.cu",
+        "source/tensorrt_llm/kernels/speculativeDecoding/kvCacheUpdateKernels.cu",
+        "source/tensorrt_llm/kernels/speculativeDecoding/mtpKernels.cu",
+        "source/tensorrt_llm/kernels/speculativeDecoding/suffixAutomaton/suffixAutomatonKernels.cu"
+      ],
+      "transitive_dependency_count": 3,
+      "transitive_dependency_hash": "5874e224ddef9dbe",
+      "type": "STATIC_LIBRARY"
+    },
+    "tllm_kernel_stream": {
+      "compile_units": 2,
+      "dependencies": [
+        "tllm_common_cuda",
+        "tllm_common_error",
+        "tllm_common_logging"
+      ],
+      "directory": "source/tensorrt_llm/kernels",
+      "reverse_fan_in": 13,
+      "sources": [
+        "source/tensorrt_llm/kernels/delayStream.cu",
+        "source/tensorrt_llm/kernels/globalTimerKernel.cu"
+      ],
+      "transitive_dependency_count": 3,
+      "transitive_dependency_hash": "5874e224ddef9dbe",
+      "type": "STATIC_LIBRARY"
+    },
+    "tllm_kernel_tensor_operations": {
+      "compile_units": 3,
+      "dependencies": [
+        "tllm_common_cuda",
+        "tllm_common_error",
+        "tllm_common_logging"
+      ],
+      "directory": "source/tensorrt_llm/kernels",
+      "reverse_fan_in": 13,
+      "sources": [
+        "source/tensorrt_llm/kernels/convertReqIndexToGlobal.cu",
+        "source/tensorrt_llm/kernels/cumsumLastDim.cu",
+        "source/tensorrt_llm/kernels/lookupKernels.cu"
+      ],
+      "transitive_dependency_count": 3,
+      "transitive_dependency_hash": "5874e224ddef9dbe",
+      "type": "STATIC_LIBRARY"
+    },
+    "tllm_kernel_tiny_gemm": {
+      "compile_units": 1,
+      "dependencies": [
+        "tllm_common_cuda",
+        "tllm_common_error",
+        "tllm_common_logging"
+      ],
+      "directory": "source/tensorrt_llm/kernels",
+      "reverse_fan_in": 13,
+      "sources": [
+        "source/tensorrt_llm/kernels/tinygemm2/tinygemm2_cuda.cu"
       ],
       "transitive_dependency_count": 3,
       "transitive_dependency_hash": "5874e224ddef9dbe",
@@ -9341,7 +9809,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 107,
+      "reverse_fan_in": 109,
       "sources": [
         "source/tensorrt_llm/runtime/bufferManager.cpp",
         "source/tensorrt_llm/runtime/iBuffer.cpp",
@@ -9505,7 +9973,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 110,
+      "reverse_fan_in": 112,
       "sources": [
         "source/tensorrt_llm/runtime/cudaMemPool.cpp",
         "source/tensorrt_llm/runtime/memoryCounters.cpp"
@@ -10180,8 +10648,8 @@
     "zmqControlChannelTest": "component"
   },
   "totals": {
-    "compile_units": 1002,
-    "targets": 293,
+    "compile_units": 994,
+    "targets": 310,
     "unique_sources": 994
   }
 }
