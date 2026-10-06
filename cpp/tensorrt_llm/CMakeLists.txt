@@ -266,7 +266,7 @@ target_link_libraries(${SHARED_TARGET} PUBLIC ${TRTLLM_LINK_LIBS})
 target_link_libraries(
   ${SHARED_TARGET}
   PRIVATE
-    $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_common_error,tllm_common_logging,tllm_common_profiler,tllm_common_cuda,tllm_executor_types,tllm_executor_serialization,tllm_runtime_memory,tllm_runtime_buffers,tllm_runtime_distributed,tllm_runtime_worker_pool,ipc_nvls_memory_src,tllm_runtime_locality,tllm_runtime_numpy,tllm_runtime_gdr>
+    $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_common_error,tllm_common_logging,tllm_common_profiler,tllm_common_cuda,tllm_executor_types,tllm_executor_serialization,tllm_runtime_memory,tllm_runtime_buffers,tllm_runtime_distributed,tllm_runtime_worker_pool,tllm_runtime_lora,ipc_nvls_memory_src,tllm_runtime_locality,tllm_runtime_numpy,tllm_runtime_gdr>
     $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_common_cublas,tllm_common_environment,tllm_executor_values,tllm_executor_transfer_agent,tllm_executor_request_utils,tllm_executor_agent_name,tllm_kv_cache_host_memory,tllm_kv_cache,tllm_kv_cache_legacy,tllm_batch_scheduler,tllm_context_transfer_consensus,tllm_kernel_kv_cache_copy>
     $<LINK_LIBRARY:WHOLE_ARCHIVE,${BATCH_MANAGER_TARGET}>
     $<LINK_LIBRARY:WHOLE_ARCHIVE,${EXECUTOR_TARGET}>
@@ -299,6 +299,7 @@ foreach(
   tllm_runtime_buffers
   tllm_runtime_distributed
   tllm_runtime_worker_pool
+  tllm_runtime_lora
   ipc_nvls_memory_src
   tllm_runtime_locality
   tllm_runtime_gdr
