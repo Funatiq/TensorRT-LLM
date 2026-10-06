@@ -190,7 +190,6 @@ set(TRTLLM_LINK_LIBS
     gemm_swiglu_sm90_src
     cutlass_src
     cute_dsl_src
-    runtime_src
     compressorKernels_src
     fusedSamplingKernels_src
     mhcKernels_src
@@ -266,7 +265,7 @@ target_link_libraries(
   PRIVATE
     $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_common_error,tllm_common_logging,tllm_common_profiler,tllm_common_cuda,tllm_executor_types,tllm_executor_serialization,tllm_runtime_memory,tllm_runtime_buffers,tllm_runtime_distributed,tllm_runtime_worker_pool,tllm_runtime_ipc,tllm_runtime_host_accessible_memory,tllm_runtime_moe_load_balance,tllm_runtime_utils,tllm_runtime_lora_cache,tllm_runtime_lora,ipc_nvls_memory_src,tllm_runtime_locality,tllm_runtime_numpy,tllm_runtime_gdr>
     $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_common_attention_workspace,tllm_common_nccl_comm,tllm_common_nccl,tllm_common_cublas,tllm_common_environment,tllm_common_ip,tllm_executor_values,tllm_executor_transfer_agent,tllm_executor_cache_routing,tllm_executor_request_utils,tllm_executor_agent_name,tllm_executor_agent_connection,tllm_executor_cache_transfer_cuda,tllm_executor_mpi_connection,tllm_executor_memory_desc,tllm_batch_request_info,tllm_batch_cache_transceiver,tllm_batch_context_progress,tllm_batch_rnn_cache_routing,tllm_kv_cache_host_memory,tllm_kv_cache,tllm_kv_cache_legacy,tllm_batch_scheduler,tllm_context_transfer_consensus,tllm_peft_cache,tllm_kernel_kv_cache_copy,userbuffers_src>
-    $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_runtime_debug,tllm_runtime_nvls_buffers,tllm_runtime_multicast,tllm_common_mcast_registry>
+    $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_runtime_debug,tllm_runtime_nvls_buffers,tllm_runtime_multicast,tllm_runtime_nccl,tllm_common_mcast_registry>
     $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_kv_cache_v2_utils>
     $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_executor_json_serialization>
     $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_executor_kv_cache_events>
@@ -306,6 +305,7 @@ foreach(
   tllm_runtime_debug
   tllm_runtime_nvls_buffers
   tllm_runtime_multicast
+  tllm_runtime_nccl
   tllm_common_mcast_registry
   tllm_runtime_lora_cache
   tllm_runtime_lora
