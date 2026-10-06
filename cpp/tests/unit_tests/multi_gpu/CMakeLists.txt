@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2023-2025 NVIDIA CORPORATION &
+# SPDX-FileCopyrightText: Copyright (c) 2023-2026 NVIDIA CORPORATION &
 # AFFILIATES. All rights reserved. SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -15,12 +15,16 @@
 
 add_subdirectory(kernels)
 
-add_gtest(cacheTransceiverTest cacheTransceiverTest.cpp)
+add_tllm_gtest(cacheTransceiverTest SOURCES cacheTransceiverTest.cpp FULL_STACK
+               LABELS "unit;full-stack")
 target_link_libraries(cacheTransceiverTest PRIVATE ${Python3_LIBRARIES})
 
-add_gtest(mpiUtilsTest mpiUtilsTest.cpp)
-add_gtest(userBufferTest userBufferTest.cpp)
-add_gtest(ncclUtilsTest ncclUtilsTest.cpp)
+add_tllm_gtest(mpiUtilsTest SOURCES mpiUtilsTest.cpp FULL_STACK LABELS
+               "unit;full-stack")
+add_tllm_gtest(userBufferTest SOURCES userBufferTest.cpp FULL_STACK LABELS
+               "unit;full-stack")
+add_tllm_gtest(ncclUtilsTest SOURCES ncclUtilsTest.cpp FULL_STACK LABELS
+               "unit;full-stack")
 target_link_libraries(ncclUtilsTest PRIVATE ${Python3_LIBRARIES})
 if(BUILD_PYT)
   target_compile_definitions(cacheTransceiverTest PUBLIC BUILD_PYT)
