@@ -29,13 +29,11 @@ else() # Windows
 endif()
 
 add_library(th_utils STATIC thUtils.cpp)
+add_library(tllm::torch_utils ALIAS th_utils)
+target_compile_features(th_utils PUBLIC cxx_std_20)
 set_property(TARGET th_utils PROPERTY POSITION_INDEPENDENT_CODE ON)
-set_property(TARGET th_utils PROPERTY CUDA_RESOLVE_DEVICE_SYMBOLS ON)
-# Declare the dependency on the main shared library explicitly so consumers
-# (e.g. thUtilsTest) place it after th_utils on the link line; this was
-# previously satisfied transitively via the removed TensorRT plugin target.
-target_link_libraries(th_utils PUBLIC ${SHARED_TARGET} ${TORCH_LIBRARIES}
-                                      ${CUBLAS_LIB} ${CURAND_LIB})
+target_link_libraries(th_utils PUBLIC tllm::runtime_buffers ${TORCH_LIBRARIES}
+                                      Python3::Python)
 
 function(add_th_common_family target)
   add_library(${target} OBJECT ${ARGN})

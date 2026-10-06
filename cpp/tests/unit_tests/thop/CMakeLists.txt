@@ -14,8 +14,14 @@
 # the License.
 
 if(${BUILD_PYT})
-  add_tllm_gtest(thUtilsTest SOURCES thUtilsTest.cpp FULL_STACK LABELS
-                 "unit;full-stack")
-  target_link_libraries(thUtilsTest PUBLIC th_utils ${Python3_LIBRARIES}
-                                           ${TORCH_LIBRARIES})
+  add_tllm_gtest(
+    thUtilsTest
+    OWNER
+    runtime
+    SOURCES
+    thUtilsTest.cpp
+    LINK_LIBRARIES
+    tllm::torch_utils
+    LABELS
+    "unit;runtime;thop;host")
 endif()
