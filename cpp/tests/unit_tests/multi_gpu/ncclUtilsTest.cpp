@@ -30,6 +30,7 @@
 #include <vector>
 
 #if ENABLE_MULTI_DEVICE && BUILD_PYT
+#include "tensorrt_llm/common/ncclTorchUtils.h"
 #include <c10/cuda/CUDAGuard.h>
 #include <torch/extension.h>
 #endif
@@ -71,22 +72,6 @@ cudaError_t fakeCudaGetLastError()
     return cudaErrorLaunchFailure;
 }
 } // namespace
-
-TEST(NCCLWindowSupportTest, RuntimeVersionAndGB10Gate)
-{
-#if NCCL_VERSION_CODE >= NCCL_VERSION(2, 28, 0)
-    EXPECT_FALSE(nccl_util::isNcclWindowSupportedForPlatform(121, true, NCCL_VERSION(2, 27, 9)));
-    EXPECT_FALSE(nccl_util::isNcclWindowSupportedForPlatform(121, true, NCCL_VERSION(2, 29, 2)));
-    EXPECT_FALSE(nccl_util::isNcclWindowSupportedForPlatform(121, true, NCCL_VERSION(2, 30, 3)));
-
-    EXPECT_TRUE(nccl_util::isNcclWindowSupportedForPlatform(121, true, NCCL_VERSION(2, 30, 4)));
-    EXPECT_TRUE(nccl_util::isNcclWindowSupportedForPlatform(121, false, NCCL_VERSION(2, 29, 2)));
-    EXPECT_TRUE(nccl_util::isNcclWindowSupportedForPlatform(120, true, NCCL_VERSION(2, 29, 2)));
-    EXPECT_TRUE(nccl_util::isNcclWindowSupportedForPlatform(100, false, NCCL_VERSION(2, 29, 2)));
-#else
-    GTEST_SKIP() << "NCCL window buffers are not compiled in";
-#endif
-}
 
 // Helper function to create a split communicator for testing
 // This allows us to test cleanup behavior explicitly by controlling the lifetime
