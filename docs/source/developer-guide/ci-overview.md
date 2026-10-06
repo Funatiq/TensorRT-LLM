@@ -86,11 +86,12 @@ The initial policy enforces these boundaries:
   `contextTransferCoordinatorTest`) cannot reach Torch libraries or unrelated
   kernel/attention aggregates.
 
-Violations print the shortest dependency path and fail the build. Cycles,
-unexplained duplicate compilation, new targets, source ownership changes, and
+Violations print the shortest dependency path and fail the build. Unexplained
+kernel source duplication also fails without `--strict`. Cycles, duplicate
+compilation outside the kernel tree, new targets, source ownership changes, and
 positive dependency/compile growth are advisory during rollout. `--strict` makes
-these findings fail too. Existing duplicate-source findings must be resolved or
-reviewed as intentional before enabling strict mode. `--report-only` reports hard
+these findings fail too. Advisory findings must be resolved or reviewed as intentional before enabling
+strict mode. `--report-only` reports hard
 violations without failing and is intended for investigation.
 
 ```bash
@@ -132,6 +133,38 @@ checker can run; missing replies/manifests fail instead of silently skipping the
 audit. CPU regression tests live in
 `tests/unittest/scripts/test_check_cpp_build_graph.py`, covered by the existing
 `unittest/scripts` entry in `l0_cpu.yml`.
+
+### Kernel source ownership
+
+Ordinary kernel families use explicit `SOURCES` lists in
+`cpp/tensorrt_llm/kernels/kernelComponents.cmake` and
+`residualKernelComponents.cmake`. `add_tllm_kernel_library` treats
+`LINK_LIBRARIES` as implementation dependencies; use `PUBLIC_LINK_LIBRARIES`
+when a public header exposes dependency types or requires its include paths.
+CUDA/common header requirements remain public. Static implementation dependencies
+still propagate for linking through CMake's `LINK_ONLY` semantics.
+
+`kernels_src` is a compatibility archive. It packages objects from Marlin, causal
+convolution, group RMS normalization, and the DSV3/Llama4 minimum-latency owners,
+then links the former residual families. These sources compile once under their
+owners' architecture and compilation settings. The facade continues to retain
+component exports through its existing whole-archive assembly.
+
+`kernelSourceOwnership.cmake` inventories source files solely to validate
+ownership. Adding an undeclared `.cpp` or `.cu` in the audited kernel scope
+triggers reconfiguration and fails before the file can enter an aggregate.
+Duplicate declared owners also fail configuration. Add each ordinary source to
+its component's explicit list; add architecture settings to that owner.
+
+Specialized backend directories retain their local build definitions, generation,
+and conditional source selection. Their explicitly delegated scopes are listed
+at the end of the kernel `CMakeLists.txt`; each scope must name an existing build
+definition. CUTLASS owns `moe/cutlass` from `cutlass_kernels/CMakeLists.txt`.
+Delegation handles inactive/generated backend sources; it does not exempt
+compiled sources from the evaluated graph's duplicate checks. Intentional
+multi-architecture reuse requires a reviewed source/owner exception in the graph
+policy. CPU regressions cover unknown-source reconfiguration, duplicate owners,
+backend scope boundaries, and public/private usage propagation.
 
 ### Measuring C++ component builds
 

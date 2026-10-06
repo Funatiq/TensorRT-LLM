@@ -25,7 +25,8 @@ target_include_directories(
 target_link_libraries(tllm_kernel_cutlass_headers INTERFACE tllm::common_cuda)
 
 function(add_tllm_kernel_library target)
-  set(multi_value_args SOURCES LINK_LIBRARIES INCLUDE_DIRECTORIES)
+  set(multi_value_args SOURCES LINK_LIBRARIES PUBLIC_LINK_LIBRARIES
+                       INCLUDE_DIRECTORIES)
   cmake_parse_arguments(PARSE_ARGV 1 ARG "" "" "${multi_value_args}")
   if(ARG_UNPARSED_ARGUMENTS
      OR ARG_KEYWORDS_MISSING_VALUES
@@ -40,8 +41,10 @@ function(add_tllm_kernel_library target)
   add_library(${target} STATIC ${sources})
   string(REGEX REPLACE "^tllm_" "tllm::" alias ${target})
   add_library(${alias} ALIAS ${target})
-  target_link_libraries(${target} PUBLIC tllm::common_cuda
-                                         ${ARG_LINK_LIBRARIES})
+  target_link_libraries(
+    ${target}
+    PUBLIC tllm::common_cuda ${ARG_PUBLIC_LINK_LIBRARIES}
+    PRIVATE ${ARG_LINK_LIBRARIES})
   target_include_directories(${target} PRIVATE ${ARG_INCLUDE_DIRECTORIES})
   target_compile_features(${target} PUBLIC cxx_std_20)
   target_compile_options(
@@ -52,12 +55,6 @@ function(add_tllm_kernel_library target)
                CUDA_STANDARD_REQUIRED ON CUDA_RESOLVE_DEVICE_SYMBOLS ON)
   add_cuda_architectures(${target} 89)
 
-  foreach(source_list SRC_CPP SRC_CU MOE_KERNELS_SRC)
-    list(REMOVE_ITEM ${source_list} ${sources})
-    set(${source_list}
-        ${${source_list}}
-        PARENT_SCOPE)
-  endforeach()
   set(TLLM_KERNEL_COMPONENT_TARGETS
       ${TLLM_KERNEL_COMPONENT_TARGETS} ${target}
       PARENT_SCOPE)
@@ -147,12 +144,17 @@ target_include_directories(tllm_kernel_attention_mask
                            PUBLIC ${CMAKE_BINARY_DIR}/_deps/cutlass-src/include)
 
 add_tllm_kernel_library(
-  tllm_kernel_cuda_core_gemm SOURCES weightOnlyBatchedGemv/cudaCoreGemm.cu
-  LINK_LIBRARIES tllm::common_environment tllm::kernel_cutlass_headers)
+  tllm_kernel_cuda_core_gemm
+  SOURCES
+  weightOnlyBatchedGemv/cudaCoreGemm.cu
+  LINK_LIBRARIES
+  tllm::common_environment
+  PUBLIC_LINK_LIBRARIES
+  tllm::kernel_cutlass_headers)
 
 add_tllm_kernel_library(
   tllm_kernel_gemm_utilities SOURCES cutlass_kernels/cutlass_heuristic.cpp
-  cutlass_kernels/cutlass_preprocessors.cpp LINK_LIBRARIES
+  cutlass_kernels/cutlass_preprocessors.cpp PUBLIC_LINK_LIBRARIES
   tllm::kernel_cutlass_headers)
 
 list(APPEND TLLM_KERNEL_COMPONENT_TARGETS gemm_swiglu_sm90_src)
@@ -165,7 +167,9 @@ add_tllm_kernel_library(
   cutlass_kernels/int8_gemm/int8_gemm_fp32.cu
   cutlass_kernels/int8_gemm/int8_gemm_int32.cu
   LINK_LIBRARIES
-  tllm::kernel_gemm_utilities)
+  tllm::kernel_gemm_utilities
+  PUBLIC_LINK_LIBRARIES
+  tllm::kernel_cutlass_headers)
 
 add_tllm_kernel_library(
   tllm_kernel_smooth_quant SOURCES weightOnlyBatchedGemv/int8SQ.cu
@@ -201,8 +205,9 @@ add_tllm_kernel_library(
   weightOnlyBatchedGemv/kernelDispatcherFp16Int8PerChannelColumnMajorFalse.cu
   weightOnlyBatchedGemv/kernelDispatcherFp16Int8PerChannelColumnMajorInterleavedForHopperTrue.cu
   weightOnlyBatchedGemv/kernelDispatcherFp16Int8PerChannelColumnMajorInterleavedTrue.cu
-  LINK_LIBRARIES
+  PUBLIC_LINK_LIBRARIES
   tllm::kernel_cutlass_headers
+  LINK_LIBRARIES
   tllm::common_environment)
 
 list(APPEND TLLM_KERNEL_COMPONENT_TARGETS
@@ -245,9 +250,10 @@ add_tllm_kernel_library(
   lora/dora.cpp
   lora/loraGroupGEMMParamFillRowReorderFusion.cu
   doraScaling.cu
-  LINK_LIBRARIES
+  PUBLIC_LINK_LIBRARIES
   tllm::common_cublas
   tllm::kernel_cutlass_headers
+  LINK_LIBRARIES
   tllm::runtime_buffers
   tllm::common_environment)
 
