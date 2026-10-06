@@ -154,8 +154,17 @@ if(EXISTS "/etc/redhat-release")
 endif()
 
 if(NIXL_ROOT OR (MOONCAKE_ROOT AND NOT IS_ROCKY8))
-  add_tllm_gtest(agentCommTest SOURCES agentCommTest.cpp FULL_STACK LABELS
-                 "unit;full-stack")
+  add_tllm_gtest(
+    agentCommTest
+    OWNER
+    executor
+    SOURCES
+    agentCommTest.cpp
+    LINK_LIBRARIES
+    tllm::executor_agent_connection
+    LABELS
+    "unit;executor;agent;integration;gpu"
+    REQUIRES_GPU)
   add_tllm_gtest(
     transferAgentTest
     OWNER
@@ -171,8 +180,7 @@ if(NIXL_ROOT OR (MOONCAKE_ROOT AND NOT IS_ROCKY8))
 
   if(NIXL_ROOT)
     target_link_libraries(transferAgentTest PRIVATE tensorrt_llm_nixl_wrapper)
-    target_link_libraries(agentCommTest PRIVATE tensorrt_llm_nixl_wrapper
-                                                ${Python3_LIBRARIES})
+    target_link_libraries(agentCommTest PRIVATE tensorrt_llm_nixl_wrapper)
     target_compile_definitions(transferAgentTest PRIVATE TEST_NIXL_BACKEND=1)
     target_compile_definitions(agentCommTest PRIVATE TEST_NIXL_BACKEND=1)
 
@@ -183,8 +191,7 @@ if(NIXL_ROOT OR (MOONCAKE_ROOT AND NOT IS_ROCKY8))
   if(MOONCAKE_ROOT)
     target_link_libraries(transferAgentTest
                           PRIVATE tensorrt_llm_mooncake_wrapper)
-    target_link_libraries(agentCommTest PRIVATE tensorrt_llm_mooncake_wrapper
-                                                ${Python3_LIBRARIES})
+    target_link_libraries(agentCommTest PRIVATE tensorrt_llm_mooncake_wrapper)
     target_compile_definitions(transferAgentTest
                                PRIVATE TEST_MOONCAKE_BACKEND=1)
     target_compile_definitions(agentCommTest PRIVATE TEST_MOONCAKE_BACKEND=1)
