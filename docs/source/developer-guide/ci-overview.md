@@ -56,6 +56,111 @@ Example from `l0_a30.yml`:
 
 Unit tests live under `tests/unittest/` and run during the merge-request pipeline. They are invoked from `jenkins/L0_MergeRequest.groovy` and do not require mapping to specific hardware stages.
 
+### C++ build graph checks
+
+C++ component test executables use explicit libraries and are excluded from the
+default build. Select their owner aggregate, such as `common-tests`, or an
+individual executable. CTest schedules tests after the selected executables have
+been built.
+
+CMake requests its File API codemodel, cache, and toolchain data during every
+configuration. `check-build-graph` audits the resulting evaluated graph, including
+transitive dependencies and configuration-specific generator expressions. Every
+`add_tllm_gtest` executable depends on this check, and `scripts/build_wheel.py`
+runs it before building, including configure-only invocations. This gives the
+Jenkins wheel-build paths the same checks as local component builds.
+
+```bash
+cmake --build cpp/build_RelWithDebInfo --target check-build-graph
+cmake --build cpp/build_RelWithDebInfo --target common-tests
+ctest --test-dir cpp/build_RelWithDebInfo -L common --output-on-failure
+```
+
+The initial policy enforces these boundaries:
+
+- Component tests cannot reach the main facade or Torch operator aggregates unless
+  they explicitly request `FULL_STACK`.
+- Component libraries cannot reach the facade, language bindings, tests, or
+  benchmarks.
+- Representative lightweight tests (`stringUtilsTest`, `executorConfigTest`, and
+  `contextTransferCoordinatorTest`) cannot reach Torch libraries or unrelated
+  kernel/attention aggregates.
+
+Violations print the shortest dependency path and fail the build. Cycles,
+unexplained duplicate compilation, new targets, source ownership changes, and
+positive dependency/compile growth are advisory during rollout. `--strict` makes
+these findings fail too. Existing duplicate-source findings must be resolved or
+reviewed as intentional before enabling strict mode. `--report-only` reports hard
+violations without failing and is intended for investigation.
+
+```bash
+cmake --build cpp/build_RelWithDebInfo --target report-build-graph
+python3 scripts/check_cpp_build_graph.py \
+  --build-dir cpp/build_RelWithDebInfo \
+  --report /tmp/build-graph.json
+```
+
+Reports include repository-owned native targets, compiled source ownership,
+compile-unit counts, dependency fan-out, transitive counts, reverse fan-in, and
+configuration metadata. The graph represents CMake build dependencies, which
+include build-order edges. Interface/imported targets are not separate native
+nodes; CMake resolves their contributions into native dependencies and linker
+fragments. Imported Torch libraries are checked through the evaluated linker
+fragments. CUDA source counts describe translation units, not individual GPU
+architecture compiler passes.
+
+Source/build paths are normalized. Profiles include the generator, configuration,
+architecture, effective feature options and compiler flags, toolkit/compiler
+versions, and compiler launchers. Baselines are stored under
+`cpp/cmake/build_graph_baselines/<profile-hash>.json`; mismatched explicit baselines
+fail, and uncaptured profiles receive an advisory finding. Windows, release, and
+other architecture profiles need their own captures rather than reusing a Linux
+SM80 baseline.
+
+After reviewing an intentional graph change, regenerate its baseline:
+
+```bash
+python3 scripts/check_cpp_build_graph.py \
+  --build-dir cpp/build_RelWithDebInfo --update-baseline
+```
+
+Baseline updates do not bypass architectural violations. The policy in
+`cpp/cmake/build_graph_policy.json` allows intentional duplicate sources only by
+source pattern and an explicit owner set. Do not add exceptions merely to hide
+residual-glob duplication. A fresh graph capture has to succeed before the
+checker can run; missing replies/manifests fail instead of silently skipping the
+audit. CPU regression tests live in
+`tests/unittest/scripts/test_check_cpp_build_graph.py`, covered by the existing
+`unittest/scripts` entry in `l0_cpu.yml`.
+
+### Measuring C++ component builds
+
+`scripts/benchmark_cpp_components.py` records wall time, Ninja compilation/link
+actions, cache statistics, and build metadata. Its default measures an existing
+incremental build. `--clean-dependencies` cleans the selected target's dependency
+artifacts between uncached, cache-fill, and warm-cache builds, then measures a
+steady-state build. This does not clean the entire build directory. Use a build
+directory with no other builds running during these measurements.
+
+```bash
+python3 scripts/benchmark_cpp_components.py \
+  --build-dir cpp/build_RelWithDebInfo \
+  --targets stringUtilsTest executorConfigTest contextTransferCoordinatorTest \
+  --jobs 16 --clean-dependencies \
+  --leaf-source cpp/tensorrt_llm/common/stringUtils.cpp \
+  --header cpp/include/tensorrt_llm/common/assert.h \
+  --output /tmp/component-builds.json
+```
+
+Measurements use an isolated ccache shared across the targets in that invocation;
+cache-fill builds may reuse dependencies cached by earlier targets. Uncached
+builds disable ccache. Source/header invalidation changes only modification times
+and restores them after the build, including failures and handled interruptions.
+Reports are saved after each completed phase, with logs beside the report. Use a
+fresh output name for each clean measurement series. Steady-state timings include
+the always-run graph audit. These are build measurements, not GPU test execution
+or model-quality/performance results.
+
 ## Jenkins stage names
 
 `jenkins/L0_Test.groovy` maps stage names to these YAML files.  For A100 the mapping includes:

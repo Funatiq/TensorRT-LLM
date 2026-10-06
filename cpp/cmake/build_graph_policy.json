@@ -1,0 +1,128 @@
+{
+  "_copyright": "Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.",
+  "_license": "Apache-2.0",
+  "boundaries": [
+    {
+      "name": "Components must not depend on the facade or language bindings",
+      "from": [
+        "tllm_common_*",
+        "tllm_runtime_*",
+        "ipc_nvls_memory_src",
+        "tllm_executor_*",
+        "tllm_batch_*",
+        "tllm_kv_cache*",
+        "tllm_context_transfer_*",
+        "tllm_peft_cache",
+        "tllm_kernel_*"
+      ],
+      "to": [
+        "tensorrt_llm",
+        "bindings",
+        "th_common",
+        "th_common_*",
+        "th_utils",
+        "tensorrt_llm_transfer_agent_binding"
+      ],
+      "from_directories": [
+        "source/tensorrt_llm/common",
+        "source/tensorrt_llm/common/*",
+        "source/tensorrt_llm/runtime",
+        "source/tensorrt_llm/runtime/*",
+        "source/tensorrt_llm/executor",
+        "source/tensorrt_llm/executor/*",
+        "source/tensorrt_llm/batch_manager",
+        "source/tensorrt_llm/batch_manager/*",
+        "source/tensorrt_llm/kernels",
+        "source/tensorrt_llm/kernels/*"
+      ],
+      "exclude_from": [
+        "tensorrt_llm_transfer_agent_binding"
+      ],
+      "exclude_from_directories": [
+        "source/tests",
+        "source/tests/*",
+        "source/micro_benchmarks",
+        "source/micro_benchmarks/*"
+      ],
+      "forbid_facade_libraries": true
+    },
+    {
+      "name": "Production components must not depend on tests or benchmarks",
+      "from": [
+        "tllm_common_*",
+        "tllm_runtime_*",
+        "ipc_nvls_memory_src",
+        "tllm_executor_*",
+        "tllm_batch_*",
+        "tllm_kv_cache*",
+        "tllm_context_transfer_*",
+        "tllm_peft_cache",
+        "tllm_kernel_*",
+        "kernels_src",
+        "cutlass_src",
+        "tensorrt_llm"
+      ],
+      "to": [
+        "google-tests",
+        "*-tests",
+        "*Test",
+        "*Test_*",
+        "*_test",
+        "*_benchmark",
+        "micro_benchmarks"
+      ],
+      "to_directories": [
+        "source/tests",
+        "source/tests/*",
+        "source/micro_benchmarks",
+        "source/micro_benchmarks/*"
+      ],
+      "from_directories": [
+        "source/tensorrt_llm/common",
+        "source/tensorrt_llm/common/*",
+        "source/tensorrt_llm/runtime",
+        "source/tensorrt_llm/runtime/*",
+        "source/tensorrt_llm/executor",
+        "source/tensorrt_llm/executor/*",
+        "source/tensorrt_llm/batch_manager",
+        "source/tensorrt_llm/batch_manager/*",
+        "source/tensorrt_llm/kernels",
+        "source/tensorrt_llm/kernels/*"
+      ],
+      "exclude_from": [
+        "tensorrt_llm_transfer_agent_binding"
+      ],
+      "exclude_from_directories": [
+        "source/tests",
+        "source/tests/*",
+        "source/micro_benchmarks",
+        "source/micro_benchmarks/*"
+      ]
+    }
+  ],
+  "component_test_forbidden": [
+    "tensorrt_llm",
+    "bindings",
+    "th_common",
+    "th_common_*"
+  ],
+  "lightweight_tests": [
+    "stringUtilsTest",
+    "executorConfigTest",
+    "contextTransferCoordinatorTest"
+  ],
+  "lightweight_forbidden": [
+    "tensorrt_llm",
+    "bindings",
+    "th_utils",
+    "th_common*",
+    "kernels_src",
+    "cutlass_src",
+    "context_attention_src",
+    "_context_attention_kernels_*",
+    "decoder_attention_src",
+    "decoder_masked_multihead_attention*",
+    "flash_mla_src"
+  ],
+  "duplicate_source_allowlist": []
+}

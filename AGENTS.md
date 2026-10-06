@@ -31,6 +31,7 @@ Python and C++ codebase with a PyTorch execution path.
 |------|---------|
 | Unit tests | `pytest tests/unittest/` |
 | C++ component tests | `cmake --build cpp/build_RelWithDebInfo --target common-tests` (also `runtime-tests`, `executor-tests`, `batch-manager-tests`, `kernel-tests`) |
+| C++ build graph | `cmake --build cpp/build_RelWithDebInfo --target check-build-graph` (use `report-build-graph` for an advisory report) |
 | C++ test scheduling | `ctest --test-dir cpp/build_RelWithDebInfo -L common --output-on-failure` (build the selected tests first) |
 | Specific test | `pytest tests/unittest/llmapi/test_llm_args.py` |
 | Pattern match | `pytest tests/unittest -k "test_llm_args"` |
@@ -173,7 +174,12 @@ See [CI overview](docs/source/developer-guide/ci-overview.md) for full details.
 New C++ unit tests should use `add_tllm_gtest` with explicit `SOURCES`,
 `LINK_LIBRARIES`, `OWNER`, and scheduling `LABELS`. Request `FULL_STACK` explicitly
 for integration tests and `REQUIRES_GPU` for tests that need a GPU. `google-tests`
-continues to build all C++ tests; component aggregate targets build migrated tests.
+continues to build all C++ tests; component aggregate targets build migrated tests. Component
+test builds and `scripts/build_wheel.py` run `check-build-graph` before compilation.
+The audit enforces transitive component/facade and lightweight-test boundaries;
+cycles, duplicate compilation, and baseline growth initially remain advisory.
+See [C++ build graph checks](docs/source/developer-guide/ci-overview.md#cpp-build-graph-checks)
+for profile baselines and component-build measurements.
 
 ### Advisory semantic review
 

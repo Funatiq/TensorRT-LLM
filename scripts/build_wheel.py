@@ -1111,6 +1111,10 @@ def main(*,
              CONFIGURE_FINGERPRINT_FILENAME).write_text(configure_fingerprint +
                                                         "\n")
 
+        build_run(
+            f'cmake --build . --config "{build_type}" --target check-build-graph'
+        )
+
         if configure_only:
             return
 

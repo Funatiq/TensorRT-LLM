@@ -72,7 +72,15 @@ function(add_tllm_gtest test_name)
     message(FATAL_ERROR "Unknown test owner: ${ARG_OWNER}")
   endif()
 
+  set(graph_mode component)
+  if(ARG_FULL_STACK)
+    set(graph_mode full_stack)
+  endif()
+  set_property(GLOBAL APPEND_STRING PROPERTY TLLM_BUILD_GRAPH_TEST_MANIFEST
+                                             "${test_name}\t${graph_mode}\n")
+
   add_executable(${test_name} EXCLUDE_FROM_ALL ${ARG_SOURCES})
+  add_dependencies(${test_name} check-build-graph)
   target_link_libraries(${test_name} PRIVATE gmock)
   if(NOT ARG_NO_GTEST_MAIN)
     target_link_libraries(${test_name} PRIVATE gtest_main)

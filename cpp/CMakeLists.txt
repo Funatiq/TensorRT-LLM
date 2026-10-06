@@ -25,6 +25,7 @@ include(cuda_configuration)
 include(sanitizers)
 
 project(tensorrt_llm LANGUAGES CXX)
+include(tllm_build_graph)
 
 # Single source of truth for the inline ABI namespace. Read by both the C++ side
 # (via tensorrt_llm/common/config.h's `#ifndef TRTLLM_ABI_NAMESPACE` guard) and
@@ -714,3 +715,5 @@ set(BUILD_WHEEL_TARGETS
     tensorrt_llm
     CACHE STRING "Targets used to build wheel")
 add_custom_target(build_wheel_targets DEPENDS ${BUILD_WHEEL_TARGETS})
+
+tllm_add_build_graph_targets()
