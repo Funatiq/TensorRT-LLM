@@ -35,8 +35,17 @@ add_tllm_gtest(
   LABELS
   "unit;runtime;gpu"
   REQUIRES_GPU)
-add_tllm_gtest(gdrcopyTest SOURCES gdrcopyTest.cpp FULL_STACK LABELS
-               "unit;full-stack")
+add_tllm_gtest(
+  gdrcopyTest
+  OWNER
+  runtime
+  SOURCES
+  gdrcopyTest.cpp
+  LINK_LIBRARIES
+  tllm::runtime_gdr
+  LABELS
+  "unit;runtime;gpu"
+  REQUIRES_GPU)
 add_tllm_gtest(
   hostAccessibleDeviceAllocatorTest SOURCES
   hostAccessibleDeviceAllocatorTest.cu FULL_STACK LABELS "unit;full-stack")
