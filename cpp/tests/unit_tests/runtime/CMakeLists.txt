@@ -111,8 +111,18 @@ add_tllm_gtest(
   LABELS
   "unit;runtime;gpu"
   REQUIRES_GPU)
-add_tllm_gtest(moeLoadBalancerTest SOURCES moeLoadBalancerTest.cpp FULL_STACK
-               LABELS "unit;full-stack")
+add_tllm_gtest(
+  moeLoadBalancerTest
+  OWNER
+  runtime
+  SOURCES
+  moeLoadBalancerTest.cpp
+  LINK_LIBRARIES
+  tllm::runtime_moe_load_balance
+  tllm::kernel_moe_load_balance
+  LABELS
+  "unit;runtime;gpu"
+  REQUIRES_GPU)
 add_tllm_gtest(
   runtimeMpiUtilsTest
   OWNER
