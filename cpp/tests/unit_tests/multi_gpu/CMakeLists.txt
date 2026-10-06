@@ -33,8 +33,18 @@ add_tllm_gtest(
 if(ENABLE_MULTI_DEVICE)
   target_link_libraries(mpiUtilsTest PRIVATE ${NCCL_LIB})
 endif()
-add_tllm_gtest(userBufferTest SOURCES userBufferTest.cpp FULL_STACK LABELS
-               "unit;full-stack")
+add_tllm_gtest(
+  userBufferTest
+  OWNER
+  kernel
+  SOURCES
+  userBufferTest.cpp
+  LINK_LIBRARIES
+  tllm::kernel_userbuffers
+  tllm::runtime_distributed
+  LABELS
+  "unit;kernels;userbuffers;multi-gpu;gpu"
+  REQUIRES_GPU)
 add_tllm_gtest(ncclUtilsTest SOURCES ncclUtilsTest.cpp FULL_STACK LABELS
                "unit;full-stack")
 target_link_libraries(ncclUtilsTest PRIVATE ${Python3_LIBRARIES})
