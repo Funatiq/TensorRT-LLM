@@ -26,4 +26,22 @@ if(${BUILD_PYT})
     LABELS
     "unit;runtime;thop;host"
     REQUIRES_GPU)
+  foreach(family Sequence VisualGen)
+    if(family STREQUAL "Sequence")
+      set(family_target tllm::torch_sequence)
+    else()
+      set(family_target tllm::torch_visual_gen)
+    endif()
+    add_tllm_gtest(
+      torch${family}RegistrationTest
+      OWNER
+      runtime
+      SOURCES
+      torch${family}RegistrationTest.cpp
+      LINK_LIBRARIES
+      ${family_target}
+      ${TORCH_LIBRARIES}
+      LABELS
+      "unit;runtime;thop;host")
+  endforeach()
 endif()

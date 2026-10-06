@@ -166,6 +166,31 @@ multi-architecture reuse requires a reviewed source/owner exception in the graph
 policy. CPU regressions cover unknown-source reconfiguration, duplicate owners,
 backend scope boundaries, and public/private usage propagation.
 
+### Focused Torch operator consumers
+
+`th_common_sequence` (`tllm::torch_sequence`) and `th_common_visual_gen`
+(`tllm::torch_visual_gen`) use direct kernel/runtime dependencies. Link these
+object targets with `target_link_libraries` to retain operator registration
+objects and propagate final-link requirements. The sequence family forwards
+its specialized kernel objects through `INTERFACE_SOURCES`; consuming only
+`$<TARGET_OBJECTS:th_common_sequence>` does not propagate those requirements.
+The DiT kernel component excludes the separate Ulysses permutation component.
+
+Focused host consumers validate every family schema and CUDA dispatch
+registration, and assert that unrelated operators are absent:
+
+```bash
+cmake --build cpp/build_RelWithDebInfo --parallel --target \
+  torchSequenceRegistrationTest torchVisualGenRegistrationTest
+ctest --test-dir cpp/build_RelWithDebInfo -L thop --output-on-failure
+```
+
+These checks do not execute GPU kernels. They join `runtime-tests` and
+`google-tests`. The build graph policy permits these two migrated families in
+component tests and rejects transitive facade, aggregate, attention, GEMM, MoE,
+and transport dependencies. Other Torch families still require `FULL_STACK`
+consumers. `th_common` retains its existing packaging and loading contract.
+
 ### Measuring C++ component builds
 
 `scripts/benchmark_cpp_components.py` records wall time, Ninja compilation/link
