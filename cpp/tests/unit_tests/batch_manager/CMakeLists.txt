@@ -362,8 +362,16 @@ add_tllm_gtest(
   "unit;batch-manager;gpu"
   REQUIRES_GPU)
 
-add_tllm_gtest(rnnCacheFormatterTest SOURCES rnnCacheFormatterTest.cpp
-               FULL_STACK LABELS "unit;full-stack")
+add_tllm_gtest(
+  rnnCacheFormatterTest
+  OWNER
+  batch-manager
+  SOURCES
+  rnnCacheFormatterTest.cpp
+  LINK_LIBRARIES
+  tllm::batch_rnn_cache_routing
+  LABELS
+  "unit;batch-manager;rnn;host")
 
 add_tllm_gtest(
   agentTreeTest
