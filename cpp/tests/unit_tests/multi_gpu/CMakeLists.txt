@@ -19,8 +19,20 @@ add_tllm_gtest(cacheTransceiverTest SOURCES cacheTransceiverTest.cpp FULL_STACK
                LABELS "unit;full-stack")
 target_link_libraries(cacheTransceiverTest PRIVATE ${Python3_LIBRARIES})
 
-add_tllm_gtest(mpiUtilsTest SOURCES mpiUtilsTest.cpp FULL_STACK LABELS
-               "unit;full-stack")
+add_tllm_gtest(
+  mpiUtilsTest
+  OWNER
+  runtime
+  SOURCES
+  mpiUtilsTest.cpp
+  LINK_LIBRARIES
+  tllm::runtime_distributed
+  tllm::runtime_buffers
+  LABELS
+  "unit;runtime;host")
+if(ENABLE_MULTI_DEVICE)
+  target_link_libraries(mpiUtilsTest PRIVATE ${NCCL_LIB})
+endif()
 add_tllm_gtest(userBufferTest SOURCES userBufferTest.cpp FULL_STACK LABELS
                "unit;full-stack")
 add_tllm_gtest(ncclUtilsTest SOURCES ncclUtilsTest.cpp FULL_STACK LABELS

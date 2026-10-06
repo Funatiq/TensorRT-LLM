@@ -81,10 +81,27 @@ add_tllm_gtest(
 add_tllm_gtest(localizationTest SOURCES localizationTest.cu FULL_STACK LABELS
                "unit;full-stack")
 add_tllm_gtest(
-  localityDomainPublicConfigTest SOURCES localityDomainPublicConfigTest.cpp
-  FULL_STACK LABELS "unit;full-stack")
-add_tllm_gtest(sanitizerTest SOURCES sanitizerTest.cpp FULL_STACK LABELS
-               "unit;full-stack")
+  localityDomainPublicConfigTest
+  OWNER
+  runtime
+  SOURCES
+  localityDomainPublicConfigTest.cpp
+  LINK_LIBRARIES
+  tllm::common_headers
+  CUDA::toolkit
+  LABELS
+  "unit;runtime;host")
+add_tllm_gtest(
+  sanitizerTest
+  OWNER
+  runtime
+  SOURCES
+  sanitizerTest.cpp
+  LINK_LIBRARIES
+  tllm::runtime_buffers
+  LABELS
+  "unit;runtime;gpu"
+  REQUIRES_GPU)
 add_tllm_gtest(
   tllmBuffersTest
   OWNER
@@ -96,8 +113,18 @@ add_tllm_gtest(
   LABELS
   "unit;runtime;gpu"
   REQUIRES_GPU)
-add_tllm_gtest(transposeKVKernelTest SOURCES transposeKVKernelTest.cpp
-               FULL_STACK LABELS "unit;full-stack")
+add_tllm_gtest(
+  transposeKVKernelTest
+  OWNER
+  runtime
+  SOURCES
+  transposeKVKernelTest.cpp
+  LINK_LIBRARIES
+  tllm::kernel_rope
+  tllm::runtime_buffers
+  LABELS
+  "unit;runtime;gpu"
+  REQUIRES_GPU)
 add_tllm_gtest(utilsTest SOURCES utilsTest.cpp FULL_STACK LABELS
                "unit;full-stack")
 add_tllm_gtest(
@@ -125,7 +152,16 @@ add_tllm_gtest(
   "unit;runtime;host")
 
 if(${BUILD_PYT})
-  add_tllm_gtest(torchTest SOURCES torchTest.cpp FULL_STACK LABELS
-                 "unit;full-stack")
-  target_link_libraries(torchTest PUBLIC ${TORCH_LIBRARIES})
+  add_tllm_gtest(
+    torchTest
+    OWNER
+    runtime
+    SOURCES
+    torchTest.cpp
+    LINK_LIBRARIES
+    tllm::runtime_buffers
+    LABELS
+    "unit;runtime;gpu"
+    REQUIRES_GPU)
+  target_link_libraries(torchTest PRIVATE ${TORCH_LIBRARIES})
 endif()
