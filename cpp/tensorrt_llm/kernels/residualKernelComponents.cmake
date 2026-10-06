@@ -58,10 +58,12 @@ add_tllm_kernel_library(
   fusedDiTQKNormRopeKernel.cu
   fusedDiTSplitNormKernel.cu
   fusedDiTSplitQKNormRopeKernel.cu
-  ulyssesPermuteScatterKernel.cu
-  ulyssesPostUnscatterKernel.cu
   LINK_LIBRARIES
   tllm::common_environment)
+
+add_tllm_kernel_library(
+  tllm_kernel_ulysses SOURCES ulyssesPermuteScatterKernel.cu
+  ulyssesPostUnscatterKernel.cu LINK_LIBRARIES tllm::common_environment)
 
 add_tllm_kernel_library(
   tllm_kernel_attention_utilities

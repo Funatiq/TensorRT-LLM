@@ -174,7 +174,14 @@ See [CI overview](docs/source/developer-guide/ci-overview.md) for full details.
 New C++ unit tests should use `add_tllm_gtest` with explicit `SOURCES`,
 `LINK_LIBRARIES`, `OWNER`, and scheduling `LABELS`. Request `FULL_STACK` explicitly
 for integration tests and `REQUIRES_GPU` for tests that need a GPU. `google-tests`
-continues to build all C++ tests; component aggregate targets build migrated tests. Component
+continues to build all C++ tests; component aggregate targets build migrated tests.
+Torch sequence and DiT registration consumers are available as
+`torchSequenceRegistrationTest` and `torchVisualGenRegistrationTest` (also in
+`runtime-tests`). They link `tllm::torch_sequence` and `tllm::torch_visual_gen`
+directly and run on a host without launching GPU kernels; the other Torch
+operator families still need explicit `FULL_STACK` consumers.
+
+Component
 test builds and `scripts/build_wheel.py` run `check-build-graph` before compilation.
 The audit enforces transitive component/facade and lightweight-test boundaries;
 unexplained kernel duplication is an error. Cycles, other duplicate compilation,
