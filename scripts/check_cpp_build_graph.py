@@ -15,8 +15,9 @@
 # limitations under the License.
 """Audit the evaluated C++ build graph without importing TensorRT-LLM.
 
-Hard boundaries are checked on every invocation. Cycles, duplicate compilation,
-and baseline growth are advisory unless --strict is requested. Reports describe
+Hard boundaries and policy-selected duplicate compilation are checked on every
+invocation. Other duplicate compilation, cycles, and baseline growth are advisory
+unless --strict is requested. Reports describe
 CMake build dependencies, including custom/build-order dependencies, rather than
 inferring an architectural layer from a source directory.
 """
@@ -359,7 +360,14 @@ def audit(graph: BuildGraph, policy: dict) -> tuple[list[str], list[str]]:
             and set(owners) <= set(exception["targets"])
             for exception in policy.get("duplicate_source_allowlist", [])
         ):
-            warnings.append(f"Source compiled by multiple targets: {source}: {', '.join(owners)}")
+            kernel_duplicate = matches(source, policy.get("duplicate_source_errors", [])) or any(
+                matches(
+                    graph.targets[owner].directory, policy.get("duplicate_owner_directories", [])
+                )
+                for owner in owners
+            )
+            findings = errors if kernel_duplicate else warnings
+            findings.append(f"Source compiled by multiple targets: {source}: {', '.join(owners)}")
     return sorted(set(errors)), sorted(set(warnings))
 
 

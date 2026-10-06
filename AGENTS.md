@@ -177,7 +177,9 @@ for integration tests and `REQUIRES_GPU` for tests that need a GPU. `google-test
 continues to build all C++ tests; component aggregate targets build migrated tests. Component
 test builds and `scripts/build_wheel.py` run `check-build-graph` before compilation.
 The audit enforces transitive component/facade and lightweight-test boundaries;
-cycles, duplicate compilation, and baseline growth initially remain advisory.
+unexplained kernel duplication is an error. Cycles, other duplicate compilation,
+and baseline growth remain advisory. Kernel sources use explicit component lists;
+configuration rejects undeclared sources in the audited scope.
 See [C++ build graph checks](docs/source/developer-guide/ci-overview.md#cpp-build-graph-checks)
 for profile baselines and component-build measurements.
 
