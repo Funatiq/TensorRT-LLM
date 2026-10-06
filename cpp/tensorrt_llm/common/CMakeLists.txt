@@ -171,7 +171,30 @@ set_target_properties(
   tllm_common_op_utils PROPERTIES CXX_EXTENSIONS OFF POSITION_INDEPENDENT_CODE
                                                      ON)
 
-add_library(common_src OBJECT attentionOp.cpp cudaFp8Utils.cu sageQuant.cu)
+add_library(tllm_common_fp8 STATIC cudaFp8Utils.cu)
+add_library(tllm::common_fp8 ALIAS tllm_common_fp8)
+target_link_libraries(
+  tllm_common_fp8
+  PUBLIC tllm::common_cuda
+  PRIVATE tllm::common_environment)
+
+add_library(tllm_common_sage_quant STATIC sageQuant.cu)
+add_library(tllm::common_sage_quant ALIAS tllm_common_sage_quant)
+target_link_libraries(
+  tllm_common_sage_quant
+  PUBLIC tllm::common_cuda
+  PRIVATE tllm::kernel_cutlass_headers)
+
+foreach(component tllm_common_fp8 tllm_common_sage_quant)
+  target_compile_features(${component} PUBLIC cxx_std_20)
+  set_target_properties(
+    ${component}
+    PROPERTIES CXX_EXTENSIONS OFF POSITION_INDEPENDENT_CODE ON CUDA_STANDARD 20
+               CUDA_STANDARD_REQUIRED ON CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+  add_cuda_architectures(${component} 89)
+endforeach()
+
+add_library(common_src OBJECT attentionOp.cpp)
 add_cuda_architectures(common_src 89)
 set_property(TARGET common_src PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_property(TARGET common_src PROPERTY CUDA_RESOLVE_DEVICE_SYMBOLS ON)
