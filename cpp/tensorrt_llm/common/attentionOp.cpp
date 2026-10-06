@@ -800,35 +800,24 @@ size_t AttentionOp::getWorkspaceSizeForContext(tensorrt_llm::DataType type, int3
 
     auto const batch_size = static_cast<size_t>(max_num_seq);
     auto const kv_seq_length = (isCrossAttention() ? cross_kv_length : input_seq_length);
-    // Unfused context attention operates on padded [batch, sequence] tensors,
-    // even when the input QKV is packed. Size those buffers from the padded
-    // token counts exactly as enqueueContext does; max_num_tokens remains the
-    // packed count used by the fused paths below.
-    size_t const padded_num_tokens = batch_size * static_cast<size_t>(input_seq_length);
-    size_t const padded_kv_tokens = batch_size * static_cast<size_t>(kv_seq_length);
-    size_t const attention_mask_size = mEnableContextFMHA ? 0 : size * padded_num_tokens * kv_seq_length;
+    auto workspaceSizes = mEnableContextFMHA ? AttentionContextWorkspaceSizes{}
+                                             : AttentionWorkspaceManager::buildUnfusedContextSizes({.elementSize = size,
+                                                 .batchSize = batch_size,
+                                                 .querySequenceLength = static_cast<size_t>(input_seq_length),
+                                                 .kvSequenceLength = static_cast<size_t>(kv_seq_length),
+                                                 .packedTokenCount = static_cast<size_t>(max_num_tokens),
+                                                 .numHeads = mNumHeads,
+                                                 .numAttnHeads = mNumAttnHeads,
+                                                 .numAttnKvHeads = mNumAttnKVHeads,
+                                                 .headSize = getHeadSize()});
     size_t const cu_seqlens_size = sizeof(int) * (batch_size + 1);
     size_t const rotary_inv_freq_size = sizeof(float) * batch_size * mRotaryEmbeddingDim / 2;
 
-    size_t q_buf_2_size = 0;
-    if (!mEnableContextFMHA)
+    if (mEnableContextFMHA && mFmhaDispatcher->isSeparateQAndKvInput())
     {
-        // Unfused mha
-        q_buf_2_size = size * batch_size * input_seq_length * local_hidden_units_qo;
-    }
-    else if (mFmhaDispatcher->isSeparateQAndKvInput())
-    {
-        // Paged context fmha
-        q_buf_2_size = (mFP8ContextFMHA ? 1 : size) * max_num_tokens * local_hidden_units_qo;
+        workspaceSizes.qBuf = (mFP8ContextFMHA ? 1 : size) * max_num_tokens * local_hidden_units_qo;
     }
 
-    size_t const k_buf_2_size = mEnableContextFMHA ? 0 : size * batch_size * kv_seq_length * local_hidden_units_kv;
-    size_t const v_buf_2_size = mEnableContextFMHA ? 0 : size * batch_size * kv_seq_length * local_hidden_units_kv;
-    size_t const qk_buf_size
-        = mEnableContextFMHA ? 0 : size * batch_size * mNumHeads * input_seq_length * kv_seq_length;
-    size_t const qkv_buf_2_size = mEnableContextFMHA ? 0 : size * padded_num_tokens * local_hidden_units_qo;
-    size_t const qk_buf_float_size
-        = mEnableContextFMHA ? 0 : sizeof(float) * batch_size * mNumHeads * input_seq_length * kv_seq_length;
     int dim_q_per_head = (mMLAParams.qk_rope_head_dim + mMLAParams.qk_nope_head_dim);
     int dim_k_per_head = (mMLAParams.qk_rope_head_dim + mMLAParams.qk_nope_head_dim);
     int dim_v_per_head = (mMLAParams.v_head_dim);
@@ -902,8 +891,6 @@ size_t AttentionOp::getWorkspaceSizeForContext(tensorrt_llm::DataType type, int3
         ? sizeof(float) * tc::divUp(local_hidden_units_kv, std::max(1, mSageAttnNumEltsPerBlkV))
         : 0;
 
-    size_t const padding_offset_size = mEnableContextFMHA ? 0 : sizeof(int) * padded_num_tokens;
-    size_t const encoder_padding_offset_size = mEnableContextFMHA ? 0 : sizeof(int) * padded_kv_tokens;
     // Each token holds (batch_idx, token_idx_in_seq) int2.
     size_t const tokens_info_size = sizeof(int2) * max_num_tokens;
     size_t const fmha_scheduler_counter = mEnableContextFMHA ? sizeof(uint32_t) : 0;
@@ -918,24 +905,14 @@ size_t AttentionOp::getWorkspaceSizeForContext(tensorrt_llm::DataType type, int3
 
     size_t const fmha_multi_ctas_kv_scratch_size = useTllmGenSparseAttention() ? getFmhaMultiCtasKvScratchSize() : 0;
 
-    AttentionContextWorkspaceSizes workspaceSizes{};
-    workspaceSizes.attentionMask = attention_mask_size;
     workspaceSizes.cuQSeqlens = cu_seqlens_size;
     workspaceSizes.cuKvSeqlens = cu_seqlens_size;
     workspaceSizes.cuMaskRows = cu_seqlens_size;
     workspaceSizes.rotaryInvFreq = rotary_inv_freq_size;
-    workspaceSizes.qBuf = q_buf_2_size;
-    workspaceSizes.kBuf = k_buf_2_size;
-    workspaceSizes.vBuf = v_buf_2_size;
-    workspaceSizes.qkBuf = qk_buf_size;
-    workspaceSizes.qkvBuf = qkv_buf_2_size;
-    workspaceSizes.qkFloatBuf = qk_buf_float_size;
     workspaceSizes.fp8QkvBuf = fp8_qkv_buffer_size;
     workspaceSizes.fp8QBuf = fp8_q_buf_size;
     workspaceSizes.fp8KBuf = fp8_k_buf_size;
     workspaceSizes.fp8VBuf = fp8_v_buf_size;
-    workspaceSizes.paddingOffset = padding_offset_size;
-    workspaceSizes.encoderPaddingOffset = encoder_padding_offset_size;
     workspaceSizes.tokensInfo = tokens_info_size;
     workspaceSizes.fmhaTileCounter = fmha_scheduler_counter;
     workspaceSizes.fmhaBmm1Scale = fmha_bmm1_scale_size;

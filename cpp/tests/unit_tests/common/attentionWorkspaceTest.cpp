@@ -15,7 +15,6 @@
  */
 
 #include "tensorrt_llm/common/attentionWorkspace.h"
-#include "tensorrt_llm/common/attentionOp.h"
 
 #include "tensorrt_llm/common/workspace.h"
 
@@ -63,17 +62,6 @@ constexpr int32_t kCrossKvLength = 7;
 constexpr int32_t kPackedTokenCount = 14;
 constexpr int32_t kHeadSize = 8;
 
-void configureUnfusedAttention(tcop::AttentionOp& op, bool crossAttention)
-{
-    op.mNumHeads = 1;
-    op.mNumKVHeads = 1;
-    op.mHeadSize = kHeadSize;
-    op.mNumAttnHeads = 1;
-    op.mNumAttnKVHeads = 1;
-    op.mEnableContextFMHA = false;
-    op.mCrossAttention = crossAttention;
-}
-
 size_t expectedUnfusedContextWorkspace(bool crossAttention)
 {
     constexpr size_t kElementSize = sizeof(half);
@@ -100,28 +88,76 @@ size_t expectedUnfusedContextWorkspace(bool crossAttention)
     return tcop::AttentionWorkspaceManager::buildContextLayout(sizes).totalSize;
 }
 
-size_t getUnfusedContextWorkspace(tcop::AttentionOp const& op)
+size_t getUnfusedContextWorkspace(bool crossAttention)
 {
-    return op.getWorkspaceSizeForContext(
-        tensorrt_llm::DataType::kHALF, kBatchSize, kInputSequenceLength, kCrossKvLength, kPackedTokenCount);
+    auto const sizes = tcop::AttentionWorkspaceManager::buildUnfusedContextSizes({.elementSize = sizeof(half),
+        .batchSize = kBatchSize,
+        .querySequenceLength = kInputSequenceLength,
+        .kvSequenceLength = static_cast<size_t>(crossAttention ? kCrossKvLength : kInputSequenceLength),
+        .packedTokenCount = kPackedTokenCount,
+        .numHeads = 1,
+        .numAttnHeads = 1,
+        .numAttnKvHeads = 1,
+        .headSize = kHeadSize});
+    return tcop::AttentionWorkspaceManager::buildContextLayout(sizes).totalSize;
 }
 
 } // namespace
 
 TEST(AttentionWorkspaceManagerTest, RaggedUnfusedSelfAttentionUsesPaddedTokenCounts)
 {
-    tcop::AttentionOp op;
-    configureUnfusedAttention(op, false);
-
-    EXPECT_EQ(getUnfusedContextWorkspace(op), expectedUnfusedContextWorkspace(false));
+    EXPECT_EQ(getUnfusedContextWorkspace(false), expectedUnfusedContextWorkspace(false));
 }
 
 TEST(AttentionWorkspaceManagerTest, RaggedUnfusedCrossAttentionUsesPaddedTokenCounts)
 {
-    tcop::AttentionOp op;
-    configureUnfusedAttention(op, true);
+    EXPECT_EQ(getUnfusedContextWorkspace(true), expectedUnfusedContextWorkspace(true));
+}
 
-    EXPECT_EQ(getUnfusedContextWorkspace(op), expectedUnfusedContextWorkspace(true));
+TEST(AttentionWorkspaceManagerTest, EmptyUnfusedContextNeedsNoWorkspace)
+{
+    auto const sizes = tcop::AttentionWorkspaceManager::buildUnfusedContextSizes({.elementSize = sizeof(half),
+        .batchSize = kBatchSize,
+        .querySequenceLength = kInputSequenceLength,
+        .kvSequenceLength = kCrossKvLength,
+        .packedTokenCount = 0,
+        .numHeads = 1,
+        .numAttnHeads = 1,
+        .numAttnKvHeads = 1,
+        .headSize = kHeadSize});
+    EXPECT_EQ(tcop::AttentionWorkspaceManager::buildContextLayout(sizes).totalSize, 0);
+}
+
+TEST(AttentionWorkspaceManagerTest, UnfusedGroupedQuerySizesDistinguishQueryAndKvHeads)
+{
+    tcop::AttentionUnfusedContextWorkspaceParams params{.elementSize = sizeof(half),
+        .batchSize = 3,
+        .querySequenceLength = 5,
+        .kvSequenceLength = 2,
+        .packedTokenCount = 7,
+        .numHeads = 4,
+        .numAttnHeads = 4,
+        .numAttnKvHeads = 1,
+        .headSize = 8};
+    auto const sizes = tcop::AttentionWorkspaceManager::buildUnfusedContextSizes(params);
+    EXPECT_EQ(sizes.attentionMask, 60);
+    EXPECT_EQ(sizes.qBuf, 960);
+    EXPECT_EQ(sizes.qkvBuf, 960);
+    EXPECT_EQ(sizes.kBuf, 96);
+    EXPECT_EQ(sizes.vBuf, 96);
+    EXPECT_EQ(sizes.qkBuf, 240);
+    EXPECT_EQ(sizes.qkFloatBuf, 480);
+    EXPECT_EQ(sizes.paddingOffset, 60);
+    EXPECT_EQ(sizes.encoderPaddingOffset, 24);
+    EXPECT_EQ(sizes.tokensInfo, sizeof(int2) * 7);
+
+    params.packedTokenCount = 15;
+    auto const denseSizes = tcop::AttentionWorkspaceManager::buildUnfusedContextSizes(params);
+    EXPECT_EQ(denseSizes.qBuf, sizes.qBuf);
+    EXPECT_EQ(denseSizes.kBuf, sizes.kBuf);
+    EXPECT_EQ(denseSizes.qkBuf, sizes.qkBuf);
+    EXPECT_EQ(denseSizes.paddingOffset, sizes.paddingOffset);
+    EXPECT_EQ(denseSizes.tokensInfo, sizeof(int2) * 15);
 }
 
 TEST(AttentionWorkspaceManagerTest, ContextLayoutMatchesAttentionOpOrdering)

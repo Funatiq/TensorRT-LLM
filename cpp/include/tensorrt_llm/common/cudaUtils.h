@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2022-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2022-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +20,7 @@
 #include "tensorrt_llm/common/cudaBf16Wrapper.h"
 #include "tensorrt_llm/common/cudaDriverWrapper.h"
 #include "tensorrt_llm/common/cudaFp8Utils.h"
+#include "tensorrt_llm/common/workspace.h"
 #if ENABLE_FP4
 #include <cuda_fp4.h>
 #endif
@@ -54,9 +55,6 @@ TRTLLM_NAMESPACE_BEGIN
 
 namespace common
 {
-
-// workspace for cublas gemm : 32MB
-#define CUBLAS_WORKSPACE_SIZE 33554432
 
 typedef struct __align__(4)
 {
