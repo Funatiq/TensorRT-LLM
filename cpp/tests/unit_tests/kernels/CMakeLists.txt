@@ -58,7 +58,19 @@ macro(remove_compile_definition TARGET_NAME DEFINITION)
   endif()
 endmacro()
 
-add_gtest(mixtureOfExpertsTest moe/mixtureOfExpertsTest.cu)
+add_tllm_gtest(
+  mixtureOfExpertsTest
+  OWNER
+  kernel
+  SOURCES
+  moe/mixtureOfExpertsTest.cu
+  LINK_LIBRARIES
+  tllm::kernel_moe
+  tllm::kernel_quantization
+  tllm::runtime_buffers
+  LABELS
+  "unit;kernels;moe;gpu"
+  REQUIRES_GPU)
 
 # If we are using oss cutlass, build an explicit internal test
 if(USING_OSS_CUTLASS_MOE_GEMM)
@@ -69,7 +81,19 @@ if(USING_OSS_CUTLASS_MOE_GEMM)
   # with the internal cutlass kernels sources; the prebuilt tarball provides the
   # library and a reduced header set only.
   if(INTERNAL_CUTLASS_KERNELS_PATH)
-    add_gtest(mixtureOfExpertsInternalTest moe/mixtureOfExpertsTest.cu)
+    add_tllm_gtest(
+      mixtureOfExpertsInternalTest
+      OWNER
+      kernel
+      SOURCES
+      moe/mixtureOfExpertsTest.cu
+      LINK_LIBRARIES
+      tllm::kernel_moe_internal
+      tllm::kernel_quantization
+      tllm::runtime_buffers
+      LABELS
+      "unit;kernels;moe;gpu"
+      REQUIRES_GPU)
     remove_compile_definition(mixtureOfExpertsInternalTest
                               USING_OSS_CUTLASS_MOE_GEMM)
   endif()
