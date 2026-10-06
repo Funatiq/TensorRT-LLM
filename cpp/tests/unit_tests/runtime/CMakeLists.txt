@@ -82,8 +82,17 @@ add_tllm_gtest(
   "unit;runtime;host")
 add_tllm_gtest(loraCacheTest SOURCES loraCacheTest.cpp FULL_STACK LABELS
                "unit;full-stack")
-add_tllm_gtest(loraUtilsTest SOURCES loraUtilsTest.cpp FULL_STACK LABELS
-               "unit;full-stack")
+add_tllm_gtest(
+  loraUtilsTest
+  OWNER
+  runtime
+  SOURCES
+  loraUtilsTest.cpp
+  LINK_LIBRARIES
+  tllm::runtime_lora
+  LABELS
+  "unit;runtime;gpu"
+  REQUIRES_GPU)
 add_tllm_gtest(moeLoadBalancerTest SOURCES moeLoadBalancerTest.cpp FULL_STACK
                LABELS "unit;full-stack")
 add_tllm_gtest(
