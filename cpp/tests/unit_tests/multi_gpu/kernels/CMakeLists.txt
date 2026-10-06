@@ -14,8 +14,20 @@
 # the License.
 
 if(NOT ENABLE_MULTI_DEVICE EQUAL 0)
-  add_tllm_gtest(allReduceKernelTest SOURCES allReduce/allReduceKernelTest.cu
-                 FULL_STACK LABELS "unit;full-stack")
+  add_tllm_gtest(
+    allReduceKernelTest
+    OWNER
+    kernel
+    SOURCES
+    allReduce/allReduceKernelTest.cu
+    LINK_LIBRARIES
+    tllm::kernel_custom_all_reduce
+    tllm::runtime_ipc
+    tllm::runtime_buffers
+    tllm::runtime_distributed
+    LABELS
+    "unit;kernels;all-reduce;multi-gpu;gpu"
+    REQUIRES_GPU)
   add_tllm_gtest(allReduceFusionTest SOURCES allReduce/allReduceFusionTest.cu
                  FULL_STACK LABELS "unit;full-stack")
   add_tllm_gtest(gemmAllReduceTest SOURCES allReduce/gemmAllReduceTest.cu
