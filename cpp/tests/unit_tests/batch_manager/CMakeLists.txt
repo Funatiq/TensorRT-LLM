@@ -105,8 +105,15 @@ add_tllm_gtest(
   REQUIRES_GPU)
 
 add_tllm_gtest(
-  contextTransferCoordinatorTest SOURCES contextTransferCoordinatorTest.cpp
-  FULL_STACK LABELS "unit;full-stack")
+  contextTransferCoordinatorTest
+  OWNER
+  batch-manager
+  SOURCES
+  contextTransferCoordinatorTest.cpp
+  LINK_LIBRARIES
+  tllm::context_transfer_consensus
+  LABELS
+  "unit;batch-manager;host")
 
 add_tllm_gtest(
   evictionPolicyTest
