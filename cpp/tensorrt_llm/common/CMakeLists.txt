@@ -55,6 +55,15 @@ target_link_libraries(
 set_target_properties(tllm_common_logging PROPERTIES POSITION_INDEPENDENT_CODE
                                                      ON)
 
+add_library(tllm_common_ip STATIC ipUtils.cpp)
+add_library(tllm::common_ip ALIAS tllm_common_ip)
+target_link_libraries(
+  tllm_common_ip
+  PUBLIC tllm::common_headers
+  PRIVATE tllm::common_logging)
+target_compile_features(tllm_common_ip PUBLIC cxx_std_20)
+set_target_properties(tllm_common_ip PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 add_library(tllm_common_profiler STATIC cudaProfilerUtils.cpp)
 add_library(tllm::common_profiler ALIAS tllm_common_profiler)
 target_link_libraries(tllm_common_profiler PUBLIC tllm::common_logging)
@@ -97,7 +106,6 @@ add_library(
   common_src OBJECT
   attentionOp.cpp
   cudaFp8Utils.cu
-  ipUtils.cpp
   mcastDevMemUtils.cpp
   ncclUtils.cpp
   opUtils.cpp
