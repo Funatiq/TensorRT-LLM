@@ -148,8 +148,6 @@ add_subdirectory(runtime)
 
 add_subdirectory(batch_manager)
 
-set(EXECUTOR_TARGET tensorrt_llm_executor_static)
-set(EXECUTOR_TARGET_ARCH ${TARGET_ARCH})
 set(UCX_WRAPPER_TARGET tensorrt_llm_ucx_wrapper)
 
 if(NIXL_ROOT)
@@ -162,8 +160,6 @@ if(MOONCAKE_ROOT)
 endif()
 
 add_subdirectory(executor)
-
-target_link_libraries(${EXECUTOR_TARGET} INTERFACE Threads::Threads)
 
 set(TRTLLM_LINK_LIBS
     ${CUDA_DRV_LIB}
@@ -272,7 +268,7 @@ target_link_libraries(
     $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_common_attention_workspace,tllm_common_nccl_comm,tllm_common_nccl,tllm_common_cublas,tllm_common_environment,tllm_common_ip,tllm_executor_values,tllm_executor_transfer_agent,tllm_executor_cache_routing,tllm_executor_request_utils,tllm_executor_agent_name,tllm_executor_agent_connection,tllm_executor_cache_transfer_cuda,tllm_executor_mpi_connection,tllm_executor_memory_desc,tllm_batch_request_info,tllm_batch_cache_transceiver,tllm_batch_context_progress,tllm_batch_rnn_cache_routing,tllm_kv_cache_host_memory,tllm_kv_cache,tllm_kv_cache_legacy,tllm_batch_scheduler,tllm_context_transfer_consensus,tllm_peft_cache,tllm_kernel_kv_cache_copy,userbuffers_src>
     $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_kv_cache_v2_utils>
     $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_executor_json_serialization>
-    $<LINK_LIBRARY:WHOLE_ARCHIVE,${EXECUTOR_TARGET}>
+    $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_executor_kv_cache_events>
     $<LINK_LIBRARY:WHOLE_ARCHIVE,fp8_blockscale_gemm_src>
     $<LINK_LIBRARY:WHOLE_ARCHIVE,${INTERNAL_CUTLASS_KERNELS_TARGET}>)
 
@@ -314,6 +310,7 @@ foreach(
   tllm_runtime_numpy
   tllm_executor_serialization
   tllm_executor_json_serialization
+  tllm_executor_kv_cache_events
   tllm_common_environment
   tllm_common_ip
   tllm_common_nccl
@@ -347,9 +344,6 @@ endforeach()
 
 # Link kernel_src and cutlass_src. static internal cutlass lib overridden.
 target_link_libraries(${SHARED_TARGET} PUBLIC kernels_src cutlass_src)
-
-# Cyclic dependency of executor on TRT-LLM
-target_link_libraries(${EXECUTOR_TARGET} INTERFACE ${SHARED_TARGET})
 
 if(TARGET ${UCX_WRAPPER_TARGET})
   add_dependencies(${SHARED_TARGET} ${UCX_WRAPPER_TARGET})
