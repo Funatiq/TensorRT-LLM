@@ -194,14 +194,42 @@ foreach(component tllm_common_fp8 tllm_common_sage_quant)
   add_cuda_architectures(${component} 89)
 endforeach()
 
-add_library(common_src OBJECT attentionOp.cpp)
-add_cuda_architectures(common_src 89)
-set_property(TARGET common_src PROPERTY POSITION_INDEPENDENT_CODE ON)
-set_property(TARGET common_src PROPERTY CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+add_library(tllm_common_attention STATIC attentionOp.cpp)
+add_library(tllm::common_attention ALIAS tllm_common_attention)
 target_link_libraries(
-  common_src PUBLIC trtllm_gen_fmha_interface tllm::common_cublas
-                    tllm::common_nccl_comm tllm::common_attention_workspace)
-
+  tllm_common_attention
+  PUBLIC tllm::common_op_utils tllm::common_attention_workspace
+         trtllm_gen_fmha_interface
+  PRIVATE tllm_kernel_attention_dispatch
+          tllm::common_nccl_comm
+          tllm::common_environment
+          tllm::common_sage_quant
+          tllm::runtime_debug
+          tllm::runtime_distributed
+          tllm::kernel_attention
+          tllm::kernel_attention_decode
+          tllm::kernel_attention_mask
+          tllm::kernel_cascade_attention
+          tllm::kernel_rope
+          tllm::kernel_mla
+          tllm::kernel_mla_chunked_prefill
+          tllm::kernel_sparse_attention
+          tllm::kernel_fp8_block_scale_gemm)
+# Object backends are forwarded to final consumers; the orchestration archive
+# owns the orchestration and dispatcher implementations.
+target_link_libraries(
+  tllm_common_attention
+  INTERFACE context_attention_src
+            decoder_attention_src
+            flash_mla_src
+            $<TARGET_OBJECTS:context_attention_src>
+            $<TARGET_OBJECTS:decoder_attention_src>
+            $<TARGET_OBJECTS:flash_mla_src>)
+target_compile_features(tllm_common_attention PUBLIC cxx_std_20)
+set_target_properties(
+  tllm_common_attention PROPERTIES CXX_EXTENSIONS OFF POSITION_INDEPENDENT_CODE
+                                                      ON)
 if(ENABLE_CUBLASLT_FP4_GEMM)
-  target_compile_definitions(common_src PRIVATE ENABLE_CUBLASLT_FP4_GEMM)
+  target_compile_definitions(tllm_common_attention
+                             PRIVATE ENABLE_CUBLASLT_FP4_GEMM)
 endif()

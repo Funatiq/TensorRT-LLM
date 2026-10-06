@@ -39,6 +39,18 @@ add_subdirectory(fusedSampling)
 file(GLOB_RECURSE SRC_CPP *.cpp)
 file(GLOB_RECURSE SRC_CU *.cu)
 
+# Attention dispatch objects are incorporated into tllm_common_attention.
+list(REMOVE_ITEM SRC_CPP "${CMAKE_CURRENT_SOURCE_DIR}/fmhaDispatcher.cpp"
+     "${CMAKE_CURRENT_SOURCE_DIR}/xqaDispatcher.cpp")
+add_library(tllm_kernel_attention_dispatch OBJECT fmhaDispatcher.cpp
+                                                  xqaDispatcher.cpp)
+target_link_libraries(tllm_kernel_attention_dispatch
+                      PRIVATE trtllm_gen_fmha_interface)
+target_compile_features(tllm_kernel_attention_dispatch PRIVATE cxx_std_20)
+set_target_properties(
+  tllm_kernel_attention_dispatch PROPERTIES CXX_EXTENSIONS OFF
+                                            POSITION_INDEPENDENT_CODE ON)
+
 list(REMOVE_ITEM SRC_CU "${CMAKE_CURRENT_SOURCE_DIR}/kvCachePartialCopy.cu")
 add_library(tllm_kernel_kv_cache_copy STATIC kvCachePartialCopy.cu)
 add_library(tllm::kernel_kv_cache_copy ALIAS tllm_kernel_kv_cache_copy)
