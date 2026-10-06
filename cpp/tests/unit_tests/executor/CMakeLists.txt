@@ -166,8 +166,18 @@ endif()
 if(NIXL_ROOT OR (MOONCAKE_ROOT AND NOT IS_ROCKY8))
   add_tllm_gtest(agentCommTest SOURCES agentCommTest.cpp FULL_STACK LABELS
                  "unit;full-stack")
-  add_tllm_gtest(transferAgentTest SOURCES transferAgentTest.cpp FULL_STACK
-                 LABELS "unit;full-stack")
+  add_tllm_gtest(
+    transferAgentTest
+    OWNER
+    executor
+    SOURCES
+    transferAgentTest.cpp
+    LINK_LIBRARIES
+    tllm::executor_transfer_agent
+    tllm::executor_values
+    LABELS
+    "unit;executor;transfer;gpu"
+    REQUIRES_GPU)
 
   if(NIXL_ROOT)
     target_link_libraries(transferAgentTest PRIVATE tensorrt_llm_nixl_wrapper)
