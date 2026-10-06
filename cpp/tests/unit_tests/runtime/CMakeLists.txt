@@ -47,8 +47,16 @@ add_tllm_gtest(
   "unit;runtime;gpu"
   REQUIRES_GPU)
 add_tllm_gtest(
-  hostAccessibleDeviceAllocatorTest SOURCES
-  hostAccessibleDeviceAllocatorTest.cu FULL_STACK LABELS "unit;full-stack")
+  hostAccessibleDeviceAllocatorTest
+  OWNER
+  runtime
+  SOURCES
+  hostAccessibleDeviceAllocatorTest.cu
+  LINK_LIBRARIES
+  tllm::runtime_host_accessible_memory
+  LABELS
+  "unit;runtime;gpu"
+  REQUIRES_GPU)
 add_tllm_gtest(
   iBufferTest
   OWNER
