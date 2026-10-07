@@ -738,3 +738,42 @@ def test_focused_torch_test_cannot_add_unrelated_kernel_directly(policy: dict) -
         tests={"torchSequenceRegistrationTest": "component"},
     )
     assert any("Focused Torch" in error for error in checker.audit(build, policy)[0])
+
+
+@pytest.mark.parametrize(
+    "dependency",
+    [
+        "tensorrt_llm",
+        "th_common",
+        "pg_utils",
+        "tllm_kernel_attention_decode",
+        "tllm_kernel_moe_prepare",
+        "tllm_runtime_distributed",
+    ],
+)
+def test_decoding_torch_family_rejects_unrelated_closures(policy: dict, dependency: str) -> None:
+    build = graph(
+        target("th_common_decoding", ("helper",), directory="source/tensorrt_llm/thop"),
+        target("helper", (dependency,), directory="source/tensorrt_llm/thop"),
+        target(dependency, directory="source/tensorrt_llm/thop"),
+    )
+    assert any("Decoding Torch" in error for error in checker.audit(build, policy)[0])
+
+
+def test_decoding_consumer_can_use_its_lora_and_sampling_backends(policy: dict) -> None:
+    build = graph(
+        target(
+            "torchDecodingRegistrationTest",
+            ("th_common_decoding",),
+            directory="source/tests/unit_tests/thop",
+        ),
+        target(
+            "th_common_decoding",
+            ("tllm_kernel_grouped_gemm", "fusedSamplingKernels_src"),
+            directory="source/tensorrt_llm/thop",
+        ),
+        target("tllm_kernel_grouped_gemm", directory="source/tensorrt_llm/kernels"),
+        target("fusedSamplingKernels_src", directory="source/tensorrt_llm/kernels"),
+        tests={"torchDecodingRegistrationTest": "component"},
+    )
+    assert checker.audit(build, policy) == ([], [])
