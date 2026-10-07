@@ -170,7 +170,8 @@ backend scope boundaries, and public/private usage propagation.
 
 `th_common_sequence` (`tllm::torch_sequence`) and `th_common_visual_gen`
 (`tllm::torch_visual_gen`), and `th_common_decoding` (`tllm::torch_decoding`)
-use direct kernel/runtime dependencies. Link these
+and `th_common_gemm_quant` (`tllm::torch_gemm_quant`) use direct kernel/runtime
+dependencies. Link these
 object targets with `target_link_libraries` to retain operator registration
 objects and propagate final-link requirements. The sequence family forwards
 its specialized kernel objects through `INTERFACE_SOURCES`; consuming only
@@ -189,7 +190,11 @@ ctest --test-dir cpp/build_RelWithDebInfo -L thop --output-on-failure
 The decoding consumer also checks its existing Composite dispatch registrations
 for host queries and LoRA capability checks. Its dependency closure includes
 LoRA/grouped GEMM, speculative decoding, and specialized sampling/MHC/compressor
-objects, while excluding attention and MoE backends.
+objects, while excluding attention and MoE backends. The GEMM/quantization
+consumer includes legacy weight preprocessing registrations in both `trtllm` and
+`tensorrt_llm` namespaces and seven existing custom classes. It selects its
+generated and CUTLASS backends explicitly. `th_tensor_allocators` shares the
+userbuffer tensor implementation without its distributed operator registration.
 
 These checks do not execute GPU kernels. They join `runtime-tests` and
 `google-tests`. The build graph policy permits these migrated families in

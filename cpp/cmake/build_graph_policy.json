@@ -173,6 +173,34 @@
       ],
       "forbid_facade_libraries": true,
       "include_tests": true
+    },
+    {
+      "name": "GEMM Torch consumers must avoid facade and attention/MoE backends",
+      "from": [
+        "th_common_gemm_quant",
+        "torchGemmQuantRegistrationTest",
+        "th_tensor_allocators"
+      ],
+      "to": [
+        "tensorrt_llm",
+        "bindings",
+        "th_common",
+        "th_common_attention",
+        "th_common_moe",
+        "th_common_distributed",
+        "pg_utils",
+        "kernels_src",
+        "cutlass_src",
+        "*attention*",
+        "*fmha*",
+        "*mla*",
+        "tllm_kernel_moe*",
+        "moe_gemm_src",
+        "trtllm_gen_fp8_block_scale_moe*",
+        "tensorrt_llm_*_wrapper"
+      ],
+      "forbid_facade_libraries": true,
+      "include_tests": true
     }
   ],
   "component_test_forbidden": [
@@ -211,6 +239,7 @@
   "component_test_allowed": [
     "th_common_sequence",
     "th_common_visual_gen",
-    "th_common_decoding"
+    "th_common_decoding",
+    "th_common_gemm_quant"
   ]
 }
