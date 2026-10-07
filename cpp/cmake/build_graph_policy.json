@@ -145,6 +145,34 @@
       ],
       "forbid_facade_libraries": true,
       "include_tests": true
+    },
+    {
+      "name": "Decoding Torch consumers must avoid facade and unrelated backends",
+      "from": [
+        "th_common_decoding",
+        "torchDecodingRegistrationTest"
+      ],
+      "to": [
+        "tensorrt_llm",
+        "bindings",
+        "th_common",
+        "th_common_attention",
+        "th_common_gemm_quant",
+        "th_common_moe",
+        "th_common_distributed",
+        "pg_utils",
+        "kernels_src",
+        "cutlass_src",
+        "*attention*",
+        "*fmha*",
+        "*mla*",
+        "*moe*",
+        "tllm_runtime_distributed",
+        "tllm_common_nccl*",
+        "tensorrt_llm_*_wrapper"
+      ],
+      "forbid_facade_libraries": true,
+      "include_tests": true
     }
   ],
   "component_test_forbidden": [
@@ -182,6 +210,7 @@
   ],
   "component_test_allowed": [
     "th_common_sequence",
-    "th_common_visual_gen"
+    "th_common_visual_gen",
+    "th_common_decoding"
   ]
 }
