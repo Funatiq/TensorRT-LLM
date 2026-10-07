@@ -421,3 +421,16 @@ add_tllm_gtest(
 target_compile_definitions(
   cacheTransceiverCommTest
   PRIVATE TLLM_TORCH_PACKAGE_ROOT="${TORCH_INSTALL_PREFIX}/..")
+
+if(ENABLE_MULTI_DEVICE)
+  add_test(
+    NAME kvCacheEventQueueTest.attention_dp_mpi
+    COMMAND
+      ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS}
+      $<TARGET_FILE:kvCacheEventQueueTest> ${MPIEXEC_POSTFLAGS}
+      --gtest_filter=KVCacheEventQueueTest.AttentionDpGatherPreservesPayloadsAndPerRankOrder
+  )
+  set_tests_properties(
+    kvCacheEventQueueTest.attention_dp_mpi
+    PROPERTIES LABELS "unit;batch-manager;host;mpi" PROCESSORS 2 TIMEOUT 30)
+endif()
