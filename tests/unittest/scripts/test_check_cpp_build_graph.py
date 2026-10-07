@@ -777,3 +777,45 @@ def test_decoding_consumer_can_use_its_lora_and_sampling_backends(policy: dict) 
         tests={"torchDecodingRegistrationTest": "component"},
     )
     assert checker.audit(build, policy) == ([], [])
+
+
+@pytest.mark.parametrize("owner", ["th_common_gemm_quant", "th_tensor_allocators"])
+@pytest.mark.parametrize(
+    "dependency",
+    [
+        "tensorrt_llm",
+        "th_common_distributed",
+        "pg_utils",
+        "tllm_kernel_attention_decode",
+        "moe_gemm_src",
+    ],
+)
+def test_gemm_and_allocator_closures_reject_unrelated_families(
+    policy: dict, owner: str, dependency: str
+) -> None:
+    build = graph(
+        target(owner, ("helper",), directory="source/tensorrt_llm/thop"),
+        target("helper", (dependency,), directory="source/tensorrt_llm/thop"),
+        target(dependency, directory="source/tensorrt_llm/thop"),
+    )
+    assert any("GEMM Torch" in error for error in checker.audit(build, policy)[0])
+
+
+def test_gemm_consumer_can_share_output_allocator_without_distributed_ops(policy: dict) -> None:
+    build = graph(
+        target(
+            "torchGemmQuantRegistrationTest",
+            ("th_common_gemm_quant",),
+            directory="source/tests/unit_tests/thop",
+        ),
+        target(
+            "th_common_gemm_quant",
+            ("th_tensor_allocators", "fp4_gemm_src"),
+            directory="source/tensorrt_llm/thop",
+        ),
+        target("th_tensor_allocators", ("userbuffers_src",), directory="source/tensorrt_llm/thop"),
+        target("userbuffers_src", directory="source/tensorrt_llm/kernels/userbuffers"),
+        target("fp4_gemm_src", directory="source/tensorrt_llm/kernels/cutlass_kernels"),
+        tests={"torchGemmQuantRegistrationTest": "component"},
+    )
+    assert checker.audit(build, policy) == ([], [])
