@@ -1014,3 +1014,38 @@ def test_new_torch_family_cannot_restore_implicit_facade_dependency(policy: dict
         target("tensorrt_llm", directory="source/tensorrt_llm"),
     )
     assert any("Torch operator families" in error for error in checker.audit(build, policy)[0])
+
+
+@pytest.mark.parametrize(
+    "dependency", ["tllm_kv_cache_legacy", "tllm_batch_cache_transceiver", "pg_utils", "th_utils"]
+)
+def test_cache_descriptors_reject_transitive_managers_and_bridges(
+    policy: dict, dependency: str
+) -> None:
+    build = graph(
+        target(
+            "tllm_batch_request_info", ("helper",), directory="source/tensorrt_llm/batch_manager"
+        ),
+        target("helper", (dependency,)),
+        target(dependency),
+    )
+    assert any("Cache descriptors" in error for error in checker.audit(build, policy)[0])
+
+
+def test_cache_descriptors_can_use_native_executor_values(policy: dict) -> None:
+    build = graph(
+        target(
+            "requestInfoTest",
+            ("tllm_batch_request_info",),
+            directory="source/tests/unit_tests/executor",
+        ),
+        target(
+            "tllm_batch_request_info",
+            ("tllm_kv_cache_key", "tllm_executor_values"),
+            directory="source/tensorrt_llm/batch_manager",
+        ),
+        target("tllm_kv_cache_key", directory="source/tensorrt_llm/batch_manager"),
+        target("tllm_executor_values", directory="source/tensorrt_llm/executor"),
+        tests={"requestInfoTest": "component"},
+    )
+    assert checker.audit(build, policy) == ([], [])

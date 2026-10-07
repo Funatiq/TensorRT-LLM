@@ -86,7 +86,6 @@ add_tllm_gtest(
   tllm::executor_memory_desc
   tllm::batch_request_info
   tllm::runtime_distributed
-  ${Python3_LIBRARIES}
   LABELS
   "unit;executor;host")
 add_tllm_gtest(
@@ -215,3 +214,14 @@ if(NIXL_ROOT OR (MOONCAKE_ROOT AND NOT IS_ROCKY8))
     target_compile_definitions(agentCommTest PRIVATE TEST_MOONCAKE_BACKEND=1)
   endif()
 endif()
+
+add_tllm_gtest(
+  requestInfoTest
+  OWNER
+  executor
+  SOURCES
+  requestInfoTest.cpp
+  LINK_LIBRARIES
+  tllm::batch_request_info
+  LABELS
+  "unit;executor;host")
