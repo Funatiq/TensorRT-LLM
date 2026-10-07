@@ -717,7 +717,7 @@ def test_component_test_can_consume_narrow_torch_family(
     assert checker.audit(build, policy) == ([], [])
 
 
-@pytest.mark.parametrize("family", ["th_common_new_family", "th_common_moe"])
+@pytest.mark.parametrize("family", ["th_common_new_family", "th_common_distributed"])
 def test_unmigrated_torch_family_still_requires_full_stack(policy: dict, family: str) -> None:
     build = graph(
         target("focusedTest", (family,), directory="source/tests/unit_tests/thop"),
@@ -779,7 +779,7 @@ def test_decoding_consumer_can_use_its_lora_and_sampling_backends(policy: dict) 
     assert checker.audit(build, policy) == ([], [])
 
 
-@pytest.mark.parametrize("owner", ["th_common_gemm_quant", "th_tensor_allocators"])
+@pytest.mark.parametrize("owner", ["th_common_gemm_quant", "th_tensor_allocators", "th_cublas"])
 @pytest.mark.parametrize(
     "dependency",
     [
@@ -798,7 +798,7 @@ def test_gemm_and_allocator_closures_reject_unrelated_families(
         target("helper", (dependency,), directory="source/tensorrt_llm/thop"),
         target(dependency, directory="source/tensorrt_llm/thop"),
     )
-    assert any("GEMM Torch" in error for error in checker.audit(build, policy)[0])
+    assert any("Torch" in error for error in checker.audit(build, policy)[0])
 
 
 def test_gemm_consumer_can_share_output_allocator_without_distributed_ops(policy: dict) -> None:
@@ -908,3 +908,49 @@ target_link_libraries(consumer PRIVATE family)
     ):
         result = subprocess.run(command, capture_output=True, text=True, check=False)
         assert result.returncode == 0, result.stdout + result.stderr
+
+
+@pytest.mark.parametrize(
+    "dependency",
+    [
+        "tensorrt_llm",
+        "th_common_gemm_quant",
+        "th_common_distributed",
+        "tllm_common_attention",
+        "tllm_kernel_mla",
+    ],
+)
+def test_moe_torch_family_rejects_unrelated_closures(policy: dict, dependency: str) -> None:
+    build = graph(
+        target("th_common_moe", ("helper",), directory="source/tensorrt_llm/thop"),
+        target("helper", (dependency,), directory="source/tensorrt_llm/thop"),
+        target(dependency, directory="source/tensorrt_llm/thop"),
+    )
+    assert any("MoE Torch" in error for error in checker.audit(build, policy)[0])
+
+
+def test_moe_consumer_can_share_cublas_without_gemm_registrations(policy: dict) -> None:
+    build = graph(
+        target(
+            "torchMoeRegistrationTest", ("th_common_moe",), directory="source/tests/unit_tests/thop"
+        ),
+        target(
+            "th_common_moe",
+            ("th_cublas", "pg_utils", "moe_gemm_src"),
+            directory="source/tensorrt_llm/thop",
+        ),
+        target("th_cublas", ("th_tensor_allocators",), directory="source/tensorrt_llm/thop"),
+        target("th_tensor_allocators", directory="source/tensorrt_llm/thop"),
+        target("pg_utils", directory="source/tensorrt_llm/runtime"),
+        target("moe_gemm_src", directory="source/tensorrt_llm/kernels/moe"),
+        tests={"torchMoeRegistrationTest": "component"},
+    )
+    assert checker.audit(build, policy) == ([], [])
+
+
+def test_shared_cublas_rejects_gemm_registration_objects(policy: dict) -> None:
+    build = graph(
+        target("th_cublas", ("th_common_gemm_quant",), directory="source/tensorrt_llm/thop"),
+        target("th_common_gemm_quant", directory="source/tensorrt_llm/thop"),
+    )
+    assert any("Shared Torch cuBLAS" in error for error in checker.audit(build, policy)[0])
