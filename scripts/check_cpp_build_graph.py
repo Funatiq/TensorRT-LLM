@@ -51,6 +51,7 @@ class Target:
     dependencies: tuple[str, ...]
     torch_link: bool = False
     facade_link: bool = False
+    python_link: bool = False
 
 
 @dataclass
@@ -160,6 +161,10 @@ def load_graph(build_dir: Path, configuration: str | None = None) -> BuildGraph:
         torch_link = any(
             re.match(r"(?:lib|-l)?(?:torch|c10)(?:[_.-]|$)", name) for name in library_names
         )
+        python_link = any(
+            re.match(r"(?:lib|-l)?python(?:[0-9.]|$)", name, re.IGNORECASE)
+            for name in library_names
+        )
         facade_link = any(
             re.match(r"(?:lib|-l)?(?:tensorrt_llm|th_common)(?:\.|$)", name)
             for name in library_names
@@ -173,6 +178,7 @@ def load_graph(build_dir: Path, configuration: str | None = None) -> BuildGraph:
             dependencies,
             torch_link,
             facade_link,
+            python_link,
         )
 
     cache = {entry["name"]: entry["value"] for entry in replies["cache"]["entries"]}
@@ -342,6 +348,13 @@ def audit(graph: BuildGraph, policy: dict) -> tuple[list[str], list[str]]:
                     errors.append(
                         f"{rule['name']}: {' -> '.join(path)} links a facade/operator library"
                     )
+                for language in ("torch", "python"):
+                    if rule.get(f"forbid_{language}_libraries") and getattr(
+                        graph.targets[dependency], f"{language}_link"
+                    ):
+                        errors.append(
+                            f"{rule['name']}: {' -> '.join(path)} links a {language} library"
+                        )
                 if dependency != name and (
                     matches(dependency, rule["to"])
                     or matches(graph.targets[dependency].directory, rule.get("to_directories", []))

@@ -17,6 +17,7 @@
 #pragma once
 
 #include "tensorrt_llm/batch_manager/cacheTransBuffer.h"
+#include "tensorrt_llm/batch_manager/cacheTransceiverComm.h"
 #include "tensorrt_llm/batch_manager/common.h"
 #include "tensorrt_llm/batch_manager/kvCacheManager.h"
 #include "tensorrt_llm/batch_manager/llmRequest.h"
@@ -33,11 +34,8 @@
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <pybind11/pybind11.h>
 #include <string>
-#include <torch/csrc/jit/python/pybind_utils.h>
 #include <torch/custom_class.h>
-#include <torch/python.h>
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
@@ -59,153 +57,6 @@ class BaseKVCacheManager;
 class CacheSender;
 class CacheReceiver;
 class ContextTransferCoordinator;
-
-class CacheTransceiverComm
-{
-public:
-    // Construct from a non-owning raw pointer, won't take ownership of the pointer
-    explicit CacheTransceiverComm(mpi::MpiComm const* mpiComm)
-        : mMpiComm(std::shared_ptr<mpi::MpiComm const>(nullptr), mpiComm)
-    {
-    }
-
-    // Construct from a shared_ptr with shared ownership
-    explicit CacheTransceiverComm(std::shared_ptr<mpi::MpiComm const> mpiComm)
-        : mMpiComm(std::move(mpiComm))
-    {
-    }
-
-    // Construct from a ProcessGroup communicator
-    explicit CacheTransceiverComm(c10::intrusive_ptr<c10d::ProcessGroup> pgComm)
-        : mPgComm(std::move(pgComm))
-    {
-    }
-
-    ~CacheTransceiverComm() = default;
-
-    bool isMpi() const noexcept
-    {
-        return mMpiComm != nullptr;
-    }
-
-    int getRank() const
-    {
-        if (isMpi())
-        {
-            return mMpiComm->getRank();
-        }
-        return mPgComm->getRank();
-    }
-
-    int getSize() const
-    {
-        if (isMpi())
-        {
-            return mMpiComm->getSize();
-        }
-        return mPgComm->getSize();
-    }
-
-    void allgather(void const* sendbuf, void* recvbuf, int count, mpi::MpiType dtype) const
-    {
-        if (isMpi())
-        {
-            mMpiComm->allgather(sendbuf, recvbuf, count, dtype);
-            return;
-        }
-        TLLM_THROW("Input arguments only supported in mpi");
-    }
-
-    template <typename Input, typename Output>
-    bool allgather(Input input, Output output, c10d::AllgatherOptions options = c10d::AllgatherOptions()) const
-    {
-        if (isMpi())
-        {
-            TLLM_THROW("Input arguments only supported in pg");
-        }
-        tensorrt_llm::pg_utils::PgHelper pgh{mPgComm};
-
-        PGCHECK_THROW(pgh.allgather(input, output, options));
-        return true;
-    }
-
-    template <typename Input, typename Output>
-    bool allgatherv(Input input, Output output, std::vector<int> const& sizes,
-        c10d::AllgatherOptions options = c10d::AllgatherOptions()) const
-    {
-        if (isMpi())
-        {
-            TLLM_THROW("Input arguments only supported in pg");
-        }
-        tensorrt_llm::pg_utils::PgHelper pgh{mPgComm};
-        PGCHECK_THROW(pgh.allgatherv(input, output, sizes, options));
-        return true;
-    }
-
-    bool allgatherv(void const* sendbuf, int sendcount, mpi::MpiType sendtype, void* recvbuf,
-        std::vector<int> const& recvcounts, std::vector<int> const& displs, mpi::MpiType recvtype) const
-    {
-        if (isMpi())
-        {
-            mMpiComm->allgatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype);
-            return true;
-        }
-        TLLM_THROW("Input arguments only supported in mpi");
-    }
-
-    [[nodiscard]] std::unique_ptr<mpi::MpiRequest> sendAsync(
-        void const* buffer, std::size_t size, mpi::MpiType dtype, int dest, mpi::MpiTag tag) const
-    {
-        TLLM_CHECK_WITH_INFO(isMpi(), "Point-to-point cache-transceiver status messages require MPI.");
-        return mMpiComm->sendAsync(buffer, size, dtype, dest, tag);
-    }
-
-    [[nodiscard]] bool iprobe(int source, mpi::MpiTag tag, MPI_Status* status) const
-    {
-        TLLM_CHECK_WITH_INFO(isMpi(), "Point-to-point cache-transceiver status messages require MPI.");
-        return mMpiComm->iprobe(source, tag, status);
-    }
-
-    void recv(void* buffer, std::size_t size, mpi::MpiType dtype, int source, mpi::MpiTag tag) const
-    {
-        TLLM_CHECK_WITH_INFO(isMpi(), "Point-to-point cache-transceiver status messages require MPI.");
-        static_cast<void>(mMpiComm->recv(buffer, size, dtype, source, tag));
-    }
-
-    CacheTransceiverComm split(int color, int key)
-    {
-        if (isMpi())
-        {
-            auto subgroup = mMpiComm->split(color, key);
-            return CacheTransceiverComm(std::make_shared<mpi::MpiComm const>(std::move(subgroup)));
-        }
-        bool const initialized = Py_IsInitialized();
-        TLLM_CHECK_WITH_INFO(initialized, "Trying to use ProcessGroup communicator but Python is not initialized");
-        try
-        {
-            c10::intrusive_ptr<c10d::ProcessGroup> pgSub;
-            {
-                pybind11::gil_scoped_acquire gil;
-                auto const m = pybind11::module::import("tensorrt_llm._torch.distributed.pg_utils");
-                // Properly box the existing intrusive_ptr ProcessGroup into an IValue
-                // and convert to a Python object without constructing a new instance.
-                auto const py_pg = torch::jit::toPyObject(c10::IValue(mPgComm));
-
-                auto const py_sub_pg = m.attr("split")(color, key, py_pg);
-                pgSub = torch::jit::toCustomClass<c10d::ProcessGroup>(py_sub_pg);
-            }
-            return CacheTransceiverComm(pgSub);
-        }
-        catch (...)
-        {
-            TLLM_THROW("Failed to split process group");
-        }
-    }
-
-private:
-    std::shared_ptr<mpi::MpiComm const> mMpiComm;
-    c10::intrusive_ptr<c10d::ProcessGroup> mPgComm;
-};
 
 class CacheTransceiverFactory
 {

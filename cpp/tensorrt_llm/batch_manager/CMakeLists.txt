@@ -167,6 +167,18 @@ target_compile_options(
   tllm_kv_cache PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>)
 add_cuda_architectures(tllm_kv_cache 89)
 
+add_library(tllm_batch_cache_transceiver_comm STATIC cacheTransceiverComm.cpp)
+add_library(tllm::cache_transceiver_comm ALIAS
+            tllm_batch_cache_transceiver_comm)
+target_link_libraries(
+  tllm_batch_cache_transceiver_comm
+  PUBLIC tllm::runtime_distributed pg_utils
+  PRIVATE ${TORCH_PYTHON_LIB} Python3::Python)
+target_compile_features(tllm_batch_cache_transceiver_comm PUBLIC cxx_std_20)
+set_target_properties(
+  tllm_batch_cache_transceiver_comm PROPERTIES CXX_EXTENSIONS OFF
+                                               POSITION_INDEPENDENT_CODE ON)
+
 add_library(
   tllm_batch_cache_transceiver STATIC
   cacheFormatter.cpp
@@ -181,7 +193,8 @@ add_library(tllm::batch_cache_transceiver ALIAS tllm_batch_cache_transceiver)
 target_link_libraries(
   tllm_batch_cache_transceiver
   PUBLIC tllm::kv_cache_legacy tllm::batch_request_info
-  PRIVATE tllm::executor_cache_transfer_cuda
+  PRIVATE tllm::cache_transceiver_comm
+          tllm::executor_cache_transfer_cuda
           tllm::executor_mpi_connection
           tllm::executor_agent_connection
           tllm::batch_rnn_cache_routing

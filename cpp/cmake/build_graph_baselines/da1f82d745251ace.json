@@ -368,6 +368,9 @@
     "source/tensorrt_llm/batch_manager/cacheTransceiver.cpp": [
       "tllm_batch_cache_transceiver"
     ],
+    "source/tensorrt_llm/batch_manager/cacheTransceiverComm.cpp": [
+      "tllm_batch_cache_transceiver_comm"
+    ],
     "source/tensorrt_llm/batch_manager/cacheTransferLayer.cpp": [
       "tllm_batch_cache_transceiver"
     ],
@@ -2666,6 +2669,9 @@
     "source/tests/unit_tests/batch_manager/cacheTransBufferTest.cpp": [
       "cacheTransBufferTest"
     ],
+    "source/tests/unit_tests/batch_manager/cacheTransceiverCommTest.cpp": [
+      "cacheTransceiverCommTest"
+    ],
     "source/tests/unit_tests/batch_manager/capacitySchedulerTest.cpp": [
       "capacitySchedulerTest"
     ],
@@ -3529,6 +3535,7 @@
         "blockKeyTest",
         "bufferIndexHolderTest",
         "cacheTransBufferTest",
+        "cacheTransceiverCommTest",
         "cacheTransceiverTest",
         "capacitySchedulerTest",
         "coldPageCodecTest",
@@ -3562,8 +3569,8 @@
       "directory": "source/tests",
       "reverse_fan_in": 0,
       "sources": [],
-      "transitive_dependency_count": 72,
-      "transitive_dependency_hash": "6d4b33b4aad54982",
+      "transitive_dependency_count": 74,
+      "transitive_dependency_hash": "493266399a017439",
       "type": "UTILITY"
     },
     "bindings": {
@@ -3668,8 +3675,8 @@
         "source/tensorrt_llm/nanobind/userbuffers/bindings.cpp",
         "source/tensorrt_llm/nanobind/visual_gen/coordinatorWatchdog.cpp"
       ],
-      "transitive_dependency_count": 167,
-      "transitive_dependency_hash": "eded548a85829c37",
+      "transitive_dependency_count": 168,
+      "transitive_dependency_hash": "2f66dae9e5f5b521",
       "type": "MODULE_LIBRARY"
     },
     "blockKeyTest": {
@@ -3894,8 +3901,8 @@
       "directory": "source/.",
       "reverse_fan_in": 0,
       "sources": [],
-      "transitive_dependency_count": 154,
-      "transitive_dependency_hash": "6b344a0b908cdd41",
+      "transitive_dependency_count": 155,
+      "transitive_dependency_hash": "07ddc8140120cf63",
       "type": "UTILITY"
     },
     "cacheTransBufferTest": {
@@ -3927,12 +3934,32 @@
       "transitive_dependency_hash": "7379b3986d6f3b8d",
       "type": "EXECUTABLE"
     },
+    "cacheTransceiverCommTest": {
+      "compile_units": 1,
+      "dependencies": [
+        "check-build-graph",
+        "pg_utils",
+        "tllm_batch_cache_transceiver_comm",
+        "tllm_common_error",
+        "tllm_common_logging",
+        "tllm_runtime_distributed"
+      ],
+      "directory": "source/tests/unit_tests/batch_manager",
+      "reverse_fan_in": 2,
+      "sources": [
+        "source/tests/unit_tests/batch_manager/cacheTransceiverCommTest.cpp"
+      ],
+      "transitive_dependency_count": 6,
+      "transitive_dependency_hash": "df640e2b1d80dc53",
+      "type": "EXECUTABLE"
+    },
     "cacheTransceiverTest": {
       "compile_units": 1,
       "dependencies": [
         "check-build-graph",
         "pg_utils",
         "tllm_batch_cache_transceiver",
+        "tllm_batch_cache_transceiver_comm",
         "tllm_batch_context_progress",
         "tllm_batch_request_info",
         "tllm_batch_rnn_cache_routing",
@@ -3964,8 +3991,8 @@
       "sources": [
         "source/tests/unit_tests/multi_gpu/cacheTransceiverTest.cpp"
       ],
-      "transitive_dependency_count": 28,
-      "transitive_dependency_hash": "79c566a13ea73735",
+      "transitive_dependency_count": 29,
+      "transitive_dependency_hash": "2845d2ee7dd3436e",
       "type": "EXECUTABLE"
     },
     "capacitySchedulerTest": {
@@ -4062,7 +4089,7 @@
       "compile_units": 0,
       "dependencies": [],
       "directory": "source/.",
-      "reverse_fan_in": 136,
+      "reverse_fan_in": 137,
       "sources": [],
       "transitive_dependency_count": 0,
       "transitive_dependency_hash": "e3b0c44298fc1c14",
@@ -4927,6 +4954,7 @@
         "bufferIndexHolderTest",
         "bufferManagerTest",
         "cacheTransBufferTest",
+        "cacheTransceiverCommTest",
         "cacheTransceiverTest",
         "capacitySchedulerTest",
         "cascadeAttentionKernelTest",
@@ -5047,8 +5075,8 @@
       "directory": "source/tests",
       "reverse_fan_in": 0,
       "sources": [],
-      "transitive_dependency_count": 290,
-      "transitive_dependency_hash": "7c9a024a156e59ac",
+      "transitive_dependency_count": 292,
+      "transitive_dependency_hash": "0a1e15848f7c6d38",
       "type": "UTILITY"
     },
     "groupRmsNormKernels_src": {
@@ -6309,7 +6337,7 @@
       "compile_units": 1,
       "dependencies": [],
       "directory": "source/tensorrt_llm/runtime/utils",
-      "reverse_fan_in": 14,
+      "reverse_fan_in": 16,
       "sources": [
         "source/tensorrt_llm/runtime/utils/pgUtils.cpp"
       ],
@@ -6859,6 +6887,7 @@
         "tensorrt_llm_internal_cutlass_kernels_static_helper",
         "tensorrt_llm_xgrammar_static",
         "tllm_batch_cache_transceiver",
+        "tllm_batch_cache_transceiver_comm",
         "tllm_batch_context_progress",
         "tllm_batch_request_info",
         "tllm_batch_rnn_cache_routing",
@@ -6974,8 +7003,8 @@
       "directory": "source/tensorrt_llm",
       "reverse_fan_in": 3,
       "sources": [],
-      "transitive_dependency_count": 153,
-      "transitive_dependency_hash": "e05fba68aa29503a",
+      "transitive_dependency_count": 154,
+      "transitive_dependency_hash": "06d8d757d06f10c2",
       "type": "SHARED_LIBRARY"
     },
     "tensorrt_llm_internal_cutlass_kernels_static_helper": {
@@ -7132,8 +7161,8 @@
       "directory": "source/tensorrt_llm/thop",
       "reverse_fan_in": 1,
       "sources": [],
-      "transitive_dependency_count": 165,
-      "transitive_dependency_hash": "91c1936113771aba",
+      "transitive_dependency_count": 166,
+      "transitive_dependency_hash": "5b1318aa7c49daca",
       "type": "SHARED_LIBRARY"
     },
     "th_common_attention": {
@@ -7666,6 +7695,7 @@
       "compile_units": 8,
       "dependencies": [
         "pg_utils",
+        "tllm_batch_cache_transceiver_comm",
         "tllm_batch_context_progress",
         "tllm_batch_request_info",
         "tllm_batch_rnn_cache_routing",
@@ -7704,8 +7734,25 @@
         "source/tensorrt_llm/batch_manager/rnnCacheFormatter.cpp",
         "source/tensorrt_llm/batch_manager/rnnCacheTransBuffer.cpp"
       ],
-      "transitive_dependency_count": 26,
-      "transitive_dependency_hash": "1cb518c7cdb77cfa",
+      "transitive_dependency_count": 27,
+      "transitive_dependency_hash": "b69eebb98374da7d",
+      "type": "STATIC_LIBRARY"
+    },
+    "tllm_batch_cache_transceiver_comm": {
+      "compile_units": 1,
+      "dependencies": [
+        "pg_utils",
+        "tllm_common_error",
+        "tllm_common_logging",
+        "tllm_runtime_distributed"
+      ],
+      "directory": "source/tensorrt_llm/batch_manager",
+      "reverse_fan_in": 9,
+      "sources": [
+        "source/tensorrt_llm/batch_manager/cacheTransceiverComm.cpp"
+      ],
+      "transitive_dependency_count": 4,
+      "transitive_dependency_hash": "1a8c786653504fb4",
       "type": "STATIC_LIBRARY"
     },
     "tllm_batch_context_progress": {
@@ -7903,7 +7950,7 @@
       "compile_units": 3,
       "dependencies": [],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 264,
+      "reverse_fan_in": 266,
       "sources": [
         "source/tensorrt_llm/common/assert.cpp",
         "source/tensorrt_llm/common/stringUtils.cpp",
@@ -7951,7 +7998,7 @@
         "tllm_common_error"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 258,
+      "reverse_fan_in": 260,
       "sources": [
         "source/tensorrt_llm/common/logger.cpp",
         "source/tensorrt_llm/common/timestampUtils.cpp"
@@ -9535,7 +9582,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 81,
+      "reverse_fan_in": 83,
       "sources": [
         "source/tensorrt_llm/runtime/utils/mpiUtils.cpp",
         "source/tensorrt_llm/runtime/worldConfig.cpp"
@@ -10495,6 +10542,7 @@
     "bufferIndexHolderTest": "component",
     "bufferManagerTest": "component",
     "cacheTransBufferTest": "component",
+    "cacheTransceiverCommTest": "component",
     "cacheTransceiverTest": "component",
     "capacitySchedulerTest": "component",
     "cascadeAttentionKernelTest": "component",
@@ -10612,8 +10660,8 @@
     "zmqControlChannelTest": "component"
   },
   "totals": {
-    "compile_units": 997,
-    "targets": 318,
-    "unique_sources": 997
+    "compile_units": 999,
+    "targets": 320,
+    "unique_sources": 999
   }
 }
