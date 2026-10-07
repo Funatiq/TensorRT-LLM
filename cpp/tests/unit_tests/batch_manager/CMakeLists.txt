@@ -406,3 +406,18 @@ add_tllm_gtest(
   tllm::kv_cache_events
   LABELS
   "unit;batch-manager;host")
+
+add_tllm_gtest(
+  cacheTransceiverCommTest
+  OWNER
+  batch-manager
+  SOURCES
+  cacheTransceiverCommTest.cpp
+  LINK_LIBRARIES
+  tllm::cache_transceiver_comm
+  Python3::Python
+  LABELS
+  "unit;batch-manager;host;python")
+target_compile_definitions(
+  cacheTransceiverCommTest
+  PRIVATE TLLM_TORCH_PACKAGE_ROOT="${TORCH_INSTALL_PREFIX}/..")

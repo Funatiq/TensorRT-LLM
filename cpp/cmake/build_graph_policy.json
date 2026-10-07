@@ -368,10 +368,13 @@
         "pg_utils",
         "th_*",
         "bindings",
-        "tensorrt_llm"
+        "tensorrt_llm",
+        "tllm_batch_cache_transceiver_comm"
       ],
       "forbid_facade_libraries": true,
-      "include_tests": true
+      "include_tests": true,
+      "forbid_torch_libraries": true,
+      "forbid_python_libraries": true
     },
     {
       "name": "KV event primitives must avoid cache orchestration and language bridges",
@@ -391,9 +394,39 @@
         "pg_utils",
         "th_*",
         "bindings",
-        "tensorrt_llm"
+        "tensorrt_llm",
+        "tllm_batch_cache_transceiver_comm"
       ],
       "forbid_facade_libraries": true,
+      "include_tests": true,
+      "forbid_torch_libraries": true,
+      "forbid_python_libraries": true
+    },
+    {
+      "name": "Scheduler and cache primitives must remain native",
+      "from": [
+        "tllm_batch_scheduler",
+        "tllm_kv_cache",
+        "tllm_kv_cache_legacy",
+        "tllm_kv_cache_host_memory",
+        "tllm_batch_context_progress",
+        "tllm_context_transfer_consensus",
+        "agentTreeTest",
+        "blockKeyTest"
+      ],
+      "to": [
+        "tllm_batch_cache_transceiver",
+        "tllm_batch_cache_transceiver_comm",
+        "tllm_executor_agent_connection",
+        "pg_utils",
+        "th_*",
+        "bindings",
+        "tensorrt_llm",
+        "tensorrt_llm_*_wrapper"
+      ],
+      "forbid_facade_libraries": true,
+      "forbid_torch_libraries": true,
+      "forbid_python_libraries": true,
       "include_tests": true
     }
   ],

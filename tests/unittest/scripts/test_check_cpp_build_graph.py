@@ -41,9 +41,17 @@ def target(
     directory: str = "source/tensorrt_llm/common",
     owned: bool = True,
     torch_link: bool = False,
+    python_link: bool = False,
 ) -> checker.Target:
     return checker.Target(
-        name, "STATIC_LIBRARY", directory, owned, sources, dependencies, torch_link
+        name,
+        "STATIC_LIBRARY",
+        directory,
+        owned,
+        sources,
+        dependencies,
+        torch_link,
+        python_link=python_link,
     )
 
 
@@ -1077,5 +1085,68 @@ def test_event_reader_consumer_can_link_without_cache_manager(policy: dict) -> N
         ),
         target("tllm_executor_kv_cache_event_reader", directory="source/tensorrt_llm/executor"),
         tests={"kvCacheEventReaderTest": "component"},
+    )
+    assert checker.audit(build, policy) == ([], [])
+
+
+@pytest.mark.parametrize(
+    "libraries",
+    ['"/opt/python/lib/libpython3.12.so"', "-lpython3.12", '"C:/Python/libs/python312.lib"'],
+)
+def test_imported_python_library_detection(tmp_path: Path, libraries: str) -> None:
+    build_dir = write_reply(tmp_path)
+    reply = build_dir / ".cmake/api/v1/reply/test.json"
+    definition = checker.read_json(reply)
+    definition["link"] = {"commandFragments": [{"role": "libraries", "fragment": libraries}]}
+    checker.write_json(reply, definition)
+    assert checker.load_graph(build_dir).targets["tinyTest"].python_link
+
+
+def test_python_named_helper_is_not_a_python_runtime_link(tmp_path: Path) -> None:
+    build_dir = write_reply(tmp_path)
+    reply = build_dir / ".cmake/api/v1/reply/test.json"
+    definition = checker.read_json(reply)
+    definition["link"] = {
+        "commandFragments": [{"role": "libraries", "fragment": "/opt/lib/libpython_helpers.a"}]
+    }
+    checker.write_json(reply, definition)
+    assert not checker.load_graph(build_dir).targets["tinyTest"].python_link
+
+
+@pytest.mark.parametrize("owner", ["tllm_batch_scheduler", "tllm_kv_cache", "tllm_kv_cache_legacy"])
+@pytest.mark.parametrize(
+    "dependency",
+    ["tllm_batch_cache_transceiver_comm", "pg_utils", "tllm_executor_agent_connection"],
+)
+def test_scheduler_and_cache_primitives_reject_bridge_closures(
+    policy: dict, owner: str, dependency: str
+) -> None:
+    build = graph(target(owner, ("helper",)), target("helper", (dependency,)), target(dependency))
+    assert any(
+        "Scheduler and cache primitives" in error for error in checker.audit(build, policy)[0]
+    )
+
+
+@pytest.mark.parametrize("owner", ["agentTreeTest", "requestInfoTest", "kvCacheEventReaderTest"])
+@pytest.mark.parametrize("language", ["torch", "python"])
+def test_native_consumers_reject_imported_language_links(
+    policy: dict, owner: str, language: str
+) -> None:
+    build = graph(
+        target(owner, ("vendor",), directory="source/tests/unit_tests"),
+        target("vendor", owned=False, **{f"{language}_link": True}),
+        tests={owner: "component"},
+    )
+    assert any(f"links a {language} library" in error for error in checker.audit(build, policy)[0])
+
+
+def test_explicit_cache_bridge_can_link_python_and_torch(policy: dict) -> None:
+    build = graph(
+        target(
+            "tllm_batch_cache_transceiver_comm",
+            torch_link=True,
+            python_link=True,
+            directory="source/tensorrt_llm/batch_manager",
+        )
     )
     assert checker.audit(build, policy) == ([], [])

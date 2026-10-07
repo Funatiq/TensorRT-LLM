@@ -243,6 +243,21 @@ through `executor.h` and their narrower `kvCacheEvents.h` header. Focused host
 consumers verify queue order, draining, bounded retention, reader timeout
 forwarding, and source lifetime without a legacy manager or language bridge.
 
+### Cache process-group bridge
+
+`tllm::cache_transceiver_comm` owns communicator splitting, including the Python
+callback and Torch process-group conversion. Its public header contains native
+communicator declarations; Python binding headers stay in the implementation.
+`cacheTransceiverCommTest` verifies host MPI splitting, the Python initialization
+requirement, callback arguments, returned-group wrapping, and exception mapping.
+It uses a stub callback and does not launch GPU kernels.
+
+Graph checks reject transitive Torch and Python library links from native
+descriptor, event, scheduler, and cache primitives, including links to imported
+SDK libraries. Actual transfer and process-group adapters retain their explicit
+language dependencies. This protects native consumer links; top-level configure
+still discovers Torch and Python.
+
 ### Measuring C++ component builds
 
 `scripts/benchmark_cpp_components.py` records wall time, Ninja compilation/link
