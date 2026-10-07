@@ -389,8 +389,11 @@
     "source/tensorrt_llm/batch_manager/evictionPolicy.cpp": [
       "tllm_kv_cache_legacy"
     ],
-    "source/tensorrt_llm/batch_manager/kvCacheEventManager.cpp": [
+    "source/tensorrt_llm/batch_manager/kvCacheBlockEvents.cpp": [
       "tllm_kv_cache_legacy"
+    ],
+    "source/tensorrt_llm/batch_manager/kvCacheEventManager.cpp": [
+      "tllm_kv_cache_events"
     ],
     "source/tensorrt_llm/batch_manager/kvCacheManager.cpp": [
       "tllm_kv_cache_legacy"
@@ -635,8 +638,11 @@
     "source/tensorrt_llm/executor/dynamicBatchConfig.cpp": [
       "tllm_executor_types"
     ],
-    "source/tensorrt_llm/executor/executorKVCacheEventManager.cpp": [
+    "source/tensorrt_llm/executor/executorKVCacheEventAdapter.cpp": [
       "tllm_executor_kv_cache_events"
+    ],
+    "source/tensorrt_llm/executor/executorKVCacheEventManager.cpp": [
+      "tllm_executor_kv_cache_event_reader"
     ],
     "source/tensorrt_llm/executor/extendedRuntimePerfKnobConfig.cpp": [
       "tllm_executor_types"
@@ -2675,6 +2681,9 @@
     "source/tests/unit_tests/batch_manager/evictionPolicyTest.cpp": [
       "evictionPolicyTest"
     ],
+    "source/tests/unit_tests/batch_manager/kvCacheEventQueueTest.cpp": [
+      "kvCacheEventQueueTest"
+    ],
     "source/tests/unit_tests/batch_manager/kvCacheManagerFabricMemoryTest.cpp": [
       "kvCacheManagerFabricMemoryTest"
     ],
@@ -2821,6 +2830,9 @@
     ],
     "source/tests/unit_tests/executor/kvCacheConfigTest.cpp": [
       "kvCacheConfigTest"
+    ],
+    "source/tests/unit_tests/executor/kvCacheEventReaderTest.cpp": [
+      "kvCacheEventReaderTest"
     ],
     "source/tests/unit_tests/executor/loraConfigTest.cpp": [
       "loraConfigTest"
@@ -3411,6 +3423,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -3422,8 +3435,8 @@
       "sources": [
         "source/tests/unit_tests/batch_manager/agentTreeTest.cpp"
       ],
-      "transitive_dependency_count": 17,
-      "transitive_dependency_hash": "0a57ecdc81d85173",
+      "transitive_dependency_count": 18,
+      "transitive_dependency_hash": "f13b6348e68607de",
       "type": "EXECUTABLE"
     },
     "allReduceFusionTest": {
@@ -3522,6 +3535,7 @@
         "contextProgressTest",
         "contextTransferCoordinatorTest",
         "evictionPolicyTest",
+        "kvCacheEventQueueTest",
         "kvCacheManagerFabricMemoryTest",
         "kvCacheManagerTest",
         "kvCacheManagerV2ColdPageCopyTest",
@@ -3548,8 +3562,8 @@
       "directory": "source/tests",
       "reverse_fan_in": 0,
       "sources": [],
-      "transitive_dependency_count": 70,
-      "transitive_dependency_hash": "e31408bb27f6e443",
+      "transitive_dependency_count": 72,
+      "transitive_dependency_hash": "6d4b33b4aad54982",
       "type": "UTILITY"
     },
     "bindings": {
@@ -3654,8 +3668,8 @@
         "source/tensorrt_llm/nanobind/userbuffers/bindings.cpp",
         "source/tensorrt_llm/nanobind/visual_gen/coordinatorWatchdog.cpp"
       ],
-      "transitive_dependency_count": 165,
-      "transitive_dependency_hash": "d5d5f204962590c9",
+      "transitive_dependency_count": 167,
+      "transitive_dependency_hash": "eded548a85829c37",
       "type": "MODULE_LIBRARY"
     },
     "blockKeyTest": {
@@ -3671,6 +3685,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -3682,8 +3697,8 @@
       "sources": [
         "source/tests/unit_tests/batch_manager/blockKeyTest.cpp"
       ],
-      "transitive_dependency_count": 15,
-      "transitive_dependency_hash": "983c5914cca6ce7c",
+      "transitive_dependency_count": 16,
+      "transitive_dependency_hash": "7379b3986d6f3b8d",
       "type": "EXECUTABLE"
     },
     "blockScaleMoeActivationTest": {
@@ -3740,6 +3755,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -3751,8 +3767,8 @@
       "sources": [
         "source/tests/unit_tests/executor/bounce/bounceArenaTest.cpp"
       ],
-      "transitive_dependency_count": 16,
-      "transitive_dependency_hash": "ac909f343364d9b4",
+      "transitive_dependency_count": 17,
+      "transitive_dependency_hash": "12e2b6dde4cf5aa3",
       "type": "EXECUTABLE"
     },
     "bounceConfigTest": {
@@ -3835,6 +3851,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -3846,8 +3863,8 @@
       "sources": [
         "source/tests/unit_tests/batch_manager/bufferIndexHolderTest.cpp"
       ],
-      "transitive_dependency_count": 15,
-      "transitive_dependency_hash": "983c5914cca6ce7c",
+      "transitive_dependency_count": 16,
+      "transitive_dependency_hash": "7379b3986d6f3b8d",
       "type": "EXECUTABLE"
     },
     "bufferManagerTest": {
@@ -3877,8 +3894,8 @@
       "directory": "source/.",
       "reverse_fan_in": 0,
       "sources": [],
-      "transitive_dependency_count": 152,
-      "transitive_dependency_hash": "21c9be1f29fa137d",
+      "transitive_dependency_count": 154,
+      "transitive_dependency_hash": "6b344a0b908cdd41",
       "type": "UTILITY"
     },
     "cacheTransBufferTest": {
@@ -3894,6 +3911,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -3905,8 +3923,8 @@
       "sources": [
         "source/tests/unit_tests/batch_manager/cacheTransBufferTest.cpp"
       ],
-      "transitive_dependency_count": 15,
-      "transitive_dependency_hash": "983c5914cca6ce7c",
+      "transitive_dependency_count": 16,
+      "transitive_dependency_hash": "7379b3986d6f3b8d",
       "type": "EXECUTABLE"
     },
     "cacheTransceiverTest": {
@@ -3934,6 +3952,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -3945,8 +3964,8 @@
       "sources": [
         "source/tests/unit_tests/multi_gpu/cacheTransceiverTest.cpp"
       ],
-      "transitive_dependency_count": 27,
-      "transitive_dependency_hash": "edf26543e34a37be",
+      "transitive_dependency_count": 28,
+      "transitive_dependency_hash": "79c566a13ea73735",
       "type": "EXECUTABLE"
     },
     "capacitySchedulerTest": {
@@ -3965,6 +3984,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -3976,8 +3996,8 @@
       "sources": [
         "source/tests/unit_tests/batch_manager/capacitySchedulerTest.cpp"
       ],
-      "transitive_dependency_count": 18,
-      "transitive_dependency_hash": "d1349e4ad8e8b11f",
+      "transitive_dependency_count": 19,
+      "transitive_dependency_hash": "06021e3dd73205b1",
       "type": "EXECUTABLE"
     },
     "cascadeAttentionKernelTest": {
@@ -4042,7 +4062,7 @@
       "compile_units": 0,
       "dependencies": [],
       "directory": "source/.",
-      "reverse_fan_in": 134,
+      "reverse_fan_in": 136,
       "sources": [],
       "transitive_dependency_count": 0,
       "transitive_dependency_hash": "e3b0c44298fc1c14",
@@ -4136,6 +4156,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -4147,8 +4168,8 @@
       "sources": [
         "source/tests/unit_tests/batch_manager/contextProgressTest.cu"
       ],
-      "transitive_dependency_count": 17,
-      "transitive_dependency_hash": "0a57ecdc81d85173",
+      "transitive_dependency_count": 18,
+      "transitive_dependency_hash": "f13b6348e68607de",
       "type": "EXECUTABLE"
     },
     "contextTransferCoordinatorTest": {
@@ -4463,6 +4484,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -4474,8 +4496,8 @@
       "sources": [
         "source/tests/unit_tests/batch_manager/evictionPolicyTest.cpp"
       ],
-      "transitive_dependency_count": 15,
-      "transitive_dependency_hash": "983c5914cca6ce7c",
+      "transitive_dependency_count": 16,
+      "transitive_dependency_hash": "7379b3986d6f3b8d",
       "type": "EXECUTABLE"
     },
     "execPoolTest": {
@@ -4514,6 +4536,7 @@
         "gatherScatterKernelTest",
         "genUniqueAgentNameTest",
         "kvCacheConfigTest",
+        "kvCacheEventReaderTest",
         "loraConfigTest",
         "requestInfoTest",
         "requestTest",
@@ -4527,8 +4550,8 @@
       "directory": "source/tests",
       "reverse_fan_in": 0,
       "sources": [],
-      "transitive_dependency_count": 46,
-      "transitive_dependency_hash": "9584a34605744b5f",
+      "transitive_dependency_count": 49,
+      "transitive_dependency_hash": "604c8edbfff5f451",
       "type": "UTILITY"
     },
     "executorConfigTest": {
@@ -4936,6 +4959,8 @@
         "iTensorTest",
         "ipcNvlsMemoryTest",
         "kvCacheConfigTest",
+        "kvCacheEventQueueTest",
+        "kvCacheEventReaderTest",
         "kvCacheManagerFabricMemoryTest",
         "kvCacheManagerTest",
         "kvCacheManagerV2ColdPageCopyTest",
@@ -5022,8 +5047,8 @@
       "directory": "source/tests",
       "reverse_fan_in": 0,
       "sources": [],
-      "transitive_dependency_count": 286,
-      "transitive_dependency_hash": "31a738f9ff91c303",
+      "transitive_dependency_count": 290,
+      "transitive_dependency_hash": "7c9a024a156e59ac",
       "type": "UTILITY"
     },
     "groupRmsNormKernels_src": {
@@ -5261,6 +5286,45 @@
       "transitive_dependency_hash": "478b3bb960ee5ab1",
       "type": "EXECUTABLE"
     },
+    "kvCacheEventQueueTest": {
+      "compile_units": 1,
+      "dependencies": [
+        "check-build-graph",
+        "tllm_common_cuda",
+        "tllm_common_error",
+        "tllm_common_logging",
+        "tllm_executor_serialization",
+        "tllm_executor_types",
+        "tllm_executor_values",
+        "tllm_kv_cache_events",
+        "tllm_runtime_buffers",
+        "tllm_runtime_distributed",
+        "tllm_runtime_memory"
+      ],
+      "directory": "source/tests/unit_tests/batch_manager",
+      "reverse_fan_in": 2,
+      "sources": [
+        "source/tests/unit_tests/batch_manager/kvCacheEventQueueTest.cpp"
+      ],
+      "transitive_dependency_count": 11,
+      "transitive_dependency_hash": "c0b858462ea1344e",
+      "type": "EXECUTABLE"
+    },
+    "kvCacheEventReaderTest": {
+      "compile_units": 1,
+      "dependencies": [
+        "check-build-graph",
+        "tllm_executor_kv_cache_event_reader"
+      ],
+      "directory": "source/tests/unit_tests/executor",
+      "reverse_fan_in": 2,
+      "sources": [
+        "source/tests/unit_tests/executor/kvCacheEventReaderTest.cpp"
+      ],
+      "transitive_dependency_count": 2,
+      "transitive_dependency_hash": "1d54fe74645f7a45",
+      "type": "EXECUTABLE"
+    },
     "kvCacheManagerFabricMemoryTest": {
       "compile_units": 1,
       "dependencies": [
@@ -5274,6 +5338,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -5285,8 +5350,8 @@
       "sources": [
         "source/tests/unit_tests/batch_manager/kvCacheManagerFabricMemoryTest.cpp"
       ],
-      "transitive_dependency_count": 15,
-      "transitive_dependency_hash": "983c5914cca6ce7c",
+      "transitive_dependency_count": 16,
+      "transitive_dependency_hash": "7379b3986d6f3b8d",
       "type": "EXECUTABLE"
     },
     "kvCacheManagerTest": {
@@ -5302,6 +5367,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -5313,8 +5379,8 @@
       "sources": [
         "source/tests/unit_tests/batch_manager/kvCacheManagerTest.cpp"
       ],
-      "transitive_dependency_count": 15,
-      "transitive_dependency_hash": "983c5914cca6ce7c",
+      "transitive_dependency_count": 16,
+      "transitive_dependency_hash": "7379b3986d6f3b8d",
       "type": "EXECUTABLE"
     },
     "kvCacheManagerV2ColdPageCopyTest": {
@@ -5570,6 +5636,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -5581,8 +5648,8 @@
       "sources": [
         "source/tests/unit_tests/batch_manager/kvCacheUtilsTest.cpp"
       ],
-      "transitive_dependency_count": 15,
-      "transitive_dependency_hash": "983c5914cca6ce7c",
+      "transitive_dependency_count": 16,
+      "transitive_dependency_hash": "7379b3986d6f3b8d",
       "type": "EXECUTABLE"
     },
     "llama4_min_latency_kernels": {
@@ -5613,6 +5680,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -5624,8 +5692,8 @@
       "sources": [
         "source/tests/unit_tests/batch_manager/llmRequestTest.cpp"
       ],
-      "transitive_dependency_count": 15,
-      "transitive_dependency_hash": "983c5914cca6ce7c",
+      "transitive_dependency_count": 16,
+      "transitive_dependency_hash": "7379b3986d6f3b8d",
       "type": "EXECUTABLE"
     },
     "localityDomainPublicConfigTest": {
@@ -5851,6 +5919,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -5862,8 +5931,8 @@
       "sources": [
         "source/tests/unit_tests/batch_manager/microBatchSchedulerTest.cpp"
       ],
-      "transitive_dependency_count": 17,
-      "transitive_dependency_hash": "0a57ecdc81d85173",
+      "transitive_dependency_count": 18,
+      "transitive_dependency_hash": "f13b6348e68607de",
       "type": "EXECUTABLE"
     },
     "mixtureOfExpertsTest": {
@@ -6214,6 +6283,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_peft_cache",
@@ -6231,8 +6301,8 @@
       "sources": [
         "source/tests/unit_tests/batch_manager/peftCacheManagerTest.cpp"
       ],
-      "transitive_dependency_count": 21,
-      "transitive_dependency_hash": "a87d7b40decdafa4",
+      "transitive_dependency_count": 22,
+      "transitive_dependency_hash": "2ee27920f885ddfd",
       "type": "EXECUTABLE"
     },
     "pg_utils": {
@@ -6294,6 +6364,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -6305,8 +6376,8 @@
       "sources": [
         "source/tests/unit_tests/batch_manager/radixBlockTreeTest.cpp"
       ],
-      "transitive_dependency_count": 15,
-      "transitive_dependency_hash": "983c5914cca6ce7c",
+      "transitive_dependency_count": 16,
+      "transitive_dependency_hash": "7379b3986d6f3b8d",
       "type": "EXECUTABLE"
     },
     "radixTreeTest": {
@@ -6322,6 +6393,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -6333,8 +6405,8 @@
       "sources": [
         "source/tests/unit_tests/batch_manager/radixTreeTest.cpp"
       ],
-      "transitive_dependency_count": 15,
-      "transitive_dependency_hash": "983c5914cca6ce7c",
+      "transitive_dependency_count": 16,
+      "transitive_dependency_hash": "7379b3986d6f3b8d",
       "type": "EXECUTABLE"
     },
     "report-build-graph": {
@@ -6407,6 +6479,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -6418,8 +6491,8 @@
       "sources": [
         "source/tests/unit_tests/executor/requestWithIdTest.cpp"
       ],
-      "transitive_dependency_count": 16,
-      "transitive_dependency_hash": "dfd6a0ebb19338e3",
+      "transitive_dependency_count": 17,
+      "transitive_dependency_hash": "5c55894e2f359672",
       "type": "EXECUTABLE"
     },
     "responseTest": {
@@ -6812,6 +6885,7 @@
         "tllm_executor_cache_routing",
         "tllm_executor_cache_transfer_cuda",
         "tllm_executor_json_serialization",
+        "tllm_executor_kv_cache_event_reader",
         "tllm_executor_kv_cache_events",
         "tllm_executor_memory_desc",
         "tllm_executor_mpi_connection",
@@ -6865,6 +6939,7 @@
         "tllm_kernel_ulysses",
         "tllm_kernel_weight_only",
         "tllm_kv_cache",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_host_memory",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
@@ -6899,8 +6974,8 @@
       "directory": "source/tensorrt_llm",
       "reverse_fan_in": 3,
       "sources": [],
-      "transitive_dependency_count": 151,
-      "transitive_dependency_hash": "764cee4927e14099",
+      "transitive_dependency_count": 153,
+      "transitive_dependency_hash": "e05fba68aa29503a",
       "type": "SHARED_LIBRARY"
     },
     "tensorrt_llm_internal_cutlass_kernels_static_helper": {
@@ -7057,8 +7132,8 @@
       "directory": "source/tensorrt_llm/thop",
       "reverse_fan_in": 1,
       "sources": [],
-      "transitive_dependency_count": 163,
-      "transitive_dependency_hash": "f1be20e0dce01c28",
+      "transitive_dependency_count": 165,
+      "transitive_dependency_hash": "91c1936113771aba",
       "type": "SHARED_LIBRARY"
     },
     "th_common_attention": {
@@ -7610,6 +7685,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -7628,8 +7704,8 @@
         "source/tensorrt_llm/batch_manager/rnnCacheFormatter.cpp",
         "source/tensorrt_llm/batch_manager/rnnCacheTransBuffer.cpp"
       ],
-      "transitive_dependency_count": 25,
-      "transitive_dependency_hash": "138a2d4d9dd92fd3",
+      "transitive_dependency_count": 26,
+      "transitive_dependency_hash": "1cb518c7cdb77cfa",
       "type": "STATIC_LIBRARY"
     },
     "tllm_batch_context_progress": {
@@ -7700,6 +7776,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -7714,8 +7791,8 @@
         "source/tensorrt_llm/batch_manager/microBatchScheduler.cpp",
         "source/tensorrt_llm/batch_manager/noOpPeftCacheManager.cpp"
       ],
-      "transitive_dependency_count": 15,
-      "transitive_dependency_hash": "9fb19083803e0160",
+      "transitive_dependency_count": 16,
+      "transitive_dependency_hash": "ad0263e9c972606d",
       "type": "STATIC_LIBRARY"
     },
     "tllm_common_attention": {
@@ -7796,7 +7873,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 218,
+      "reverse_fan_in": 220,
       "sources": [
         "source/tensorrt_llm/common/cudaDriverWrapper.cpp",
         "source/tensorrt_llm/common/memoryUtils.cu",
@@ -7826,7 +7903,7 @@
       "compile_units": 3,
       "dependencies": [],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 262,
+      "reverse_fan_in": 264,
       "sources": [
         "source/tensorrt_llm/common/assert.cpp",
         "source/tensorrt_llm/common/stringUtils.cpp",
@@ -7874,7 +7951,7 @@
         "tllm_common_error"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 256,
+      "reverse_fan_in": 258,
       "sources": [
         "source/tensorrt_llm/common/logger.cpp",
         "source/tensorrt_llm/common/timestampUtils.cpp"
@@ -8024,6 +8101,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -8035,8 +8113,8 @@
       "sources": [
         "source/tensorrt_llm/executor/cache_transmission/agent_utils/connection.cpp"
       ],
-      "transitive_dependency_count": 19,
-      "transitive_dependency_hash": "89be755176039077",
+      "transitive_dependency_count": 20,
+      "transitive_dependency_hash": "2fce453ab3f7084e",
       "type": "STATIC_LIBRARY"
     },
     "tllm_executor_agent_name": {
@@ -8063,6 +8141,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -8074,8 +8153,8 @@
       "sources": [
         "source/tensorrt_llm/executor/cache_transmission/nixl_utils/bounce/BounceArena.cpp"
       ],
-      "transitive_dependency_count": 14,
-      "transitive_dependency_hash": "1d7c3e035a2416b4",
+      "transitive_dependency_count": 15,
+      "transitive_dependency_hash": "f836e734b577f6df",
       "type": "STATIC_LIBRARY"
     },
     "tllm_executor_bounce_control": {
@@ -8183,6 +8262,18 @@
       "transitive_dependency_hash": "e3b0c44298fc1c14",
       "type": "STATIC_LIBRARY"
     },
+    "tllm_executor_kv_cache_event_reader": {
+      "compile_units": 1,
+      "dependencies": [],
+      "directory": "source/tensorrt_llm/executor",
+      "reverse_fan_in": 8,
+      "sources": [
+        "source/tensorrt_llm/executor/executorKVCacheEventManager.cpp"
+      ],
+      "transitive_dependency_count": 0,
+      "transitive_dependency_hash": "e3b0c44298fc1c14",
+      "type": "STATIC_LIBRARY"
+    },
     "tllm_executor_kv_cache_events": {
       "compile_units": 1,
       "dependencies": [
@@ -8190,11 +8281,13 @@
         "tllm_common_environment",
         "tllm_common_error",
         "tllm_common_logging",
+        "tllm_executor_kv_cache_event_reader",
         "tllm_executor_serialization",
         "tllm_executor_transfer_agent",
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -8204,10 +8297,10 @@
       "directory": "source/tensorrt_llm/executor",
       "reverse_fan_in": 4,
       "sources": [
-        "source/tensorrt_llm/executor/executorKVCacheEventManager.cpp"
+        "source/tensorrt_llm/executor/executorKVCacheEventAdapter.cpp"
       ],
-      "transitive_dependency_count": 14,
-      "transitive_dependency_hash": "1d7c3e035a2416b4",
+      "transitive_dependency_count": 16,
+      "transitive_dependency_hash": "96081976163fc5c6",
       "type": "STATIC_LIBRARY"
     },
     "tllm_executor_memory_desc": {
@@ -8266,6 +8359,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -8278,8 +8372,8 @@
         "source/tensorrt_llm/executor/requestUtils.cpp",
         "source/tensorrt_llm/executor/requestWithId.cpp"
       ],
-      "transitive_dependency_count": 14,
-      "transitive_dependency_hash": "1d7c3e035a2416b4",
+      "transitive_dependency_count": 15,
+      "transitive_dependency_hash": "f836e734b577f6df",
       "type": "STATIC_LIBRARY"
     },
     "tllm_executor_serialization": {
@@ -8290,7 +8384,7 @@
         "tllm_executor_types"
       ],
       "directory": "source/tensorrt_llm/executor",
-      "reverse_fan_in": 46,
+      "reverse_fan_in": 48,
       "sources": [
         "source/tensorrt_llm/executor/samplingConfigSerialization.cpp"
       ],
@@ -8320,7 +8414,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/executor",
-      "reverse_fan_in": 50,
+      "reverse_fan_in": 52,
       "sources": [
         "source/tensorrt_llm/executor/cacheTransceiverConfig.cpp",
         "source/tensorrt_llm/executor/decodingConfig.cpp",
@@ -8352,7 +8446,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/executor",
-      "reverse_fan_in": 44,
+      "reverse_fan_in": 46,
       "sources": [
         "source/tensorrt_llm/executor/contextPhaseParams.cpp",
         "source/tensorrt_llm/executor/loraConfig.cpp",
@@ -9237,6 +9331,28 @@
       "transitive_dependency_hash": "1b5338ffaff3eddb",
       "type": "STATIC_LIBRARY"
     },
+    "tllm_kv_cache_events": {
+      "compile_units": 1,
+      "dependencies": [
+        "tllm_common_cuda",
+        "tllm_common_error",
+        "tllm_common_logging",
+        "tllm_executor_serialization",
+        "tllm_executor_types",
+        "tllm_executor_values",
+        "tllm_runtime_buffers",
+        "tllm_runtime_distributed",
+        "tllm_runtime_memory"
+      ],
+      "directory": "source/tensorrt_llm/batch_manager",
+      "reverse_fan_in": 35,
+      "sources": [
+        "source/tensorrt_llm/batch_manager/kvCacheEventManager.cpp"
+      ],
+      "transitive_dependency_count": 9,
+      "transitive_dependency_hash": "63e494ac1f4691ac",
+      "type": "STATIC_LIBRARY"
+    },
     "tllm_kv_cache_host_memory": {
       "compile_units": 2,
       "dependencies": [
@@ -9281,6 +9397,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_runtime_buffers",
         "tllm_runtime_distributed",
@@ -9293,13 +9410,13 @@
         "source/tensorrt_llm/batch_manager/blockKey.cpp",
         "source/tensorrt_llm/batch_manager/cacheTransBuffer.cpp",
         "source/tensorrt_llm/batch_manager/evictionPolicy.cpp",
-        "source/tensorrt_llm/batch_manager/kvCacheEventManager.cpp",
+        "source/tensorrt_llm/batch_manager/kvCacheBlockEvents.cpp",
         "source/tensorrt_llm/batch_manager/kvCacheManager.cpp",
         "source/tensorrt_llm/batch_manager/kvCacheTransferManager.cpp",
         "source/tensorrt_llm/batch_manager/llmRequest.cpp"
       ],
-      "transitive_dependency_count": 13,
-      "transitive_dependency_hash": "a9ca427f3e1f3c32",
+      "transitive_dependency_count": 14,
+      "transitive_dependency_hash": "c341049f6341f5a0",
       "type": "STATIC_LIBRARY"
     },
     "tllm_kv_cache_test_support": {
@@ -9351,6 +9468,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -9367,8 +9485,8 @@
       "sources": [
         "source/tensorrt_llm/batch_manager/peftCacheManager.cpp"
       ],
-      "transitive_dependency_count": 19,
-      "transitive_dependency_hash": "97665746d70065cc",
+      "transitive_dependency_count": 20,
+      "transitive_dependency_hash": "972bd8beae2edec3",
       "type": "STATIC_LIBRARY"
     },
     "tllm_runtime_buffers": {
@@ -9380,7 +9498,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 111,
+      "reverse_fan_in": 113,
       "sources": [
         "source/tensorrt_llm/runtime/bufferManager.cpp",
         "source/tensorrt_llm/runtime/iBuffer.cpp",
@@ -9417,7 +9535,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 79,
+      "reverse_fan_in": 81,
       "sources": [
         "source/tensorrt_llm/runtime/utils/mpiUtils.cpp",
         "source/tensorrt_llm/runtime/worldConfig.cpp"
@@ -9544,7 +9662,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 114,
+      "reverse_fan_in": 116,
       "sources": [
         "source/tensorrt_llm/runtime/cudaMemPool.cpp",
         "source/tensorrt_llm/runtime/memoryCounters.cpp"
@@ -10150,6 +10268,7 @@
         "tllm_executor_types",
         "tllm_executor_values",
         "tllm_kernel_kv_cache_copy",
+        "tllm_kv_cache_events",
         "tllm_kv_cache_key",
         "tllm_kv_cache_legacy",
         "tllm_runtime_buffers",
@@ -10161,8 +10280,8 @@
       "sources": [
         "source/tests/unit_tests/batch_manager/truncateBlocksTest.cpp"
       ],
-      "transitive_dependency_count": 15,
-      "transitive_dependency_hash": "983c5914cca6ce7c",
+      "transitive_dependency_count": 16,
+      "transitive_dependency_hash": "7379b3986d6f3b8d",
       "type": "EXECUTABLE"
     },
     "ucxCommTest": {
@@ -10407,6 +10526,8 @@
     "iTensorTest": "component",
     "ipcNvlsMemoryTest": "component",
     "kvCacheConfigTest": "component",
+    "kvCacheEventQueueTest": "component",
+    "kvCacheEventReaderTest": "component",
     "kvCacheManagerFabricMemoryTest": "component",
     "kvCacheManagerTest": "component",
     "kvCacheManagerV2ColdPageCopyTest": "component",
@@ -10491,8 +10612,8 @@
     "zmqControlChannelTest": "component"
   },
   "totals": {
-    "compile_units": 993,
-    "targets": 314,
-    "unique_sources": 993
+    "compile_units": 997,
+    "targets": 318,
+    "unique_sources": 997
   }
 }

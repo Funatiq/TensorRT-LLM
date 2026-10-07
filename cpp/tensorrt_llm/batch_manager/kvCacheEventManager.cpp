@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2025-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,8 +16,8 @@
  */
 
 #include "tensorrt_llm/batch_manager/kvCacheEventManager.h"
-#include "tensorrt_llm/batch_manager/kvCacheManager.h"
-#include "tensorrt_llm/executor/executor.h"
+#include "tensorrt_llm/common/assert.h"
+#include "tensorrt_llm/common/logger.h"
 #include "tensorrt_llm/executor/serialization.h"
 #include "tensorrt_llm/runtime/utils/mpiUtils.h"
 
@@ -84,45 +84,6 @@ void KVCacheEventManager::enqueueCreatedEvent(
     std::vector<SizeType32> const& numBlocksPerCacheLevel, SizeType32 windowSize)
 {
     enqueueEvent({mEventId++, tle::KVCacheCreatedData{numBlocksPerCacheLevel}, windowSize, mAttentionDpRank});
-}
-
-void KVCacheEventManager::enqueueStoredEvent(std::vector<BlockPtr> const& blocks, SizeType32 windowSize)
-{
-    if (blocks.empty())
-    {
-        return;
-    }
-
-    flushRemovedEvents(windowSize);
-
-    auto const parentBlock = blocks.front()->getPrevBlock();
-    auto const parent = (parentBlock != nullptr && parentBlock->getBlockId() >= 0)
-        ? std::optional<size_t>(parentBlock->getHash())
-        : std::nullopt;
-
-    tle::KVCacheStoredData data{parent, {}};
-
-    for (auto const& block : blocks)
-    {
-        data.blocks.emplace_back(block->getHash(), block->getUniqueTokens(), block->getBlockKey().loraTaskId,
-            block->isPrimary() ? kPrimaryLevel : kSecondaryLevel, block->getPriority(), block->getExtraKeys(),
-            block->getBlockKey().cacheSalt);
-    }
-
-    enqueueEvent({mEventId++, data, windowSize, mAttentionDpRank});
-}
-
-void KVCacheEventManager::enqueueRemovedEvent(BlockPtr const& block, SizeType32 windowSize)
-{
-    auto& latestRemovedEvent = mLatestRemovedEvents[windowSize];
-    if (latestRemovedEvent != std::nullopt)
-    {
-        latestRemovedEvent->blockHashes.push_back(block->getHash());
-    }
-    else
-    {
-        latestRemovedEvent = tle::KVCacheRemovedData{{block->getHash()}};
-    }
 }
 
 void KVCacheEventManager::flushRemovedEvents(SizeType32 windowSize)
