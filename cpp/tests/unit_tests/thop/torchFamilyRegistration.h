@@ -27,6 +27,7 @@ struct TorchRegistration
     char const* name;
     c10::DispatchKey dispatch;
     bool hasSchema;
+    bool hasKernel{true};
 };
 
 inline void expectTorchRegistrations(std::span<TorchRegistration const> registrations)
@@ -38,7 +39,7 @@ inline void expectTorchRegistrations(std::span<TorchRegistration const> registra
         ASSERT_TRUE(op.has_value()) << registration.name;
         EXPECT_EQ(dispatcher.findSchema({registration.name, ""}).has_value(), registration.hasSchema)
             << registration.name;
-        EXPECT_TRUE(op->hasKernelForDispatchKey(registration.dispatch)) << registration.name;
+        EXPECT_EQ(op->hasKernelForDispatchKey(registration.dispatch), registration.hasKernel) << registration.name;
     }
 }
 

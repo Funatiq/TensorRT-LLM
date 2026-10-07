@@ -211,7 +211,10 @@ The distributed consumer selects communication, Ulysses, userbuffer, and fused
 GEMM/all-reduce components and checks the NCCL, asynchronous-send, and fused GEMM/all-reduce classes.
 `th_quantization` shares FP4/FP8 implementations with GEMM while registration
 objects remain in the GEMM family. Distributed and MoE consumers retain
-`pg_utils` for their actual process-group calls.
+`pg_utils` for their actual process-group calls. The three asynchronous Ulysses
+schemas remain registered with `ENABLE_MULTI_DEVICE=OFF`; their dispatch
+implementations require multi-device support. The distributed registration
+consumer checks implementation presence for the selected profile.
 
 These checks do not execute GPU kernels. They join `runtime-tests` and
 `google-tests`. The build graph policy permits these migrated families in
