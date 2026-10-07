@@ -2406,6 +2406,9 @@
       "th_common_gemm_quant"
     ],
     "source/tensorrt_llm/thop/fp4Quantize.cpp": [
+      "th_quantization"
+    ],
+    "source/tensorrt_llm/thop/fp4QuantizeOp.cpp": [
       "th_common_gemm_quant"
     ],
     "source/tensorrt_llm/thop/fp4xFp8GemmTrtllmGen.cpp": [
@@ -2418,9 +2421,12 @@
       "th_common_gemm_quant"
     ],
     "source/tensorrt_llm/thop/fp8Op.cpp": [
-      "th_common_gemm_quant"
+      "th_quantization"
     ],
     "source/tensorrt_llm/thop/fp8PerTensorScalingTrtllmGenGemm.cpp": [
+      "th_common_gemm_quant"
+    ],
+    "source/tensorrt_llm/thop/fp8QuantizationOp.cpp": [
       "th_common_gemm_quant"
     ],
     "source/tensorrt_llm/thop/fp8Quantize.cpp": [
@@ -3020,6 +3026,9 @@
     "source/tests/unit_tests/thop/torchDecodingRegistrationTest.cpp": [
       "torchDecodingRegistrationTest"
     ],
+    "source/tests/unit_tests/thop/torchDistributedRegistrationTest.cpp": [
+      "torchDistributedRegistrationTest"
+    ],
     "source/tests/unit_tests/thop/torchGemmQuantRegistrationTest.cpp": [
       "torchGemmQuantRegistrationTest"
     ],
@@ -3038,7 +3047,7 @@
       "compile_units": 204,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/contextFusedMultiHeadAttention",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/kernels/contextFusedMultiHeadAttention/fmha_v2_cu/fmha_v2_flash_attention_bf16_128_128_S_q_kv_32_sm80.cu",
         "source/tensorrt_llm/kernels/contextFusedMultiHeadAttention/fmha_v2_cu/fmha_v2_flash_attention_bf16_128_128_S_q_kv_64_sm80.cu",
@@ -3253,7 +3262,7 @@
       "compile_units": 48,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/cutlass_kernels",
-      "reverse_fan_in": 13,
+      "reverse_fan_in": 12,
       "sources": [
         "build/tensorrt_llm/kernels/cutlass_kernels/cutlass_instantiations/gemm/90/cutlass_kernel_file_gemm_sm90_M128_group0.generated.cu",
         "build/tensorrt_llm/kernels/cutlass_kernels/cutlass_instantiations/gemm/90/cutlass_kernel_file_gemm_sm90_M128_group1.generated.cu",
@@ -3312,7 +3321,7 @@
       "compile_units": 2,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/cutlass_kernels",
-      "reverse_fan_in": 13,
+      "reverse_fan_in": 12,
       "sources": [
         "source/tensorrt_llm/kernels/moe/cutlass/moe_gemm_kernels_fp4_fp4.cu",
         "source/tensorrt_llm/kernels/moe/cutlass/moe_gemm_kernels_fp8_fp4.cu"
@@ -3325,7 +3334,7 @@
       "compile_units": 3,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/cutlass_kernels",
-      "reverse_fan_in": 13,
+      "reverse_fan_in": 12,
       "sources": [
         "source/tensorrt_llm/kernels/moe/cutlass/moe_gemm_kernels_bf16_fp8.cu",
         "source/tensorrt_llm/kernels/moe/cutlass/moe_gemm_kernels_fp8_fp8.cu",
@@ -3339,7 +3348,7 @@
       "compile_units": 2,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/cutlass_kernels",
-      "reverse_fan_in": 13,
+      "reverse_fan_in": 12,
       "sources": [
         "source/tensorrt_llm/kernels/moe/cutlass/moe_gemm_kernels_bf16_fp4.cu",
         "source/tensorrt_llm/kernels/moe/cutlass/moe_gemm_kernels_fp16_fp4.cu"
@@ -3352,7 +3361,7 @@
       "compile_units": 2,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/cutlass_kernels",
-      "reverse_fan_in": 13,
+      "reverse_fan_in": 12,
       "sources": [
         "source/tensorrt_llm/kernels/moe/cutlass/moe_gemm_tma_warp_specialized_input.cu",
         "source/tensorrt_llm/kernels/moe/cutlass/moe_kernels.cu"
@@ -3365,7 +3374,7 @@
       "compile_units": 9,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/cutlass_kernels",
-      "reverse_fan_in": 13,
+      "reverse_fan_in": 12,
       "sources": [
         "build/tensorrt_llm/kernels/cutlass_kernels/cutlass_instantiations/gemm_grouped/80/cutlass_kernel_file_gemm_grouped_sm80_M128_group0.generated.cu",
         "build/tensorrt_llm/kernels/cutlass_kernels/cutlass_instantiations/gemm_grouped/80/cutlass_kernel_file_gemm_grouped_sm80_M128_group1.generated.cu",
@@ -3469,7 +3478,7 @@
         "tllm_runtime_distributed"
       ],
       "directory": "source/tensorrt_llm/kernels/cutlass_kernels",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/kernels/cutlass_kernels/allreduce_gemm/allreduce_gemm_runner.cu"
       ],
@@ -3638,8 +3647,8 @@
         "source/tensorrt_llm/nanobind/userbuffers/bindings.cpp",
         "source/tensorrt_llm/nanobind/visual_gen/coordinatorWatchdog.cpp"
       ],
-      "transitive_dependency_count": 163,
-      "transitive_dependency_hash": "3d91ca95ef0b4267",
+      "transitive_dependency_count": 164,
+      "transitive_dependency_hash": "137b59d6c3d3e5d0",
       "type": "MODULE_LIBRARY"
     },
     "blockKeyTest": {
@@ -4008,7 +4017,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels/causalConv1d",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/causalConv1d/causalConv1d.cu"
       ],
@@ -4020,7 +4029,7 @@
       "compile_units": 0,
       "dependencies": [],
       "directory": "source/.",
-      "reverse_fan_in": 132,
+      "reverse_fan_in": 133,
       "sources": [],
       "transitive_dependency_count": 0,
       "transitive_dependency_hash": "e3b0c44298fc1c14",
@@ -4091,7 +4100,7 @@
       "compile_units": 1,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/compressorKernels",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/kernels/compressorKernels/compressorKernels.cu"
       ],
@@ -4148,7 +4157,7 @@
       "compile_units": 5,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/contextFusedMultiHeadAttention",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "build/tensorrt_llm/kernels/contextFusedMultiHeadAttention/context_attention_src_cubin_aggregator.cpp",
         "source/tensorrt_llm/kernels/contextFusedMultiHeadAttention/cubin/fmha_cubin.cpp",
@@ -4270,7 +4279,7 @@
       "compile_units": 1,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/moe/cuteDsl",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/kernels/moe/cuteDsl/moeUtils.cu"
       ],
@@ -4307,7 +4316,7 @@
         "tllm_kernel_cascade_attention"
       ],
       "directory": "source/tensorrt_llm/kernels/decoderMaskedMultiheadAttention",
-      "reverse_fan_in": 13,
+      "reverse_fan_in": 12,
       "sources": [
         "source/tensorrt_llm/kernels/decoderMaskedMultiheadAttention/instantiation/decoderMaskedMultiheadAttention128_bf16.cu",
         "source/tensorrt_llm/kernels/decoderMaskedMultiheadAttention/instantiation/decoderMaskedMultiheadAttention128_bf16_block_sparse_attn.cu",
@@ -4348,7 +4357,7 @@
         "tllm_kernel_cascade_attention"
       ],
       "directory": "source/tensorrt_llm/kernels/decoderMaskedMultiheadAttention",
-      "reverse_fan_in": 13,
+      "reverse_fan_in": 12,
       "sources": [
         "source/tensorrt_llm/kernels/decoderMaskedMultiheadAttention/instantiation/decoderMaskedMultiheadAttention256_bf16.cu",
         "source/tensorrt_llm/kernels/decoderMaskedMultiheadAttention/instantiation/decoderMaskedMultiheadAttention256_bf16_qk_tanh_scale.cu",
@@ -4367,7 +4376,7 @@
         "nvrtc_wrapper_src"
       ],
       "directory": "source/tensorrt_llm/kernels/decoderMaskedMultiheadAttention",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/kernels/decoderMaskedMultiheadAttention/decoderXQAImplJIT/compileEngine.cpp",
         "source/tensorrt_llm/kernels/decoderMaskedMultiheadAttention/decoderXQAImplJIT/cubinObj.cpp",
@@ -4418,7 +4427,7 @@
       "compile_units": 2,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/dsv3MinLatencyKernels",
-      "reverse_fan_in": 12,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/kernels/dsv3MinLatencyKernels/dsv3FusedAGemm.cu",
         "source/tensorrt_llm/kernels/dsv3MinLatencyKernels/dsv3RouterGemm.cu"
@@ -4567,7 +4576,7 @@
       "compile_units": 2,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/cutlass_kernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/cutlass_kernels/fp8_rowwise_gemm/fp8_rowwise_gemm_bf16.cu",
         "source/tensorrt_llm/kernels/cutlass_kernels/fp8_rowwise_gemm/fp8_rowwise_gemm_fp16.cu"
@@ -4590,7 +4599,7 @@
       "compile_units": 4,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/flashMLA",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/kernels/flashMLA/flash_fwd_mla_bf16_sm90.cu",
         "source/tensorrt_llm/kernels/flashMLA/flash_fwd_mla_fp16_sm90.cu",
@@ -4627,7 +4636,7 @@
       "compile_units": 3,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/cutlass_kernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/cutlass_kernels/fp4_gemm/fp4_gemm_bf16.cu",
         "source/tensorrt_llm/kernels/cutlass_kernels/fp4_gemm/fp4_gemm_fp16.cu",
@@ -4647,7 +4656,7 @@
         "tllm_kernel_gemm_utilities"
       ],
       "directory": "source/tensorrt_llm/kernels/cutlass_kernels",
-      "reverse_fan_in": 18,
+      "reverse_fan_in": 17,
       "sources": [
         "source/tensorrt_llm/kernels/cutlass_kernels/fp8_blockscale_gemm/fp8_blockscale_gemm.cu",
         "source/tensorrt_llm/kernels/cutlass_kernels/fp8_blockscale_gemm/fp8_blockscale_quant_packed.cu"
@@ -4667,7 +4676,7 @@
         "tllm_kernel_gemm_utilities"
       ],
       "directory": "source/tensorrt_llm/kernels/cutlass_kernels",
-      "reverse_fan_in": 12,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/kernels/cutlass_kernels/fpA_intB_gemm/bf16_int4_gemm_fg_scalebias.cu",
         "source/tensorrt_llm/kernels/cutlass_kernels/fpA_intB_gemm/bf16_int4_gemm_fg_scaleonly.cu",
@@ -4695,7 +4704,7 @@
       "compile_units": 1,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/fusedGatedRMSNormQuant",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/kernels/fusedGatedRMSNormQuant/fusedGatedRMSNormQuant.cu"
       ],
@@ -4726,7 +4735,7 @@
       "compile_units": 3,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/fusedSampling",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/kernels/fusedSampling/fusedSamplingKernels.cu",
         "source/tensorrt_llm/kernels/fusedSampling/fusedSamplingMultiCta.cu",
@@ -4838,7 +4847,7 @@
         "tllm_kernel_gemm_utilities"
       ],
       "directory": "source/tensorrt_llm/kernels/cutlass_kernels",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/kernels/cutlass_kernels/fused_gated_gemm/gemm_swiglu_e4m3.cu"
       ],
@@ -4975,6 +4984,7 @@
         "tllmExceptionTest",
         "torchAttentionRegistrationTest",
         "torchDecodingRegistrationTest",
+        "torchDistributedRegistrationTest",
         "torchGemmQuantRegistrationTest",
         "torchMoeRegistrationTest",
         "torchSequenceRegistrationTest",
@@ -4995,15 +5005,15 @@
       "directory": "source/tests",
       "reverse_fan_in": 0,
       "sources": [],
-      "transitive_dependency_count": 276,
-      "transitive_dependency_hash": "2905ca4b9dd042f6",
+      "transitive_dependency_count": 284,
+      "transitive_dependency_hash": "0120f50e602f3603",
       "type": "UTILITY"
     },
     "groupRmsNormKernels_src": {
       "compile_units": 1,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/groupRmsNormKernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/groupRmsNormKernels/groupRmsNormKernels.cu"
       ],
@@ -5097,7 +5107,7 @@
         "tllm_runtime_distributed"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 25,
+      "reverse_fan_in": 26,
       "sources": [
         "source/tensorrt_llm/runtime/ipcNvlsMemory.cu",
         "source/tensorrt_llm/runtime/ipcSocket.cpp",
@@ -5111,7 +5121,7 @@
       "compile_units": 3,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/kdaDecode",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/kernels/kdaDecode/kdaDecodeDispatcher.cpp",
         "source/tensorrt_llm/kernels/kdaDecode/kdaDecodeLegacy.cu",
@@ -5198,7 +5208,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 5,
+      "reverse_fan_in": 4,
       "sources": [],
       "transitive_dependency_count": 31,
       "transitive_dependency_hash": "4228e0fd16649b35",
@@ -5208,7 +5218,7 @@
       "compile_units": 2,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/kimiK3AttnRes",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/kernels/kimiK3AttnRes/attnResFwd.cu",
         "source/tensorrt_llm/kernels/kimiK3AttnRes/attnResFwdPersistentFused.cu"
@@ -5559,7 +5569,7 @@
       "compile_units": 4,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/llama4MinLatencyKernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/llama4MinLatencyKernels/llama4Bf16Bf16Gemm.cu",
         "source/tensorrt_llm/kernels/llama4MinLatencyKernels/llama4Fp8Bf16Gemm.cu",
@@ -5735,7 +5745,7 @@
       "compile_units": 3,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/cutlass_kernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/cutlass_kernels/low_latency_gemm/low_latency_fp8_gemm_bf16.cu",
         "source/tensorrt_llm/kernels/cutlass_kernels/low_latency_gemm/low_latency_fp8_gemm_fp16.cu",
@@ -5749,7 +5759,7 @@
       "compile_units": 4,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/mamba2MTPSSMCache",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/kernels/mamba2MTPSSMCache/mamba2MTPSSMCache.cu",
         "source/tensorrt_llm/kernels/mamba2MTPSSMCache/mamba2MTPSSMCacheVec16.cu",
@@ -5764,7 +5774,7 @@
       "compile_units": 4,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 12,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/kernels/marlin/marlin_nvfp4_dispatch_utils.cpp",
         "source/tensorrt_llm/kernels/marlin/marlin_nvfp4_gemm.cu",
@@ -5796,7 +5806,7 @@
       "compile_units": 2,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/mhcKernels",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/kernels/mhcKernels/mhcFusedHcKernel.cu",
         "source/tensorrt_llm/kernels/mhcKernels/mhcKernels.cu"
@@ -6025,7 +6035,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/kernels/cutlass_kernels",
-      "reverse_fan_in": 12,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/kernels/moe/cutlass/moe_gemm_kernels_bf16_bf16.cu",
         "source/tensorrt_llm/kernels/moe/cutlass/moe_gemm_kernels_bf16_uint4.cu",
@@ -6147,7 +6157,7 @@
         "xqa_sources_h"
       ],
       "directory": "source/tensorrt_llm/kernels/decoderMaskedMultiheadAttention/decoderXQAImplJIT/nvrtcWrapper",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/decoderMaskedMultiheadAttention/decoderXQAImplJIT/nvrtcWrapper/src/nvrtcWrapper.cpp"
       ],
@@ -6206,7 +6216,7 @@
       "compile_units": 1,
       "dependencies": [],
       "directory": "source/tensorrt_llm/runtime/utils",
-      "reverse_fan_in": 13,
+      "reverse_fan_in": 14,
       "sources": [
         "source/tensorrt_llm/runtime/utils/pgUtils.cpp"
       ],
@@ -6469,6 +6479,7 @@
         "tllmBuffersTest",
         "torchAttentionRegistrationTest",
         "torchDecodingRegistrationTest",
+        "torchDistributedRegistrationTest",
         "torchGemmQuantRegistrationTest",
         "torchMoeRegistrationTest",
         "torchSequenceRegistrationTest",
@@ -6483,8 +6494,8 @@
       "directory": "source/tests",
       "reverse_fan_in": 0,
       "sources": [],
-      "transitive_dependency_count": 140,
-      "transitive_dependency_hash": "2fe3471d2e251f8f",
+      "transitive_dependency_count": 152,
+      "transitive_dependency_hash": "145b6048b13f52ae",
       "type": "UTILITY"
     },
     "runtimeMpiUtilsTest": {
@@ -6527,7 +6538,7 @@
       "compile_units": 15,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/selectiveScan",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/kernels/selectiveScan/instantiation/bmmchunk_bf16.cu",
         "source/tensorrt_llm/kernels/selectiveScan/instantiation/bmmchunk_fp16.cu",
@@ -6838,7 +6849,7 @@
         "ws_layernorm_src"
       ],
       "directory": "source/tensorrt_llm",
-      "reverse_fan_in": 4,
+      "reverse_fan_in": 3,
       "sources": [],
       "transitive_dependency_count": 150,
       "transitive_dependency_hash": "59c98c06fbf12ad9",
@@ -6848,7 +6859,7 @@
       "compile_units": 0,
       "dependencies": [],
       "directory": "source/tensorrt_llm",
-      "reverse_fan_in": 5,
+      "reverse_fan_in": 4,
       "sources": [],
       "transitive_dependency_count": 0,
       "transitive_dependency_hash": "e3b0c44298fc1c14",
@@ -6858,7 +6869,7 @@
       "compile_units": 19,
       "dependencies": [],
       "directory": "source/tensorrt_llm/batch_manager",
-      "reverse_fan_in": 5,
+      "reverse_fan_in": 4,
       "sources": [
         "dependency/xgrammar-src/cpp/compiled_grammar.cc",
         "dependency/xgrammar-src/cpp/config.cc",
@@ -6944,12 +6955,14 @@
         "th_common_sequence",
         "th_common_visual_gen",
         "th_cublas",
+        "th_quantization",
         "th_tensor_allocators",
         "th_utils",
         "tllm_common_cublas",
         "tllm_common_cuda",
         "tllm_common_environment",
         "tllm_common_error",
+        "tllm_common_fp8",
         "tllm_common_logging",
         "tllm_common_nccl",
         "tllm_common_nccl_comm",
@@ -6974,6 +6987,7 @@
         "tllm_kernel_normalization",
         "tllm_kernel_pre_quant_scale",
         "tllm_kernel_qserve_gemm",
+        "tllm_kernel_quantization",
         "tllm_kernel_recurrent",
         "tllm_kernel_speculative_decoding",
         "tllm_kernel_stream",
@@ -6995,8 +7009,8 @@
       "directory": "source/tensorrt_llm/thop",
       "reverse_fan_in": 1,
       "sources": [],
-      "transitive_dependency_count": 161,
-      "transitive_dependency_hash": "9c797f0d59773b84",
+      "transitive_dependency_count": 162,
+      "transitive_dependency_hash": "adaaf55ceb9c13e3",
       "type": "SHARED_LIBRARY"
     },
     "th_common_attention": {
@@ -7112,80 +7126,40 @@
     "th_common_distributed": {
       "compile_units": 15,
       "dependencies": [
-        "_fpA_intB_gemm_src_instantiations_90",
-        "_moe_gemm_fp4",
-        "_moe_gemm_fp8",
-        "_moe_gemm_hopper_fp4",
-        "_moe_gemm_launcher",
-        "_moe_gemm_src_instantiations_80",
         "ar_gemm_src",
-        "compressorKernels_src",
-        "cute_dsl_src",
-        "decoder_attention_0",
-        "decoder_attention_1",
-        "fb_gemm_src",
-        "fp4_gemm_src",
-        "fp8_blockscale_gemm_src",
-        "fpA_intB_gemm_src",
-        "fusedGatedRMSNormQuant_src",
-        "fusedSamplingKernels_src",
-        "gemm_swiglu_sm90_src",
         "ipc_nvls_memory_src",
-        "kda_decode_src",
-        "kernels_src",
-        "kimi_k3_attn_res_src",
-        "low_latency_gemm_src",
-        "mamba2_mtp_ssm_cache_src",
-        "mhcKernels_src",
-        "moe_gemm_src",
         "pg_utils",
-        "selective_scan_src",
-        "tensorrt_llm",
+        "th_quantization",
+        "th_tensor_allocators",
         "th_utils",
         "tllm_common_cublas",
         "tllm_common_cuda",
         "tllm_common_environment",
         "tllm_common_error",
+        "tllm_common_fp8",
         "tllm_common_logging",
+        "tllm_common_mcast_registry",
+        "tllm_common_nccl",
+        "tllm_common_nccl_comm",
+        "tllm_common_op_utils",
         "tllm_kernel_activation_quantization",
-        "tllm_kernel_attention_mask",
-        "tllm_kernel_attention_utilities",
-        "tllm_kernel_cache_indexing",
-        "tllm_kernel_cascade_attention",
+        "tllm_kernel_all_reduce_fusion",
         "tllm_kernel_communication",
-        "tllm_kernel_cuda_core_gemm_nvfp4",
-        "tllm_kernel_dit",
-        "tllm_kernel_gemm_utilities",
-        "tllm_kernel_grouped_gemm",
-        "tllm_kernel_indexer",
-        "tllm_kernel_int8_gemm",
-        "tllm_kernel_lora",
-        "tllm_kernel_moe_block_scale",
-        "tllm_kernel_moe_custom_routing",
-        "tllm_kernel_moe_lora",
+        "tllm_kernel_custom_all_reduce",
         "tllm_kernel_moe_prepare",
-        "tllm_kernel_normalization",
-        "tllm_kernel_pre_quant_scale",
-        "tllm_kernel_qserve_gemm",
-        "tllm_kernel_recurrent",
-        "tllm_kernel_speculative_decoding",
-        "tllm_kernel_stream",
-        "tllm_kernel_tensor_operations",
-        "tllm_kernel_tiny_gemm",
+        "tllm_kernel_quantization",
         "tllm_kernel_ulysses",
         "tllm_runtime_buffers",
         "tllm_runtime_distributed",
+        "tllm_runtime_ipc",
+        "tllm_runtime_locality",
         "tllm_runtime_memory",
-        "trtllm_gen_batched_gemm",
-        "trtllm_gen_fmha",
-        "trtllm_gen_fp8_block_scale_moe",
-        "trtllm_gen_fp8_block_scale_moe_routing",
-        "trtllm_gen_gemm",
-        "trtllm_gen_gemm_gated_act",
-        "ws_layernorm_src"
+        "tllm_runtime_multicast",
+        "tllm_runtime_nccl",
+        "userbuffers_src"
       ],
       "directory": "source/tensorrt_llm/thop",
-      "reverse_fan_in": 2,
+      "reverse_fan_in": 5,
       "sources": [
         "source/tensorrt_llm/thop/allgatherOp.cpp",
         "source/tensorrt_llm/thop/allocateOutput.cpp",
@@ -7203,8 +7177,8 @@
         "source/tensorrt_llm/thop/userbuffersTensorOp.cpp",
         "source/tensorrt_llm/thop/virtualMemoryAllocator.cpp"
       ],
-      "transitive_dependency_count": 152,
-      "transitive_dependency_hash": "b8ed9ea7518846b5",
+      "transitive_dependency_count": 31,
+      "transitive_dependency_hash": "9b44d2c908bef309",
       "type": "OBJECT_LIBRARY"
     },
     "th_common_gemm_quant": {
@@ -7222,6 +7196,7 @@
         "low_latency_gemm_src",
         "marlin_src",
         "th_cublas",
+        "th_quantization",
         "th_tensor_allocators",
         "th_utils",
         "tllm_common_cublas",
@@ -7266,12 +7241,12 @@
         "source/tensorrt_llm/thop/fp4Gemm.cpp",
         "source/tensorrt_llm/thop/fp4GemmTrtllmGen.cpp",
         "source/tensorrt_llm/thop/fp4Op.cpp",
-        "source/tensorrt_llm/thop/fp4Quantize.cpp",
+        "source/tensorrt_llm/thop/fp4QuantizeOp.cpp",
         "source/tensorrt_llm/thop/fp4xFp8GemmTrtllmGen.cpp",
         "source/tensorrt_llm/thop/fp8BatchedGemmTrtllmGen.cpp",
         "source/tensorrt_llm/thop/fp8BlockScalingGemm.cpp",
-        "source/tensorrt_llm/thop/fp8Op.cpp",
         "source/tensorrt_llm/thop/fp8PerTensorScalingTrtllmGenGemm.cpp",
+        "source/tensorrt_llm/thop/fp8QuantizationOp.cpp",
         "source/tensorrt_llm/thop/fp8Quantize.cpp",
         "source/tensorrt_llm/thop/fp8RowwiseGemm.cpp",
         "source/tensorrt_llm/thop/fusedActivationQuant.cpp",
@@ -7289,8 +7264,8 @@
         "source/tensorrt_llm/thop/weightOnlyQuantGemm.cpp",
         "source/tensorrt_llm/thop/weightOnlyQuantOp.cpp"
       ],
-      "transitive_dependency_count": 40,
-      "transitive_dependency_hash": "6daa017638b4ddf4",
+      "transitive_dependency_count": 41,
+      "transitive_dependency_hash": "481602d2e346f98d",
       "type": "OBJECT_LIBRARY"
     },
     "th_common_moe": {
@@ -7449,6 +7424,30 @@
       "transitive_dependency_hash": "17add18a0c275713",
       "type": "STATIC_LIBRARY"
     },
+    "th_quantization": {
+      "compile_units": 2,
+      "dependencies": [
+        "th_utils",
+        "tllm_common_cuda",
+        "tllm_common_environment",
+        "tllm_common_error",
+        "tllm_common_fp8",
+        "tllm_common_logging",
+        "tllm_kernel_activation_quantization",
+        "tllm_kernel_quantization",
+        "tllm_runtime_buffers",
+        "tllm_runtime_memory"
+      ],
+      "directory": "source/tensorrt_llm/thop",
+      "reverse_fan_in": 8,
+      "sources": [
+        "source/tensorrt_llm/thop/fp4Quantize.cpp",
+        "source/tensorrt_llm/thop/fp8Op.cpp"
+      ],
+      "transitive_dependency_count": 10,
+      "transitive_dependency_hash": "fc199117318c95de",
+      "type": "STATIC_LIBRARY"
+    },
     "th_tensor_allocators": {
       "compile_units": 1,
       "dependencies": [
@@ -7463,7 +7462,7 @@
         "userbuffers_src"
       ],
       "directory": "source/tensorrt_llm/thop",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/thop/userbuffersTensor.cpp"
       ],
@@ -7481,7 +7480,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/thop",
-      "reverse_fan_in": 20,
+      "reverse_fan_in": 22,
       "sources": [
         "source/tensorrt_llm/thop/thUtils.cpp"
       ],
@@ -7569,7 +7568,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/batch_manager",
-      "reverse_fan_in": 8,
+      "reverse_fan_in": 7,
       "sources": [
         "source/tensorrt_llm/batch_manager/cacheFormatter.cpp",
         "source/tensorrt_llm/batch_manager/cacheTransceiver.cpp",
@@ -7592,7 +7591,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/batch_manager",
-      "reverse_fan_in": 14,
+      "reverse_fan_in": 13,
       "sources": [
         "source/tensorrt_llm/batch_manager/contextProgress.cpp"
       ],
@@ -7618,7 +7617,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/batch_manager",
-      "reverse_fan_in": 12,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/batch_manager/requestInfo.cpp"
       ],
@@ -7635,7 +7634,7 @@
         "tllm_runtime_distributed"
       ],
       "directory": "source/tensorrt_llm/batch_manager",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/batch_manager/rnnCacheRouting.cpp"
       ],
@@ -7662,7 +7661,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/batch_manager",
-      "reverse_fan_in": 11,
+      "reverse_fan_in": 10,
       "sources": [
         "source/tensorrt_llm/batch_manager/agentTree.cpp",
         "source/tensorrt_llm/batch_manager/capacityScheduler.cpp",
@@ -7706,7 +7705,7 @@
         "trtllm_gen_fmha"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/common/attentionOp.cpp"
       ],
@@ -7720,7 +7719,7 @@
         "tllm_common_error"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 12,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/common/attentionWorkspace.cpp"
       ],
@@ -7736,7 +7735,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 25,
+      "reverse_fan_in": 26,
       "sources": [
         "source/tensorrt_llm/common/cublasMMWrapper.cpp"
       ],
@@ -7751,7 +7750,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 215,
+      "reverse_fan_in": 217,
       "sources": [
         "source/tensorrt_llm/common/cudaDriverWrapper.cpp",
         "source/tensorrt_llm/common/memoryUtils.cu",
@@ -7769,7 +7768,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 114,
+      "reverse_fan_in": 116,
       "sources": [
         "source/tensorrt_llm/common/envUtils.cpp"
       ],
@@ -7781,7 +7780,7 @@
       "compile_units": 3,
       "dependencies": [],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 258,
+      "reverse_fan_in": 260,
       "sources": [
         "source/tensorrt_llm/common/assert.cpp",
         "source/tensorrt_llm/common/stringUtils.cpp",
@@ -7800,7 +7799,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/common/cudaFp8Utils.cu"
       ],
@@ -7815,7 +7814,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 5,
+      "reverse_fan_in": 4,
       "sources": [
         "source/tensorrt_llm/common/ipUtils.cpp"
       ],
@@ -7829,7 +7828,7 @@
         "tllm_common_error"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 252,
+      "reverse_fan_in": 254,
       "sources": [
         "source/tensorrt_llm/common/logger.cpp",
         "source/tensorrt_llm/common/timestampUtils.cpp"
@@ -7842,7 +7841,7 @@
       "compile_units": 1,
       "dependencies": [],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 6,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/common/mcastDevMemUtils.cpp"
       ],
@@ -7858,7 +7857,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 19,
+      "reverse_fan_in": 20,
       "sources": [
         "source/tensorrt_llm/common/ncclUtils.cpp"
       ],
@@ -7877,7 +7876,7 @@
         "tllm_runtime_distributed"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 17,
+      "reverse_fan_in": 18,
       "sources": [
         "source/tensorrt_llm/common/ncclCommUtils.cpp"
       ],
@@ -7894,7 +7893,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 17,
+      "reverse_fan_in": 18,
       "sources": [
         "source/tensorrt_llm/common/opUtils.cpp"
       ],
@@ -7909,7 +7908,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 8,
+      "reverse_fan_in": 7,
       "sources": [
         "source/tensorrt_llm/common/cudaProfilerUtils.cpp"
       ],
@@ -7924,7 +7923,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 5,
+      "reverse_fan_in": 4,
       "sources": [
         "source/tensorrt_llm/common/safetensors.cpp"
       ],
@@ -7940,7 +7939,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/common",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/common/sageQuant.cu"
       ],
@@ -7954,7 +7953,7 @@
         "tllm_common_error"
       ],
       "directory": "source/tensorrt_llm/batch_manager",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/batch_manager/contextTransferVoteReducer.cpp"
       ],
@@ -7985,7 +7984,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/executor",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/executor/cache_transmission/agent_utils/connection.cpp"
       ],
@@ -7997,7 +7996,7 @@
       "compile_units": 1,
       "dependencies": [],
       "directory": "source/tensorrt_llm/executor",
-      "reverse_fan_in": 12,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/executor/cache_transmission/agent_utils/agentName.cpp"
       ],
@@ -8091,7 +8090,7 @@
         "tllm_runtime_distributed"
       ],
       "directory": "source/tensorrt_llm/executor",
-      "reverse_fan_in": 13,
+      "reverse_fan_in": 12,
       "sources": [
         "source/tensorrt_llm/executor/cache_transmission/cacheRouting.cpp"
       ],
@@ -8115,7 +8114,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/executor",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/executor/cache_transmission/cacheSplitConcat.cu",
         "source/tensorrt_llm/executor/cache_transmission/rnnCacheSplitConcat.cu"
@@ -8128,7 +8127,7 @@
       "compile_units": 1,
       "dependencies": [],
       "directory": "source/tensorrt_llm/executor",
-      "reverse_fan_in": 5,
+      "reverse_fan_in": 4,
       "sources": [
         "source/tensorrt_llm/executor/jsonSerialization.cpp"
       ],
@@ -8154,7 +8153,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/executor",
-      "reverse_fan_in": 5,
+      "reverse_fan_in": 4,
       "sources": [
         "source/tensorrt_llm/executor/executorKVCacheEventManager.cpp"
       ],
@@ -8176,7 +8175,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/executor",
-      "reverse_fan_in": 12,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/executor/memoryDesc.cpp"
       ],
@@ -8198,7 +8197,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/executor",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/executor/cache_transmission/mpi_utils/connection.cpp"
       ],
@@ -8224,7 +8223,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/executor",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/executor/requestUtils.cpp",
         "source/tensorrt_llm/executor/requestWithId.cpp"
@@ -8241,7 +8240,7 @@
         "tllm_executor_types"
       ],
       "directory": "source/tensorrt_llm/executor",
-      "reverse_fan_in": 46,
+      "reverse_fan_in": 45,
       "sources": [
         "source/tensorrt_llm/executor/samplingConfigSerialization.cpp"
       ],
@@ -8256,7 +8255,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/executor",
-      "reverse_fan_in": 39,
+      "reverse_fan_in": 38,
       "sources": [
         "source/tensorrt_llm/executor/cache_transmission/transferAgent.cpp"
       ],
@@ -8271,7 +8270,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/executor",
-      "reverse_fan_in": 49,
+      "reverse_fan_in": 48,
       "sources": [
         "source/tensorrt_llm/executor/cacheTransceiverConfig.cpp",
         "source/tensorrt_llm/executor/decodingConfig.cpp",
@@ -8303,7 +8302,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/executor",
-      "reverse_fan_in": 44,
+      "reverse_fan_in": 43,
       "sources": [
         "source/tensorrt_llm/executor/contextPhaseParams.cpp",
         "source/tensorrt_llm/executor/loraConfig.cpp",
@@ -8328,7 +8327,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 12,
       "sources": [
         "source/tensorrt_llm/kernels/arcquantFP4.cu",
         "source/tensorrt_llm/kernels/fp8PerTokenQuant/fp8_per_token_quant.cu",
@@ -8354,7 +8353,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 8,
+      "reverse_fan_in": 10,
       "sources": [
         "source/tensorrt_llm/kernels/communicationKernels/allReduceFusionKernels.cu",
         "source/tensorrt_llm/kernels/communicationKernels/allReduceWorkspace.cu"
@@ -8375,7 +8374,7 @@
         "tllm_kernel_cascade_attention"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 12,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/kernels/decoderMaskedMultiheadAttention.cu"
       ],
@@ -8387,7 +8386,7 @@
       "compile_units": 2,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/fmhaDispatcher.cpp",
         "source/tensorrt_llm/kernels/xqaDispatcher.cpp"
@@ -8404,7 +8403,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 14,
+      "reverse_fan_in": 13,
       "sources": [
         "source/tensorrt_llm/kernels/trtllmGenKernels/fmha/prepareCustomMask.cu"
       ],
@@ -8421,7 +8420,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/buildRelativeAttentionBiasKernel.cu",
         "source/tensorrt_llm/kernels/fusedQKNormRopeKernel.cu",
@@ -8441,7 +8440,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/deepseekV4BlockTable.cu",
         "source/tensorrt_llm/kernels/indexerKCacheGather.cu",
@@ -8461,7 +8460,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 16,
+      "reverse_fan_in": 15,
       "sources": [
         "source/tensorrt_llm/kernels/decoderMaskedMultiheadAttention/cascadeAttentionKernel.cu"
       ],
@@ -8478,7 +8477,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 6,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/communicationKernels/MiniMaxReduceRMSKernel.cu",
         "source/tensorrt_llm/kernels/communicationKernels/customLowPrecisionAllReduceKernels.cu",
@@ -8499,7 +8498,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 11,
+      "reverse_fan_in": 10,
       "sources": [
         "source/tensorrt_llm/kernels/weightOnlyBatchedGemv/cudaCoreGemm.cu"
       ],
@@ -8516,7 +8515,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/weightOnlyBatchedGemv/cudaCoreGemmNVFP4.cu"
       ],
@@ -8533,7 +8532,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 11,
+      "reverse_fan_in": 13,
       "sources": [
         "source/tensorrt_llm/kernels/customAllReduceKernels.cu"
       ],
@@ -8550,7 +8549,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/fusedAdaptiveLayerNormKernel.cu",
         "source/tensorrt_llm/kernels/fusedDiTGateResidNormShiftScaleKernel.cu",
@@ -8570,7 +8569,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 25,
+      "reverse_fan_in": 24,
       "sources": [
         "source/tensorrt_llm/kernels/cutlass_kernels/cutlass_heuristic.cpp",
         "source/tensorrt_llm/kernels/cutlass_kernels/cutlass_preprocessors.cpp"
@@ -8592,7 +8591,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 12,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/kernels/cuda_graph_grouped_gemm.cu"
       ],
@@ -8609,7 +8608,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/indexerTopK.cu",
         "source/tensorrt_llm/kernels/minimaxM3Fp8IndexerKernel.cu",
@@ -8628,7 +8627,7 @@
         "tllm_kernel_gemm_utilities"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 8,
+      "reverse_fan_in": 7,
       "sources": [
         "source/tensorrt_llm/kernels/cutlass_kernels/int8_gemm/int8_gemm_bf16.cu",
         "source/tensorrt_llm/kernels/cutlass_kernels/int8_gemm/int8_gemm_fp16.cu",
@@ -8647,7 +8646,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 37,
+      "reverse_fan_in": 36,
       "sources": [
         "source/tensorrt_llm/kernels/kvCachePartialCopy.cu"
       ],
@@ -8663,7 +8662,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 11,
+      "reverse_fan_in": 10,
       "sources": [
         "source/tensorrt_llm/kernels/logitsBitmask.cu"
       ],
@@ -8683,7 +8682,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 17,
+      "reverse_fan_in": 16,
       "sources": [
         "source/tensorrt_llm/kernels/doraScaling.cu",
         "source/tensorrt_llm/kernels/groupGemm.cu",
@@ -8705,7 +8704,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 12,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/kernels/mlaKernels.cu"
       ],
@@ -8721,7 +8720,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 12,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/kernels/mlaChunkedPrefill.cu"
       ],
@@ -8737,7 +8736,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 13,
+      "reverse_fan_in": 12,
       "sources": [
         "source/tensorrt_llm/kernels/moe/trtllmGen/DevKernel.cu"
       ],
@@ -8754,7 +8753,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 11,
+      "reverse_fan_in": 10,
       "sources": [
         "source/tensorrt_llm/kernels/moe/communication/fusedMoeCommKernels.cu"
       ],
@@ -8771,7 +8770,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/moe/routing/customMoeRoutingKernels.cu",
         "source/tensorrt_llm/kernels/noAuxTcKernels.cu"
@@ -8789,7 +8788,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 13,
+      "reverse_fan_in": 12,
       "sources": [
         "source/tensorrt_llm/kernels/moe/loadBalance/moeLoadBalanceKernels.cu"
       ],
@@ -8805,7 +8804,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 16,
+      "reverse_fan_in": 15,
       "sources": [
         "source/tensorrt_llm/kernels/moe/cutlass/moe_lora_pointer_expand.cu",
         "source/tensorrt_llm/kernels/moe/cutlass/moe_lora_problem_builder.cu",
@@ -8824,7 +8823,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/kernels/moe/communication/megaMoePrepareKernel.cu",
         "source/tensorrt_llm/kernels/moe/communication/moeAllReduceFusionKernels.cu",
@@ -8845,7 +8844,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/deepseekV4QNormKernel.cu",
         "source/tensorrt_llm/kernels/layernormKernels.cu",
@@ -8864,7 +8863,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 8,
+      "reverse_fan_in": 7,
       "sources": [
         "source/tensorrt_llm/kernels/nvfp4ColdPageKernels.cu"
       ],
@@ -8880,7 +8879,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 17,
+      "reverse_fan_in": 16,
       "sources": [
         "source/tensorrt_llm/kernels/preQuantScaleKernel.cu"
       ],
@@ -8896,7 +8895,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 6,
+      "reverse_fan_in": 5,
       "sources": [
         "source/tensorrt_llm/kernels/qserveGemmPerChannel.cu",
         "source/tensorrt_llm/kernels/qserveGemmPerGroup.cu"
@@ -8914,7 +8913,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 14,
+      "reverse_fan_in": 16,
       "sources": [
         "source/tensorrt_llm/kernels/quantization.cu"
       ],
@@ -8930,7 +8929,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/lruKernel.cu",
         "source/tensorrt_llm/kernels/mambaConv1dKernels.cu"
@@ -8947,7 +8946,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 8,
+      "reverse_fan_in": 7,
       "sources": [
         "source/tensorrt_llm/kernels/rmsnormKernels.cu"
       ],
@@ -8964,7 +8963,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 15,
+      "reverse_fan_in": 14,
       "sources": [
         "source/tensorrt_llm/kernels/attentionMask.cu",
         "source/tensorrt_llm/kernels/gptKernels.cu",
@@ -8993,7 +8992,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 8,
+      "reverse_fan_in": 7,
       "sources": [
         "source/tensorrt_llm/kernels/weightOnlyBatchedGemv/int8SQ.cu"
       ],
@@ -9009,7 +9008,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 12,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/kernels/sparseAttentionKernels.cu"
       ],
@@ -9025,7 +9024,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/speculativeDecoding/dynamicTreeKernels.cu",
         "source/tensorrt_llm/kernels/speculativeDecoding/kvCacheUpdateKernels.cu",
@@ -9044,7 +9043,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 6,
+      "reverse_fan_in": 5,
       "sources": [
         "source/tensorrt_llm/kernels/delayStream.cu",
         "source/tensorrt_llm/kernels/globalTimerKernel.cu"
@@ -9061,7 +9060,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/convertReqIndexToGlobal.cu",
         "source/tensorrt_llm/kernels/cumsumLastDim.cu",
@@ -9079,7 +9078,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/tinygemm2/tinygemm2_cuda.cu"
       ],
@@ -9096,7 +9095,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 6,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/kernels/ulyssesPermuteScatterKernel.cu",
         "source/tensorrt_llm/kernels/ulyssesPostUnscatterKernel.cu"
@@ -9115,7 +9114,7 @@
         "tllm_kernel_pre_quant_scale"
       ],
       "directory": "source/tensorrt_llm/kernels",
-      "reverse_fan_in": 11,
+      "reverse_fan_in": 10,
       "sources": [
         "source/tensorrt_llm/kernels/weightOnlyBatchedGemv/kernelDispatcherBf16Int4GroupwiseColumnMajorFalse.cu",
         "source/tensorrt_llm/kernels/weightOnlyBatchedGemv/kernelDispatcherBf16Int4GroupwiseColumnMajorInterleavedForHopperTrue.cu",
@@ -9155,7 +9154,7 @@
         "tllm_kv_cache_host_memory"
       ],
       "directory": "source/tensorrt_llm/batch_manager",
-      "reverse_fan_in": 21,
+      "reverse_fan_in": 20,
       "sources": [
         "source/tensorrt_llm/batch_manager/kv_cache_compression/nativeColdPageCodec.cpp",
         "source/tensorrt_llm/batch_manager/kv_cache_manager_v2/batchedPageCopy.cu",
@@ -9195,7 +9194,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/batch_manager",
-      "reverse_fan_in": 24,
+      "reverse_fan_in": 23,
       "sources": [
         "source/tensorrt_llm/batch_manager/kv_cache_manager_v2/utils/hostMem.cpp",
         "source/tensorrt_llm/batch_manager/kv_cache_manager_v2/utils/poison.cpp"
@@ -9221,7 +9220,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/batch_manager",
-      "reverse_fan_in": 36,
+      "reverse_fan_in": 35,
       "sources": [
         "source/tensorrt_llm/batch_manager/baseTransBuffer.cpp",
         "source/tensorrt_llm/batch_manager/blockKey.cpp",
@@ -9264,7 +9263,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/batch_manager",
-      "reverse_fan_in": 5,
+      "reverse_fan_in": 4,
       "sources": [
         "source/tensorrt_llm/batch_manager/kvCacheManagerV2Utils.cpp",
         "source/tensorrt_llm/batch_manager/kvCacheManagerV2Utils.cu"
@@ -9296,7 +9295,7 @@
         "tllm_runtime_worker_pool"
       ],
       "directory": "source/tensorrt_llm/batch_manager",
-      "reverse_fan_in": 8,
+      "reverse_fan_in": 7,
       "sources": [
         "source/tensorrt_llm/batch_manager/peftCacheManager.cpp"
       ],
@@ -9313,7 +9312,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 108,
+      "reverse_fan_in": 110,
       "sources": [
         "source/tensorrt_llm/runtime/bufferManager.cpp",
         "source/tensorrt_llm/runtime/iBuffer.cpp",
@@ -9335,7 +9334,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/runtime/utils/debugUtils.cu"
       ],
@@ -9350,7 +9349,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 79,
+      "reverse_fan_in": 80,
       "sources": [
         "source/tensorrt_llm/runtime/utils/mpiUtils.cpp",
         "source/tensorrt_llm/runtime/worldConfig.cpp"
@@ -9366,7 +9365,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 14,
+      "reverse_fan_in": 13,
       "sources": [
         "source/tensorrt_llm/runtime/moeLoadBalancer/gdrwrap.cpp"
       ],
@@ -9384,7 +9383,7 @@
         "tllm_runtime_gdr"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 12,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/runtime/moeLoadBalancer/hostAccessibleDeviceAllocator.cpp",
         "source/tensorrt_llm/runtime/moeLoadBalancer/topologyDetector.cpp"
@@ -9406,7 +9405,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 12,
       "sources": [
         "source/tensorrt_llm/runtime/ipcUtils.cpp"
       ],
@@ -9422,7 +9421,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 8,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/runtime/locality_domain/locality_domain_utils.cpp"
       ],
@@ -9441,7 +9440,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 13,
+      "reverse_fan_in": 12,
       "sources": [
         "source/tensorrt_llm/runtime/loraModule.cpp",
         "source/tensorrt_llm/runtime/loraUtils.cpp"
@@ -9462,7 +9461,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 11,
+      "reverse_fan_in": 10,
       "sources": [
         "source/tensorrt_llm/runtime/loraCache.cpp"
       ],
@@ -9477,7 +9476,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 111,
+      "reverse_fan_in": 113,
       "sources": [
         "source/tensorrt_llm/runtime/cudaMemPool.cpp",
         "source/tensorrt_llm/runtime/memoryCounters.cpp"
@@ -9498,7 +9497,7 @@
         "tllm_runtime_host_accessible_memory"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 10,
+      "reverse_fan_in": 9,
       "sources": [
         "source/tensorrt_llm/runtime/moeLoadBalancer/moeLoadBalancer.cpp"
       ],
@@ -9517,7 +9516,7 @@
         "tllm_runtime_distributed"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 5,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/runtime/mcastDeviceMemory.cpp"
       ],
@@ -9535,7 +9534,7 @@
         "tllm_runtime_distributed"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 5,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/runtime/ncclCommunicator.cpp"
       ],
@@ -9553,7 +9552,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 12,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/runtime/utils/numpyUtils.cpp"
       ],
@@ -9573,7 +9572,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 5,
+      "reverse_fan_in": 4,
       "sources": [
         "source/tensorrt_llm/runtime/bufferManagerNvls.cpp"
       ],
@@ -9592,7 +9591,7 @@
         "tllm_runtime_memory"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/runtime/utils/runtimeUtils.cpp"
       ],
@@ -9607,7 +9606,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/runtime",
-      "reverse_fan_in": 11,
+      "reverse_fan_in": 10,
       "sources": [
         "source/tensorrt_llm/runtime/workerPool.cpp"
       ],
@@ -9702,6 +9701,52 @@
       "transitive_dependency_hash": "0665217f9eaef3c5",
       "type": "EXECUTABLE"
     },
+    "torchDistributedRegistrationTest": {
+      "compile_units": 1,
+      "dependencies": [
+        "ar_gemm_src",
+        "check-build-graph",
+        "ipc_nvls_memory_src",
+        "pg_utils",
+        "th_common_distributed",
+        "th_quantization",
+        "th_tensor_allocators",
+        "th_utils",
+        "tllm_common_cublas",
+        "tllm_common_cuda",
+        "tllm_common_environment",
+        "tllm_common_error",
+        "tllm_common_fp8",
+        "tllm_common_logging",
+        "tllm_common_mcast_registry",
+        "tllm_common_nccl",
+        "tllm_common_nccl_comm",
+        "tllm_common_op_utils",
+        "tllm_kernel_activation_quantization",
+        "tllm_kernel_all_reduce_fusion",
+        "tllm_kernel_communication",
+        "tllm_kernel_custom_all_reduce",
+        "tllm_kernel_moe_prepare",
+        "tllm_kernel_quantization",
+        "tllm_kernel_ulysses",
+        "tllm_runtime_buffers",
+        "tllm_runtime_distributed",
+        "tllm_runtime_ipc",
+        "tllm_runtime_locality",
+        "tllm_runtime_memory",
+        "tllm_runtime_multicast",
+        "tllm_runtime_nccl",
+        "userbuffers_src"
+      ],
+      "directory": "source/tests/unit_tests/thop",
+      "reverse_fan_in": 2,
+      "sources": [
+        "source/tests/unit_tests/thop/torchDistributedRegistrationTest.cpp"
+      ],
+      "transitive_dependency_count": 33,
+      "transitive_dependency_hash": "6aa52a33138c03f3",
+      "type": "EXECUTABLE"
+    },
     "torchGemmQuantRegistrationTest": {
       "compile_units": 1,
       "dependencies": [
@@ -9719,6 +9764,7 @@
         "marlin_src",
         "th_common_gemm_quant",
         "th_cublas",
+        "th_quantization",
         "th_tensor_allocators",
         "th_utils",
         "tllm_common_cublas",
@@ -9753,8 +9799,8 @@
       "sources": [
         "source/tests/unit_tests/thop/torchGemmQuantRegistrationTest.cpp"
       ],
-      "transitive_dependency_count": 42,
-      "transitive_dependency_hash": "929ddff48668c8bb",
+      "transitive_dependency_count": 43,
+      "transitive_dependency_hash": "fc9a253e30541061",
       "type": "EXECUTABLE"
     },
     "torchMoeRegistrationTest": {
@@ -9927,7 +9973,7 @@
       "compile_units": 2,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/trtllmGenKernels/batchedGemm",
-      "reverse_fan_in": 11,
+      "reverse_fan_in": 10,
       "sources": [
         "build/tensorrt_llm/kernels/trtllmGenKernels/batchedGemm/trtllm_gen_batched_gemm_cubin_aggregator.cpp",
         "source/tensorrt_llm/kernels/trtllmGenKernels/batchedGemm/KernelRunner.cpp"
@@ -9946,7 +9992,7 @@
         "tllm_kernel_attention_mask"
       ],
       "directory": "source/tensorrt_llm/kernels/trtllmGenKernels/fmha",
-      "reverse_fan_in": 12,
+      "reverse_fan_in": 11,
       "sources": [
         "build/tensorrt_llm/kernels/trtllmGenKernels/fmha/trtllm_gen_fmha_cubin_aggregator.cpp",
         "source/tensorrt_llm/kernels/trtllmGenKernels/fmha/fmhaReduction.cu",
@@ -9966,7 +10012,7 @@
         "trtllm_gen_fp8_block_scale_moe_routing"
       ],
       "directory": "source/tensorrt_llm/kernels/moe/trtllmGen",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/kernels/moe/trtllmGen/runner.cu"
       ],
@@ -9982,7 +10028,7 @@
         "tllm_common_logging"
       ],
       "directory": "source/tensorrt_llm/kernels/moe/trtllmGen",
-      "reverse_fan_in": 12,
+      "reverse_fan_in": 11,
       "sources": [
         "source/tensorrt_llm/kernels/moe/trtllmGen/routing/RoutingCustomBlock.cu",
         "source/tensorrt_llm/kernels/moe/trtllmGen/routing/RoutingCustomCluster.cu",
@@ -10001,7 +10047,7 @@
       "compile_units": 2,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/trtllmGenKernels/gemm",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "build/tensorrt_llm/kernels/trtllmGenKernels/gemm/trtllm_gen_gemm_cubin_aggregator.cpp",
         "source/tensorrt_llm/kernels/trtllmGenKernels/gemm/KernelRunner.cpp"
@@ -10014,7 +10060,7 @@
       "compile_units": 2,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/trtllmGenKernels/gemmGatedAct",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "build/tensorrt_llm/kernels/trtllmGenKernels/gemmGatedAct/trtllm_gen_gemm_gated_act_cubin_aggregator.cpp",
         "source/tensorrt_llm/kernels/trtllmGenKernels/gemmGatedAct/KernelRunner.cpp"
@@ -10099,7 +10145,7 @@
         "tllm_runtime_distributed"
       ],
       "directory": "source/tensorrt_llm/kernels/userbuffers",
-      "reverse_fan_in": 16,
+      "reverse_fan_in": 17,
       "sources": [
         "source/tensorrt_llm/kernels/userbuffers/ub_interface.cpp",
         "source/tensorrt_llm/kernels/userbuffers/userbuffersManager.cpp"
@@ -10208,7 +10254,7 @@
       "compile_units": 1,
       "dependencies": [],
       "directory": "source/tensorrt_llm/kernels/fusedLayernormKernels",
-      "reverse_fan_in": 9,
+      "reverse_fan_in": 8,
       "sources": [
         "source/tensorrt_llm/kernels/fusedLayernormKernels/ws_layernorm_fp4_traits.cu"
       ],
@@ -10220,7 +10266,7 @@
       "compile_units": 0,
       "dependencies": [],
       "directory": "source/kernels/xqa",
-      "reverse_fan_in": 11,
+      "reverse_fan_in": 10,
       "sources": [],
       "transitive_dependency_count": 0,
       "transitive_dependency_hash": "e3b0c44298fc1c14",
@@ -10356,6 +10402,7 @@
     "tllmExceptionTest": "component",
     "torchAttentionRegistrationTest": "component",
     "torchDecodingRegistrationTest": "component",
+    "torchDistributedRegistrationTest": "component",
     "torchGemmQuantRegistrationTest": "component",
     "torchMoeRegistrationTest": "component",
     "torchSequenceRegistrationTest": "component",
@@ -10374,8 +10421,8 @@
     "zmqControlChannelTest": "component"
   },
   "totals": {
-    "compile_units": 988,
-    "targets": 310,
-    "unique_sources": 988
+    "compile_units": 991,
+    "targets": 312,
+    "unique_sources": 991
   }
 }

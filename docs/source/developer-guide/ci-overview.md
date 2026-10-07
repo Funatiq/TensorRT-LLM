@@ -79,7 +79,9 @@ ctest --test-dir cpp/build_RelWithDebInfo -L common --output-on-failure
 The initial policy enforces these boundaries:
 
 - Component tests cannot reach the main facade or Torch operator aggregates unless
-  they explicitly request `FULL_STACK`.
+  they explicitly request `FULL_STACK`. The seven audited `th_common_*` family
+  targets are allowed in component tests; their family-specific rules reject
+  facade, aggregate, and unrelated-backend dependencies.
 - Component libraries cannot reach the facade, language bindings, tests, or
   benchmarks.
 - Representative lightweight tests (`stringUtilsTest`, `executorConfigTest`, and
@@ -168,21 +170,25 @@ backend scope boundaries, and public/private usage propagation.
 
 ### Focused Torch operator consumers
 
-The sequence, DiT, decoding, GEMM/quantization, attention, and MoE Torch families
+All seven Torch operator families (sequence, DiT, decoding, GEMM/quantization,
+attention, MoE, and distributed)
 use direct kernel/runtime dependencies through their `tllm::torch_*` aliases.
-Link these
-object targets with `target_link_libraries` to retain operator registration
+Link these object targets with `target_link_libraries` to retain operator registration
 objects and propagate final-link requirements. The sequence family forwards
 its specialized kernel objects through `INTERFACE_SOURCES`; consuming only
 `$<TARGET_OBJECTS:th_common_sequence>` does not propagate those requirements.
 The DiT kernel component excludes the separate Ulysses permutation component.
 
-Focused host consumers validate every family schema and CUDA dispatch
-registration, and assert that unrelated operators are absent:
+Focused host consumers validate each family's schemas and dispatch registrations
+(including existing implementation-only registrations) and assert that unrelated
+operators are absent:
 
 ```bash
 cmake --build cpp/build_RelWithDebInfo --parallel --target \
-  torchSequenceRegistrationTest torchVisualGenRegistrationTest
+  torchSequenceRegistrationTest torchVisualGenRegistrationTest \
+  torchDecodingRegistrationTest torchGemmQuantRegistrationTest \
+  torchAttentionRegistrationTest torchMoeRegistrationTest \
+  torchDistributedRegistrationTest
 ctest --test-dir cpp/build_RelWithDebInfo -L thop --output-on-failure
 ```
 
@@ -201,12 +207,18 @@ the private object-library dependency chain.
 The MoE consumer selects its routing, communication, load-balancing, and GEMM
 backends explicitly and checks six custom classes. `th_cublas` shares the cuBLAS
 implementation with GEMM without bringing GEMM registrations into MoE.
+The distributed consumer selects communication, Ulysses, userbuffer, and fused
+GEMM/all-reduce components and checks the NCCL, asynchronous-send, and fused GEMM/all-reduce classes.
+`th_quantization` shares FP4/FP8 implementations with GEMM while registration
+objects remain in the GEMM family. Distributed and MoE consumers retain
+`pg_utils` for their actual process-group calls.
 
 These checks do not execute GPU kernels. They join `runtime-tests` and
 `google-tests`. The build graph policy permits these migrated families in
 component tests and rejects transitive facade/aggregate dependencies and
-backends unrelated to each family. The distributed family still requires
-`FULL_STACK` consumers. `th_common` retains its existing packaging and loading contract.
+backends unrelated to each family. New families must declare their direct
+dependencies; the helper no longer supplies an implicit facade/process-group
+link. `th_common` retains its existing packaging and loading contract.
 
 ### Measuring C++ component builds
 
