@@ -69,6 +69,7 @@ endfunction()
 
 add_th_common_family(
   th_common_attention
+  COMPONENT_LOCAL
   SOURCES
   mlaPreprocessOp.cpp
   attentionOp.cpp
@@ -89,7 +90,23 @@ add_th_common_family(
   dsv3RopeOp.cpp
   convertReqIndexToGlobalOp.cpp
   nvfp4MlaKvCacheGatherOp.cpp
-  trtllmGenQKVProcessOp.cpp)
+  trtllmGenQKVProcessOp.cpp
+  LINK_LIBRARIES
+  tllm::common_attention
+  tllm::common_op_utils
+  tllm::runtime_debug
+  tllm::kernel_mla
+  tllm::kernel_mla_chunked_prefill
+  tllm::kernel_rope
+  tllm::kernel_sparse_attention
+  tllm::kernel_attention_utilities
+  tllm::kernel_cache_indexing
+  tllm::kernel_indexer
+  tllm::kernel_tensor_operations
+  OBJECT_LIBRARIES
+  kda_decode_src
+  kimi_k3_attn_res_src)
+add_library(tllm::torch_attention ALIAS th_common_attention)
 
 add_th_common_family(
   th_common_gemm_quant
