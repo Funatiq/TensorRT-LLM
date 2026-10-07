@@ -242,6 +242,16 @@ that accepts a legacy cache manager. The public event types remain available
 through `executor.h` and their narrower `kvCacheEvents.h` header. Focused host
 consumers verify queue order, draining, bounded retention, reader timeout
 forwarding, and source lifetime without a legacy manager or language bridge.
+With `ENABLE_MULTI_DEVICE=ON`, a separate two-rank host test verifies DP event
+payloads, per-rank order, draining, and exchange-thread shutdown:
+
+```bash
+cmake --build cpp/build_RelWithDebInfo --target kvCacheEventQueueTest
+ctest --test-dir cpp/build_RelWithDebInfo -R '^kvCacheEventQueueTest.attention_dp_mpi$' --output-on-failure
+```
+
+The MPI test has `host` and `mpi` labels, reserves two CTest processors, and has a
+30-second timeout. The ordinary single-process queue test skips the DP case.
 
 ### Cache process-group bridge
 

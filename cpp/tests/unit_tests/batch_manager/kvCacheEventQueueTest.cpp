@@ -15,6 +15,7 @@
  */
 
 #include "tensorrt_llm/batch_manager/kvCacheEventManager.h"
+#include "tensorrt_llm/runtime/utils/mpiUtils.h"
 
 #include <gtest/gtest.h>
 
@@ -58,4 +59,87 @@ TEST(KVCacheEventQueueTest, BoundedQueueKeepsNewestEvents)
         EXPECT_EQ(events[index].eventId, index + 3);
         EXPECT_EQ(std::get<ex::KVCacheCreatedData>(events[index].data).numBlocksPerCacheLevel[0], index + 3);
     }
+}
+
+TEST(KVCacheEventQueueTest, AttentionDpGatherPreservesPayloadsAndPerRankOrder)
+{
+#if ENABLE_MULTI_DEVICE
+    auto const& comm = tensorrt_llm::mpi::MpiComm::session();
+    auto const rank = comm.getRank();
+    auto const size = comm.getSize();
+    if (size < 2)
+    {
+        GTEST_SKIP() << "Requires at least two MPI ranks";
+    }
+
+    {
+        kv::KVCacheEventManager queue{8, rank, size};
+        queue.enqueueCreatedEvent({rank + 1, rank + 2}, 32);
+        queue.enqueueUpdatedEvent(ex::KVCacheUpdatedData{static_cast<size_t>(rank + 100)}.priorityUpdated(1, 7), 64);
+        queue.flush();
+
+        if (rank == 0)
+        {
+            std::deque<ex::KVCacheEvent> gathered;
+            auto const expectedCount = static_cast<size_t>(2 * size);
+            auto const deadline = std::chrono::steady_clock::now() + std::chrono::seconds{10};
+            while (gathered.size() < expectedCount && std::chrono::steady_clock::now() < deadline)
+            {
+                auto events = queue.getEvents(std::chrono::milliseconds{100});
+                gathered.insert(gathered.end(), events.begin(), events.end());
+            }
+            EXPECT_EQ(gathered.size(), expectedCount);
+            std::vector<size_t> nextEventIds(size, 0);
+            for (auto const& event : gathered)
+            {
+                EXPECT_TRUE(event.attentionDpRank.has_value());
+                if (!event.attentionDpRank || *event.attentionDpRank < 0 || *event.attentionDpRank >= size)
+                {
+                    ADD_FAILURE() << "Invalid attention DP rank";
+                    continue;
+                }
+                auto const sourceRank = *event.attentionDpRank;
+                EXPECT_EQ(event.eventId, nextEventIds[sourceRank]++);
+                if (event.eventId == 0)
+                {
+                    EXPECT_EQ(event.windowSize, 32);
+                    auto const* created = std::get_if<ex::KVCacheCreatedData>(&event.data);
+                    EXPECT_NE(created, nullptr);
+                    if (created)
+                    {
+                        EXPECT_EQ(
+                            created->numBlocksPerCacheLevel, (std::vector<int32_t>{sourceRank + 1, sourceRank + 2}));
+                    }
+                }
+                else
+                {
+                    EXPECT_EQ(event.eventId, 1);
+                    EXPECT_EQ(event.windowSize, 64);
+                    auto const* updated = std::get_if<ex::KVCacheUpdatedData>(&event.data);
+                    EXPECT_NE(updated, nullptr);
+                    if (updated)
+                    {
+                        EXPECT_EQ(updated->blockHash, sourceRank + 100);
+                        EXPECT_TRUE(updated->priority.has_value());
+                        if (updated->priority)
+                        {
+                            EXPECT_EQ(updated->priority->oldValue, 1);
+                            EXPECT_EQ(updated->priority->newValue, 7);
+                        }
+                    }
+                }
+            }
+            for (auto const nextEventId : nextEventIds)
+            {
+                EXPECT_EQ(nextEventId, 2);
+            }
+            EXPECT_TRUE(queue.getEvents(std::chrono::milliseconds{0}).empty());
+        }
+        // Keep exchange threads alive until rank zero has drained every rank's events.
+        comm.barrier();
+    }
+    comm.barrier();
+#else
+    GTEST_SKIP() << "Multi-device support is disabled";
+#endif
 }
