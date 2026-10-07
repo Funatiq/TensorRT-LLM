@@ -170,7 +170,8 @@ backend scope boundaries, and public/private usage propagation.
 
 `th_common_sequence` (`tllm::torch_sequence`) and `th_common_visual_gen`
 (`tllm::torch_visual_gen`), and `th_common_decoding` (`tllm::torch_decoding`)
-and `th_common_gemm_quant` (`tllm::torch_gemm_quant`) use direct kernel/runtime
+, `th_common_gemm_quant` (`tllm::torch_gemm_quant`), and
+`th_common_attention` (`tllm::torch_attention`) use direct kernel/runtime
 dependencies. Link these
 object targets with `target_link_libraries` to retain operator registration
 objects and propagate final-link requirements. The sequence family forwards
@@ -195,12 +196,16 @@ consumer includes legacy weight preprocessing registrations in both `trtllm` and
 `tensorrt_llm` namespaces and seven existing custom classes. It selects its
 generated and CUTLASS backends explicitly. `th_tensor_allocators` shares the
 userbuffer tensor implementation without its distributed operator registration.
+The attention consumer selects attention orchestration, MLA, RoPE, indexing, and
+specialized KDA/residual backends without selecting MoE or other Torch families.
+Generated FMHA architecture objects are forwarded as link inputs so they survive
+the private object-library dependency chain.
 
 These checks do not execute GPU kernels. They join `runtime-tests` and
 `google-tests`. The build graph policy permits these migrated families in
-component tests and rejects transitive facade, aggregate, attention, GEMM, MoE,
-and transport dependencies. Other Torch families still require `FULL_STACK`
-consumers. `th_common` retains its existing packaging and loading contract.
+component tests and rejects transitive facade/aggregate dependencies and
+backends unrelated to each family. MoE and distributed families still require
+`FULL_STACK` consumers. `th_common` retains its existing packaging and loading contract.
 
 ### Measuring C++ component builds
 
