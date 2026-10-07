@@ -168,11 +168,9 @@ backend scope boundaries, and public/private usage propagation.
 
 ### Focused Torch operator consumers
 
-`th_common_sequence` (`tllm::torch_sequence`) and `th_common_visual_gen`
-(`tllm::torch_visual_gen`), and `th_common_decoding` (`tllm::torch_decoding`)
-, `th_common_gemm_quant` (`tllm::torch_gemm_quant`), and
-`th_common_attention` (`tllm::torch_attention`) use direct kernel/runtime
-dependencies. Link these
+The sequence, DiT, decoding, GEMM/quantization, attention, and MoE Torch families
+use direct kernel/runtime dependencies through their `tllm::torch_*` aliases.
+Link these
 object targets with `target_link_libraries` to retain operator registration
 objects and propagate final-link requirements. The sequence family forwards
 its specialized kernel objects through `INTERFACE_SOURCES`; consuming only
@@ -200,11 +198,14 @@ The attention consumer selects attention orchestration, MLA, RoPE, indexing, and
 specialized KDA/residual backends without selecting MoE or other Torch families.
 Generated FMHA architecture objects are forwarded as link inputs so they survive
 the private object-library dependency chain.
+The MoE consumer selects its routing, communication, load-balancing, and GEMM
+backends explicitly and checks six custom classes. `th_cublas` shares the cuBLAS
+implementation with GEMM without bringing GEMM registrations into MoE.
 
 These checks do not execute GPU kernels. They join `runtime-tests` and
 `google-tests`. The build graph policy permits these migrated families in
 component tests and rejects transitive facade/aggregate dependencies and
-backends unrelated to each family. MoE and distributed families still require
+backends unrelated to each family. The distributed family still requires
 `FULL_STACK` consumers. `th_common` retains its existing packaging and loading contract.
 
 ### Measuring C++ component builds
