@@ -220,6 +220,18 @@ backends unrelated to each family. New families must declare their direct
 dependencies; the helper no longer supplies an implicit facade/process-group
 link. `th_common` retains its existing packaging and loading contract.
 
+### Native cache descriptors
+
+`tllm::kv_cache_key` owns block-key value operations; request-dependent multimodal
+key construction remains in the legacy cache component. `tllm::batch_request_info`
+uses this value component and native executor serialization without linking the
+legacy manager or Python. Request, buffer-kind, and connection notification
+metadata have narrow headers that do not include the transfer orchestration or
+process-group bridge. `requestInfoTest` checks key identity and serialized field
+order/stream alignment; `serializeUtilsTest` covers the existing wire formats.
+The graph policy rejects transitive manager or language-bridge dependencies for
+these descriptor consumers.
+
 ### Measuring C++ component builds
 
 `scripts/benchmark_cpp_components.py` records wall time, Ninja compilation/link

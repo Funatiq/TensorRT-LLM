@@ -352,6 +352,26 @@
         "th_common"
       ],
       "forbid_facade_libraries": true
+    },
+    {
+      "name": "Cache descriptors must avoid managers and language bridges",
+      "from": [
+        "tllm_kv_cache_key",
+        "tllm_batch_request_info",
+        "requestInfoTest",
+        "serializeUtilsTest"
+      ],
+      "to": [
+        "tllm_kv_cache_legacy",
+        "tllm_batch_cache_transceiver",
+        "tllm_executor_agent_connection",
+        "pg_utils",
+        "th_*",
+        "bindings",
+        "tensorrt_llm"
+      ],
+      "forbid_facade_libraries": true,
+      "include_tests": true
     }
   ],
   "component_test_forbidden": [

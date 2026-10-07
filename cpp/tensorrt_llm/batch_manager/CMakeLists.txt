@@ -65,6 +65,14 @@ target_include_directories(
 target_link_libraries(tllm_kv_cache PUBLIC tllm::kv_cache_host_memory
                                            tllm::common_cuda CUDA::cuda_driver)
 
+add_library(tllm_kv_cache_key STATIC blockKeyValues.cpp)
+add_library(tllm::kv_cache_key ALIAS tllm_kv_cache_key)
+target_link_libraries(tllm_kv_cache_key PUBLIC tllm::common_error
+                                               tllm::executor_types)
+target_compile_features(tllm_kv_cache_key PUBLIC cxx_std_20)
+set_target_properties(tllm_kv_cache_key PROPERTIES CXX_EXTENSIONS OFF
+                                                   POSITION_INDEPENDENT_CODE ON)
+
 add_library(
   tllm_kv_cache_legacy STATIC
   baseTransBuffer.cpp
@@ -79,6 +87,7 @@ add_library(tllm::kv_cache_legacy ALIAS tllm_kv_cache_legacy)
 target_link_libraries(
   tllm_kv_cache_legacy
   PUBLIC tllm::runtime_buffers tllm::runtime_distributed tllm::executor_values
+         tllm::kv_cache_key
   PRIVATE tllm::common_environment tllm::executor_transfer_agent
           tllm::kernel_kv_cache_copy)
 
@@ -118,10 +127,8 @@ set_target_properties(
 
 add_library(tllm_batch_request_info STATIC requestInfo.cpp)
 add_library(tllm::batch_request_info ALIAS tllm_batch_request_info)
-target_link_libraries(
-  tllm_batch_request_info
-  PUBLIC tllm::kv_cache_legacy
-  PRIVATE ${Python3_LIBRARIES})
+target_link_libraries(tllm_batch_request_info PUBLIC tllm::kv_cache_key
+                                                     tllm::executor_values)
 target_compile_features(tllm_batch_request_info PUBLIC cxx_std_20)
 set_target_properties(
   tllm_batch_request_info PROPERTIES CXX_EXTENSIONS OFF

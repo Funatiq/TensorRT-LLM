@@ -15,21 +15,22 @@
  * limitations under the License.
  */
 
-#include "tensorrt_llm/batch_manager/dataTransceiver.h"
+#include "tensorrt_llm/batch_manager/requestInfo.h"
+#include "tensorrt_llm/executor/serializeUtils.h"
 
 #include <utility>
 
 namespace tensorrt_llm::batch_manager
 {
 
-RequestInfo::RequestInfo(LlmRequest::RequestIdType requestId, executor::DataTransceiverState transState)
+RequestInfo::RequestInfo(RequestIdType requestId, executor::DataTransceiverState transState)
     : mRequestId{requestId}
     , mTransState{std::move(transState)}
 {
 }
 
-RequestInfo::RequestInfo(LlmRequest::RequestIdType requestId, executor::DataTransceiverState transState,
-    int32_t indexFromEnd, BlockKey const& lastBlockKey)
+RequestInfo::RequestInfo(RequestIdType requestId, executor::DataTransceiverState transState, int32_t indexFromEnd,
+    BlockKey const& lastBlockKey)
     : mRequestId{requestId}
     , mIndexFromEnd{indexFromEnd}
     , mLastBlockKey{lastBlockKey}
@@ -43,7 +44,7 @@ bool RequestInfo::operator==(RequestInfo const& rhs) const
         && mIsArbitraryTransfer == rhs.mIsArbitraryTransfer && mTransState == rhs.mTransState;
 }
 
-LlmRequest::RequestIdType RequestInfo::getRequestId() const noexcept
+RequestIdType RequestInfo::getRequestId() const noexcept
 {
     return mRequestId;
 }

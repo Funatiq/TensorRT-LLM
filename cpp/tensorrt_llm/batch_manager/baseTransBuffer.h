@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include "tensorrt_llm/batch_manager/cacheBufferKind.h"
+
 #include "tensorrt_llm/common/tllmDataType.h"
 #include "tensorrt_llm/runtime/bufferManager.h"
 #include "tensorrt_llm/runtime/iTensor.h"
@@ -39,13 +41,6 @@ class FabricMemory;
 
 namespace tensorrt_llm::batch_manager
 {
-
-enum class BufferKind : uint8_t
-{
-    kKV = 0,
-    kKV_INDEXER = 1,
-    kRNN = 2
-};
 
 class BaseTransBufferManager;
 

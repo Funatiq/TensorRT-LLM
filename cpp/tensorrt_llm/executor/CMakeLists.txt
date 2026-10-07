@@ -134,9 +134,9 @@ add_library(tllm::executor_agent_connection ALIAS
 target_link_libraries(
   tllm_executor_agent_connection
   PUBLIC tllm::executor_transfer_agent tllm::executor_memory_desc
-         tllm::batch_request_info tllm::kv_cache_legacy
-  PRIVATE tllm::executor_agent_name tllm::executor_cache_routing
-          tllm::common_environment pg_utils ${Python3_LIBRARIES})
+         tllm::batch_request_info
+  PRIVATE tllm::kv_cache_legacy tllm::executor_agent_name
+          tllm::executor_cache_routing tllm::common_environment pg_utils)
 
 add_library(
   tllm_executor_cache_transfer_cuda STATIC
