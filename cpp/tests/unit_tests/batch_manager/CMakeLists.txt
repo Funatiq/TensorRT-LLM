@@ -395,3 +395,14 @@ add_tllm_gtest(
   LABELS
   "unit;batch-manager;gpu"
   REQUIRES_GPU)
+
+add_tllm_gtest(
+  kvCacheEventQueueTest
+  OWNER
+  batch-manager
+  SOURCES
+  kvCacheEventQueueTest.cpp
+  LINK_LIBRARIES
+  tllm::kv_cache_events
+  LABELS
+  "unit;batch-manager;host")

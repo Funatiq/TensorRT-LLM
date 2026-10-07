@@ -372,6 +372,29 @@
       ],
       "forbid_facade_libraries": true,
       "include_tests": true
+    },
+    {
+      "name": "KV event primitives must avoid cache orchestration and language bridges",
+      "from": [
+        "tllm_kv_cache_events",
+        "tllm_executor_kv_cache_event_reader",
+        "kvCacheEventReaderTest",
+        "kvCacheEventQueueTest"
+      ],
+      "to": [
+        "tllm_kv_cache_legacy",
+        "tllm_batch_scheduler",
+        "tllm_batch_cache_transceiver",
+        "tllm_executor_kv_cache_events",
+        "tllm_executor_agent_connection",
+        "tllm_kernel_kv_cache_copy",
+        "pg_utils",
+        "th_*",
+        "bindings",
+        "tensorrt_llm"
+      ],
+      "forbid_facade_libraries": true,
+      "include_tests": true
     }
   ],
   "component_test_forbidden": [

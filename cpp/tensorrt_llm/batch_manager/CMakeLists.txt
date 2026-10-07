@@ -73,6 +73,17 @@ target_compile_features(tllm_kv_cache_key PUBLIC cxx_std_20)
 set_target_properties(tllm_kv_cache_key PROPERTIES CXX_EXTENSIONS OFF
                                                    POSITION_INDEPENDENT_CODE ON)
 
+add_library(tllm_kv_cache_events STATIC kvCacheEventManager.cpp)
+add_library(tllm::kv_cache_events ALIAS tllm_kv_cache_events)
+target_link_libraries(
+  tllm_kv_cache_events
+  PUBLIC tllm::common_error
+  PRIVATE tllm::executor_values tllm::runtime_distributed Threads::Threads)
+target_compile_features(tllm_kv_cache_events PUBLIC cxx_std_20)
+set_target_properties(
+  tllm_kv_cache_events PROPERTIES CXX_EXTENSIONS OFF POSITION_INDEPENDENT_CODE
+                                                     ON)
+
 add_library(
   tllm_kv_cache_legacy STATIC
   baseTransBuffer.cpp
@@ -80,14 +91,14 @@ add_library(
   cacheTransBuffer.cpp
   evictionPolicy.cpp
   kvCacheManager.cpp
-  kvCacheEventManager.cpp
+  kvCacheBlockEvents.cpp
   kvCacheTransferManager.cpp
   llmRequest.cpp)
 add_library(tllm::kv_cache_legacy ALIAS tllm_kv_cache_legacy)
 target_link_libraries(
   tllm_kv_cache_legacy
   PUBLIC tllm::runtime_buffers tllm::runtime_distributed tllm::executor_values
-         tllm::kv_cache_key
+         tllm::kv_cache_key tllm::kv_cache_events
   PRIVATE tllm::common_environment tllm::executor_transfer_agent
           tllm::kernel_kv_cache_copy)
 

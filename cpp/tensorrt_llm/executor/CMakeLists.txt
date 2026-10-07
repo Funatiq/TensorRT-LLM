@@ -175,19 +175,29 @@ foreach(
                                                 POSITION_INDEPENDENT_CODE ON)
 endforeach()
 
-add_library(tllm_executor_kv_cache_events STATIC
+add_library(tllm_executor_kv_cache_event_reader STATIC
             executorKVCacheEventManager.cpp)
+add_library(tllm::kv_cache_event_reader ALIAS
+            tllm_executor_kv_cache_event_reader)
+target_link_libraries(tllm_executor_kv_cache_event_reader
+                      PUBLIC tllm::common_headers)
+add_library(tllm_executor_kv_cache_events STATIC
+            executorKVCacheEventAdapter.cpp)
 add_library(tllm::executor_kv_cache_events ALIAS tllm_executor_kv_cache_events)
+add_library(tllm::executor_kv_cache_event_adapter ALIAS
+            tllm_executor_kv_cache_events)
 target_link_libraries(
   tllm_executor_kv_cache_events
-  PUBLIC tllm::common_headers
+  PUBLIC tllm::kv_cache_event_reader
   PRIVATE tllm::kv_cache_legacy)
-target_include_directories(tllm_executor_kv_cache_events SYSTEM
-                           PUBLIC ${CUDAToolkit_INCLUDE_DIRS})
-target_compile_features(tllm_executor_kv_cache_events PUBLIC cxx_std_20)
-set_target_properties(
-  tllm_executor_kv_cache_events PROPERTIES CXX_EXTENSIONS OFF
-                                           POSITION_INDEPENDENT_CODE ON)
+foreach(component tllm_executor_kv_cache_event_reader
+                  tllm_executor_kv_cache_events)
+  target_include_directories(${component} SYSTEM
+                             PUBLIC ${CUDAToolkit_INCLUDE_DIRS})
+  target_compile_features(${component} PUBLIC cxx_std_20)
+  set_target_properties(${component} PROPERTIES CXX_EXTENSIONS OFF
+                                                POSITION_INDEPENDENT_CODE ON)
+endforeach()
 
 add_subdirectory(cache_transmission/ucx_utils)
 add_subdirectory(cache_transmission/mooncake_utils)
