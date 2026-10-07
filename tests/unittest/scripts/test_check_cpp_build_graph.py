@@ -1049,3 +1049,33 @@ def test_cache_descriptors_can_use_native_executor_values(policy: dict) -> None:
         tests={"requestInfoTest": "component"},
     )
     assert checker.audit(build, policy) == ([], [])
+
+
+@pytest.mark.parametrize("owner", ["tllm_kv_cache_events", "tllm_executor_kv_cache_event_reader"])
+@pytest.mark.parametrize(
+    "dependency",
+    [
+        "tllm_kv_cache_legacy",
+        "tllm_executor_kv_cache_events",
+        "tllm_batch_cache_transceiver",
+        "pg_utils",
+    ],
+)
+def test_event_primitives_reject_transitive_manager_and_bridge_dependencies(
+    policy: dict, owner: str, dependency: str
+) -> None:
+    build = graph(target(owner, ("helper",)), target("helper", (dependency,)), target(dependency))
+    assert any("KV event primitives" in error for error in checker.audit(build, policy)[0])
+
+
+def test_event_reader_consumer_can_link_without_cache_manager(policy: dict) -> None:
+    build = graph(
+        target(
+            "kvCacheEventReaderTest",
+            ("tllm_executor_kv_cache_event_reader",),
+            directory="source/tests/unit_tests/executor",
+        ),
+        target("tllm_executor_kv_cache_event_reader", directory="source/tensorrt_llm/executor"),
+        tests={"kvCacheEventReaderTest": "component"},
+    )
+    assert checker.audit(build, policy) == ([], [])

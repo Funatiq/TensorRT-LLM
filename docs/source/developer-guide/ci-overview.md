@@ -232,6 +232,17 @@ order/stream alignment; `serializeUtilsTest` covers the existing wire formats.
 The graph policy rejects transitive manager or language-bridge dependencies for
 these descriptor consumers.
 
+### KV cache event boundary
+
+`tllm::kv_cache_events` owns the asynchronous event queue, retention, and optional
+DP exchange. Block-to-event translation stays with the legacy cache manager.
+`tllm::kv_cache_event_reader` reads from an internal event-source interface;
+`tllm::executor_kv_cache_event_adapter` preserves the existing executor constructor
+that accepts a legacy cache manager. The public event types remain available
+through `executor.h` and their narrower `kvCacheEvents.h` header. Focused host
+consumers verify queue order, draining, bounded retention, reader timeout
+forwarding, and source lifetime without a legacy manager or language bridge.
+
 ### Measuring C++ component builds
 
 `scripts/benchmark_cpp_components.py` records wall time, Ninja compilation/link

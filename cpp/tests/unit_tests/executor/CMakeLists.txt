@@ -225,3 +225,14 @@ add_tllm_gtest(
   tllm::batch_request_info
   LABELS
   "unit;executor;host")
+
+add_tllm_gtest(
+  kvCacheEventReaderTest
+  OWNER
+  executor
+  SOURCES
+  kvCacheEventReaderTest.cpp
+  LINK_LIBRARIES
+  tllm::kv_cache_event_reader
+  LABELS
+  "unit;executor;host")

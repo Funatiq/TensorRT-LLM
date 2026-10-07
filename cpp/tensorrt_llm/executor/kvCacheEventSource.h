@@ -14,19 +14,27 @@
  * limitations under the License.
  */
 
-#include "tensorrt_llm/executor/kvCacheEventSource.h"
+#pragma once
 
-namespace tensorrt_llm::executor
+#include "tensorrt_llm/executor/kvCacheEvents.h"
+
+namespace tensorrt_llm::executor::detail
 {
 
-KVCacheEventManager::KVCacheEventManager(std::shared_ptr<detail::KVCacheEventSource> source, EventSourceTag)
-    : mSource{std::move(source)}
+class KVCacheEventSource
 {
-}
+public:
+    virtual ~KVCacheEventSource() = default;
+    virtual std::deque<KVCacheEvent> getLatestEvents(std::optional<std::chrono::milliseconds> timeout) = 0;
+};
 
-std::deque<KVCacheEvent> KVCacheEventManager::getLatestEvents(std::optional<std::chrono::milliseconds> timeout)
+class KVCacheEventManagerAccess
 {
-    return mSource->getLatestEvents(timeout);
-}
+public:
+    static KVCacheEventManager create(std::shared_ptr<KVCacheEventSource> source)
+    {
+        return KVCacheEventManager{std::move(source), KVCacheEventManager::EventSourceTag{}};
+    }
+};
 
-} // namespace tensorrt_llm::executor
+} // namespace tensorrt_llm::executor::detail
