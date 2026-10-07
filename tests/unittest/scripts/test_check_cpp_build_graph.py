@@ -717,7 +717,7 @@ def test_component_test_can_consume_narrow_torch_family(
     assert checker.audit(build, policy) == ([], [])
 
 
-@pytest.mark.parametrize("family", ["th_common_new_family", "th_common_distributed"])
+@pytest.mark.parametrize("family", ["th_common_new_family", "th_common_future_family"])
 def test_unmigrated_torch_family_still_requires_full_stack(policy: dict, family: str) -> None:
     build = graph(
         target("focusedTest", (family,), directory="source/tests/unit_tests/thop"),
@@ -954,3 +954,63 @@ def test_shared_cublas_rejects_gemm_registration_objects(policy: dict) -> None:
         target("th_common_gemm_quant", directory="source/tensorrt_llm/thop"),
     )
     assert any("Shared Torch cuBLAS" in error for error in checker.audit(build, policy)[0])
+
+
+@pytest.mark.parametrize(
+    "dependency",
+    [
+        "tensorrt_llm",
+        "th_common_attention",
+        "th_common_gemm_quant",
+        "moe_gemm_src",
+        "tensorrt_llm_ucx_wrapper",
+    ],
+)
+def test_distributed_torch_family_rejects_unrelated_closures(policy: dict, dependency: str) -> None:
+    build = graph(
+        target("th_common_distributed", ("helper",), directory="source/tensorrt_llm/thop"),
+        target("helper", (dependency,), directory="source/tensorrt_llm/thop"),
+        target(dependency, directory="source/tensorrt_llm/thop"),
+    )
+    assert any("Distributed Torch" in error for error in checker.audit(build, policy)[0])
+
+
+def test_distributed_consumer_can_use_transport_and_shared_quantization(policy: dict) -> None:
+    build = graph(
+        target(
+            "torchDistributedRegistrationTest",
+            ("th_common_distributed",),
+            directory="source/tests/unit_tests/thop",
+        ),
+        target(
+            "th_common_distributed",
+            ("th_quantization", "pg_utils", "tllm_kernel_communication", "tllm_kernel_moe_prepare"),
+            directory="source/tensorrt_llm/thop",
+        ),
+        target(
+            "th_quantization", ("tllm_kernel_quantization",), directory="source/tensorrt_llm/thop"
+        ),
+        target("tllm_kernel_quantization", directory="source/tensorrt_llm/kernels"),
+        target("pg_utils", directory="source/tensorrt_llm/runtime"),
+        target("tllm_kernel_communication", directory="source/tensorrt_llm/kernels"),
+        target("tllm_kernel_moe_prepare", directory="source/tensorrt_llm/kernels"),
+        tests={"torchDistributedRegistrationTest": "component"},
+    )
+    assert checker.audit(build, policy) == ([], [])
+
+
+@pytest.mark.parametrize("family", ["th_common_gemm_quant", "th_common_distributed"])
+def test_shared_quantization_rejects_registration_objects(policy: dict, family: str) -> None:
+    build = graph(
+        target("th_quantization", (family,), directory="source/tensorrt_llm/thop"),
+        target(family, directory="source/tensorrt_llm/thop"),
+    )
+    assert any("Shared Torch quantization" in error for error in checker.audit(build, policy)[0])
+
+
+def test_new_torch_family_cannot_restore_implicit_facade_dependency(policy: dict) -> None:
+    build = graph(
+        target("th_common_new_family", ("tensorrt_llm",), directory="source/tensorrt_llm/thop"),
+        target("tensorrt_llm", directory="source/tensorrt_llm"),
+    )
+    assert any("Torch operator families" in error for error in checker.audit(build, policy)[0])
