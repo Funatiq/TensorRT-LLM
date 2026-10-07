@@ -21,6 +21,12 @@
 namespace
 {
 
+#if ENABLE_MULTI_DEVICE
+constexpr bool kHasAsyncUlyssesKernels = true;
+#else
+constexpr bool kHasAsyncUlyssesKernels = false;
+#endif
+
 constexpr TorchRegistration kRegistrations[] = {{"trtllm::allgather", c10::DispatchKey::CUDA, true},
     {"trtllm::allgather_list", c10::DispatchKey::CUDA, true},
     {"trtllm::allgather_list_pg", c10::DispatchKey::CUDA, true}, {"trtllm::allgather_pg", c10::DispatchKey::CUDA, true},
@@ -48,9 +54,9 @@ constexpr TorchRegistration kRegistrations[] = {{"trtllm::allgather", c10::Dispa
     {"trtllm::reducescatter_list_pg", c10::DispatchKey::CUDA, true},
     {"trtllm::reducescatter_pg", c10::DispatchKey::CUDA, true},
     {"trtllm::register_allreduce_tactic", c10::DispatchKey::CUDA, true},
-    {"trtllm::ulysses_a2a_async_barrier", c10::DispatchKey::CompositeExplicitAutograd, true},
-    {"trtllm::ulysses_a2a_async_prepare", c10::DispatchKey::CompositeExplicitAutograd, true},
-    {"trtllm::ulysses_a2a_async_push", c10::DispatchKey::CompositeExplicitAutograd, true},
+    {"trtllm::ulysses_a2a_async_barrier", c10::DispatchKey::CompositeExplicitAutograd, true, kHasAsyncUlyssesKernels},
+    {"trtllm::ulysses_a2a_async_prepare", c10::DispatchKey::CompositeExplicitAutograd, true, kHasAsyncUlyssesKernels},
+    {"trtllm::ulysses_a2a_async_push", c10::DispatchKey::CompositeExplicitAutograd, true, kHasAsyncUlyssesKernels},
     {"trtllm::ulysses_permute_scatter", c10::DispatchKey::CUDA, true},
     {"trtllm::ulysses_post_unscatter_qkv", c10::DispatchKey::CUDA, true},
     {"trtllm::userbuffers_allreduce_finalize", c10::DispatchKey::CUDA, true},
