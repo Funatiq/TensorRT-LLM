@@ -84,6 +84,27 @@ function(add_tllm_gtest test_name)
     message(FATAL_ERROR "Unknown test owner: ${ARG_OWNER}")
   endif()
 
+  if(ARG_FULL_STACK)
+    foreach(library IN LISTS ARG_LINK_LIBRARIES)
+      if(NOT TARGET "${library}")
+        continue()
+      endif()
+      get_target_property(aliased_target "${library}" ALIASED_TARGET)
+      if(aliased_target)
+        set(library "${aliased_target}")
+      endif()
+      get_target_property(is_facade_component "${library}"
+                          TLLM_FACADE_COMPONENT)
+      get_target_property(library_type "${library}" TYPE)
+      if(is_facade_component AND NOT library_type STREQUAL "INTERFACE_LIBRARY")
+        message(
+          FATAL_ERROR
+            "${test_name}: FULL_STACK cannot be combined with component LINK_LIBRARIES (${library}); remove FULL_STACK to test the component or remove the component link to test the full stack"
+        )
+      endif()
+    endforeach()
+  endif()
+
   set(graph_mode component)
   if(ARG_FULL_STACK)
     set(graph_mode full_stack)

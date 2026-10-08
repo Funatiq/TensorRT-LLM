@@ -1150,3 +1150,69 @@ def test_explicit_cache_bridge_can_link_python_and_torch(policy: dict) -> None:
         )
     )
     assert checker.audit(build, policy) == ([], [])
+
+
+@pytest.mark.parametrize(
+    ("full_stack", "library", "accepted"),
+    [
+        (True, "component", False),
+        (True, "tllm::component", False),
+        (True, "object_component", False),
+        (True, "headers", True),
+        (True, "tllm::headers", True),
+        (True, "external", True),
+        (True, "test_support", True),
+        (True, "tllm::standalone", True),
+        (True, "", True),
+        (False, "tllm::component", True),
+    ],
+)
+def test_gtest_full_stack_component_links(
+    tmp_path: Path, full_stack: bool, library: str, accepted: bool
+) -> None:
+    if not shutil.which("cmake"):
+        pytest.skip("CMake is required for test helper integration coverage")
+    module = (REPO_ROOT / "cpp/tests/CMakeLists.txt").read_text()
+    start = module.index("function(tllm_assert_test_is_component_local target)")
+    end = module.index("add_subdirectory(unit_tests)", start)
+    (tmp_path / "helper.cmake").write_text(module[start:end])
+    (tmp_path / "test.cpp").write_text("int main() { return 0; }\n")
+    mode = "FULL_STACK" if full_stack else ""
+    links = f"LINK_LIBRARIES {library}" if library else ""
+    (tmp_path / "CMakeLists.txt").write_text(
+        f"""cmake_minimum_required(VERSION 3.27)
+project(gtest_link_guard LANGUAGES CXX)
+set(SHARED_TARGET facade)
+add_library(facade SHARED test.cpp)
+add_library(component STATIC test.cpp)
+add_library(tllm::component ALIAS component)
+add_library(object_component OBJECT test.cpp)
+add_library(headers INTERFACE)
+add_library(tllm::headers ALIAS headers)
+set_property(TARGET component object_component headers PROPERTY TLLM_FACADE_COMPONENT TRUE)
+add_library(external STATIC IMPORTED)
+set_property(TARGET external PROPERTY IMPORTED_LOCATION "${{CMAKE_CURRENT_SOURCE_DIR}}/external.a")
+add_library(test_support STATIC test.cpp)
+add_library(standalone STATIC test.cpp)
+add_library(tllm::standalone ALIAS standalone)
+add_library(gmock INTERFACE)
+add_library(gtest_main INTERFACE)
+add_custom_target(check-build-graph)
+add_custom_target(google-tests)
+function(gtest_discover_tests)
+endfunction()
+include(helper.cmake)
+add_tllm_gtest(exampleTest {mode} SOURCES test.cpp {links})
+"""
+    )
+    result = subprocess.run(
+        ["cmake", "-S", str(tmp_path), "-B", str(tmp_path / "build")],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    if accepted:
+        assert result.returncode == 0, result.stderr
+    else:
+        assert result.returncode != 0
+        assert "FULL_STACK cannot be combined with component LINK_LIBRARIES" in result.stderr
