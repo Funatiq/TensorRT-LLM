@@ -256,101 +256,88 @@ target_link_libraries(
   ${SHARED_TARGET} PRIVATE ${TORCH_PYTHON_LIB} Python3::Python pg_utils
                            tensorrt_llm_xgrammar_static Threads::Threads)
 
-target_link_libraries(
-  ${SHARED_TARGET}
-  PRIVATE
-    $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_common_error,tllm_common_logging,tllm_common_profiler,tllm_common_cuda,tllm_executor_types,tllm_executor_serialization,tllm_runtime_memory,tllm_runtime_buffers,tllm_runtime_distributed,tllm_runtime_worker_pool,tllm_runtime_ipc,tllm_runtime_host_accessible_memory,tllm_runtime_moe_load_balance,tllm_runtime_utils,tllm_runtime_lora_cache,tllm_runtime_lora,ipc_nvls_memory_src,tllm_runtime_locality,tllm_runtime_numpy,tllm_runtime_gdr>
-    $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_common_attention_workspace,tllm_common_nccl_comm,tllm_common_nccl,tllm_common_cublas,tllm_common_environment,tllm_common_ip,tllm_executor_values,tllm_executor_transfer_agent,tllm_executor_cache_routing,tllm_executor_request_utils,tllm_executor_agent_name,tllm_executor_agent_connection,tllm_executor_cache_transfer_cuda,tllm_executor_mpi_connection,tllm_executor_memory_desc,tllm_batch_request_info,tllm_batch_cache_transceiver_comm,tllm_batch_cache_transceiver,tllm_batch_context_progress,tllm_batch_rnn_cache_routing,tllm_kv_cache_host_memory,tllm_kv_cache,tllm_kv_cache_key,tllm_kv_cache_events,tllm_kv_cache_legacy,tllm_batch_scheduler,tllm_context_transfer_consensus,tllm_peft_cache,tllm_kernel_kv_cache_copy,userbuffers_src>
-    $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_runtime_debug,tllm_runtime_nvls_buffers,tllm_runtime_multicast,tllm_runtime_nccl,tllm_common_mcast_registry>
-    $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_common_safetensors,tllm_common_op_utils,tllm_common_fp8,tllm_common_sage_quant,tllm_common_attention>
-    $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_kv_cache_v2_utils>
-    $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_executor_json_serialization>
-    $<LINK_LIBRARY:WHOLE_ARCHIVE,tllm_executor_kv_cache_events,tllm_executor_kv_cache_event_reader>
-    $<LINK_LIBRARY:WHOLE_ARCHIVE,fp8_blockscale_gemm_src>
-    $<LINK_LIBRARY:WHOLE_ARCHIVE,${INTERNAL_CUTLASS_KERNELS_TARGET}>)
+# Compiled components packaged into the facade cannot also be linked by
+# full-stack tests.
+set(TLLM_FACADE_COMPONENT_TARGETS
+    tllm_common_error
+    tllm_common_logging
+    tllm_common_profiler
+    tllm_common_cuda
+    tllm_executor_types
+    tllm_executor_serialization
+    tllm_runtime_memory
+    tllm_runtime_buffers
+    tllm_runtime_distributed
+    tllm_runtime_worker_pool
+    tllm_runtime_ipc
+    tllm_runtime_host_accessible_memory
+    tllm_runtime_moe_load_balance
+    tllm_runtime_utils
+    tllm_runtime_lora_cache
+    tllm_runtime_lora
+    ipc_nvls_memory_src
+    tllm_runtime_locality
+    tllm_runtime_numpy
+    tllm_runtime_gdr
+    tllm_common_attention_workspace
+    tllm_common_nccl_comm
+    tllm_common_nccl
+    tllm_common_cublas
+    tllm_common_environment
+    tllm_common_ip
+    tllm_executor_values
+    tllm_executor_transfer_agent
+    tllm_executor_cache_routing
+    tllm_executor_request_utils
+    tllm_executor_agent_name
+    tllm_executor_agent_connection
+    tllm_executor_cache_transfer_cuda
+    tllm_executor_mpi_connection
+    tllm_executor_memory_desc
+    tllm_batch_request_info
+    tllm_batch_cache_transceiver_comm
+    tllm_batch_cache_transceiver
+    tllm_batch_context_progress
+    tllm_batch_rnn_cache_routing
+    tllm_kv_cache_host_memory
+    tllm_kv_cache
+    tllm_kv_cache_key
+    tllm_kv_cache_events
+    tllm_kv_cache_legacy
+    tllm_batch_scheduler
+    tllm_context_transfer_consensus
+    tllm_peft_cache
+    tllm_kernel_kv_cache_copy
+    userbuffers_src
+    tllm_runtime_debug
+    tllm_runtime_nvls_buffers
+    tllm_runtime_multicast
+    tllm_runtime_nccl
+    tllm_common_mcast_registry
+    tllm_common_safetensors
+    tllm_common_op_utils
+    tllm_common_fp8
+    tllm_common_sage_quant
+    tllm_common_attention
+    tllm_kv_cache_v2_utils
+    tllm_executor_json_serialization
+    tllm_executor_kv_cache_events
+    tllm_executor_kv_cache_event_reader
+    fp8_blockscale_gemm_src
+    ${INTERNAL_CUTLASS_KERNELS_TARGET}
+    ${TLLM_KERNEL_COMPONENT_TARGETS})
 
-foreach(component IN LISTS TLLM_KERNEL_COMPONENT_TARGETS)
+foreach(component IN LISTS TLLM_FACADE_COMPONENT_TARGETS)
+  set_property(TARGET ${component} PROPERTY TLLM_FACADE_COMPONENT TRUE)
   target_link_libraries(${SHARED_TARGET}
                         PRIVATE $<LINK_LIBRARY:WHOLE_ARCHIVE,${component}>)
   set_property(TARGET ${SHARED_TARGET}
                PROPERTY LINK_LIBRARY_OVERRIDE_${component} WHOLE_ARCHIVE)
 endforeach()
 
-set_property(TARGET ${SHARED_TARGET}
-             PROPERTY LINK_LIBRARY_OVERRIDE_tllm_common_cublas WHOLE_ARCHIVE)
-
-# Components also link each other normally; retain all component exports here.
-set_property(TARGET ${SHARED_TARGET}
-             PROPERTY LINK_LIBRARY_OVERRIDE_tllm_common_error WHOLE_ARCHIVE)
-set_property(TARGET ${SHARED_TARGET}
-             PROPERTY LINK_LIBRARY_OVERRIDE_tllm_common_logging WHOLE_ARCHIVE)
-set_property(TARGET ${SHARED_TARGET}
-             PROPERTY LINK_LIBRARY_OVERRIDE_tllm_executor_types WHOLE_ARCHIVE)
-
-foreach(
-  component
-  tllm_common_cuda
-  tllm_common_profiler
-  tllm_runtime_memory
-  tllm_runtime_buffers
-  tllm_runtime_distributed
-  tllm_runtime_worker_pool
-  tllm_runtime_ipc
-  tllm_runtime_host_accessible_memory
-  tllm_runtime_moe_load_balance
-  tllm_runtime_utils
-  tllm_runtime_debug
-  tllm_runtime_nvls_buffers
-  tllm_runtime_multicast
-  tllm_runtime_nccl
-  tllm_common_mcast_registry
-  tllm_runtime_lora_cache
-  tllm_runtime_lora
-  ipc_nvls_memory_src
-  tllm_runtime_locality
-  tllm_runtime_gdr
-  tllm_runtime_numpy
-  tllm_executor_serialization
-  tllm_executor_json_serialization
-  tllm_executor_kv_cache_events
-  tllm_common_environment
-  tllm_common_safetensors
-  tllm_common_op_utils
-  tllm_common_fp8
-  tllm_common_sage_quant
-  tllm_common_attention
-  tllm_common_ip
-  tllm_common_nccl
-  tllm_common_nccl_comm
-  tllm_common_attention_workspace
-  tllm_executor_values
-  tllm_executor_transfer_agent
-  tllm_executor_cache_routing
-  tllm_executor_request_utils
-  tllm_executor_agent_name
-  tllm_executor_agent_connection
-  tllm_executor_cache_transfer_cuda
-  tllm_executor_mpi_connection
-  tllm_executor_memory_desc
-  tllm_batch_request_info
-  tllm_batch_cache_transceiver
-  tllm_batch_context_progress
-  tllm_batch_rnn_cache_routing
-  tllm_kv_cache_host_memory
-  tllm_kv_cache
-  tllm_kv_cache_legacy
-  tllm_kv_cache_v2_utils
-  tllm_batch_scheduler
-  tllm_context_transfer_consensus
-  tllm_peft_cache
-  tllm_kernel_kv_cache_copy
-  userbuffers_src)
-  set_property(TARGET ${SHARED_TARGET}
-               PROPERTY LINK_LIBRARY_OVERRIDE_${component} WHOLE_ARCHIVE)
-endforeach()
-
 # Link kernel_src and cutlass_src. static internal cutlass lib overridden.
 target_link_libraries(${SHARED_TARGET} PUBLIC kernels_src cutlass_src)
+set_property(TARGET kernels_src cutlass_src PROPERTY TLLM_FACADE_COMPONENT TRUE)
 
 if(TARGET ${UCX_WRAPPER_TARGET})
   add_dependencies(${SHARED_TARGET} ${UCX_WRAPPER_TARGET})

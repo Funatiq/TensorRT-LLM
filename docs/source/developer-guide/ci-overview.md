@@ -81,7 +81,9 @@ The initial policy enforces these boundaries:
 - Component tests cannot reach the main facade or Torch operator aggregates unless
   they explicitly request `FULL_STACK`. The seven audited `th_common_*` family
   targets are allowed in component tests; their family-specific rules reject
-  facade, aggregate, and unrelated-backend dependencies.
+  facade, aggregate, and unrelated-backend dependencies. `FULL_STACK` tests cannot
+  also explicitly link compiled components packaged into the facade. External
+  libraries, test support libraries, and interface targets remain permitted.
 - Component libraries cannot reach the facade, language bindings, tests, or
   benchmarks.
 - Representative lightweight tests (`stringUtilsTest`, `executorConfigTest`, and
