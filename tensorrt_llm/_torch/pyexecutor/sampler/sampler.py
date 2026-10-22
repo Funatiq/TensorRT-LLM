@@ -40,7 +40,6 @@ from tensorrt_llm.logger import logger
 
 from ...utils import torch_multi_arange
 from ..llm_request import LlmRequest, LlmRequestState, get_draft_token_length
-from ..resource_manager import ResourceManager
 from ..scheduler import ScheduledRequests
 from .beam_search import (
     BeamHistory,
@@ -189,7 +188,6 @@ class Sampler(ABC, Generic[GenericSampleState]):
         scheduled_requests: ScheduledRequests,
         model_outputs: dict[str, Any],
         num_context_logits_prefix_sum: list[int],
-        resource_manager: Optional[ResourceManager] = None,
     ) -> GenericSampleState:
         raise NotImplementedError
 
@@ -220,7 +218,6 @@ class Sampler(ABC, Generic[GenericSampleState]):
     def update_requests(
         self,
         state: GenericSampleState,
-        resource_manager: Optional[ResourceManager] = None,
     ) -> None:
         raise NotImplementedError
 
@@ -265,7 +262,6 @@ class EarlyStopSampler(Sampler[SampleState[SampleStateTensors, SampleStateTensor
         scheduled_requests: ScheduledRequests,
         model_outputs: dict[str, Any],
         num_context_logits_prefix_sum: list[int],
-        resource_manager: Optional[ResourceManager] = None,
     ) -> SampleState:
         host = SampleStateTensors(new_tokens=torch.empty(0))
         assert not scheduled_requests.generation_requests
@@ -275,7 +271,6 @@ class EarlyStopSampler(Sampler[SampleState[SampleStateTensors, SampleStateTensor
     def update_requests(
         self,
         state: SampleState,
-        resource_manager: Optional[ResourceManager] = None,
     ) -> None:
         assert isinstance(state, SampleState)
         requests = state.requests
@@ -383,7 +378,6 @@ class EarlyStopWithMMResult(Sampler[SampleStateWithMMResult]):
         scheduled_requests: ScheduledRequests,
         model_outputs: dict[str, Any],
         num_context_logits_prefix_sum: list[int],
-        resource_manager: Optional[ResourceManager] = None,
     ) -> SampleState:
         # from model_outputs to MultimodalResult
         assert not scheduled_requests.generation_requests
@@ -396,9 +390,7 @@ class EarlyStopWithMMResult(Sampler[SampleStateWithMMResult]):
     def update_requests(
         self,
         state: SampleState,
-        resource_manager: Optional[ResourceManager] = None,
     ) -> None:
-        # resource_manager will not be used in this function, just for interface consistency.
         assert isinstance(state, SampleState)
         requests = state.requests
         mm_embeddings = state.data.mm_embeddings
@@ -1359,7 +1351,6 @@ class TorchSampler(Sampler[SampleStateTorch], AsyncWorkerMixin):
     def update_requests(
         self,
         state: SampleStateTorch,
-        resource_manager: Optional[ResourceManager] = None,
     ) -> None:
         if state.sampler_event:
             state.sampler_event.synchronize()
@@ -1636,7 +1627,6 @@ class TorchSampler(Sampler[SampleStateTorch], AsyncWorkerMixin):
         scheduled_requests: ScheduledRequests,
         model_outputs: dict[str, Any],
         num_context_logits_prefix_sum: list[int],
-        resource_manager: Optional[ResourceManager] = None,
     ) -> SampleStateTorch:
         # NB: There are 1 + get_draft_token_length(request) tokens per request.
         self.setup_sampler_step(scheduled_requests)

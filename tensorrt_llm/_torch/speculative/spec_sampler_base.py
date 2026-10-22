@@ -29,7 +29,6 @@ import torch
 
 from ...sampling_params import SamplingParams
 from ..pyexecutor.llm_request import LlmRequest, LlmRequestState, get_draft_token_length
-from ..pyexecutor.resource_manager import BaseResourceManager
 from ..pyexecutor.sampler import (
     DEFAULT_BEAM_IDX,
     AsyncWorkerMixin,
@@ -326,7 +325,6 @@ class SpecSampler(Sampler[SampleStateSpec], AsyncWorkerMixin):
     def update_requests(
         self,
         state: SampleStateSpec,
-        resource_manager: Optional[BaseResourceManager] = None,
     ) -> None:
         """
         CPU-side request updates after GPU->CPU sync.

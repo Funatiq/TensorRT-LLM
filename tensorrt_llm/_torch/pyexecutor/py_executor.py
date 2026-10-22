@@ -8546,7 +8546,7 @@ class PyExecutor:
                          sample_state: SampleState,
                          resource_manager: Optional[ResourceManager] = None):
         try:
-            self.sampler.update_requests(sample_state, resource_manager)
+            self.sampler.update_requests(sample_state)
             self._accumulate_spec_dec_stats(sample_state)
         except Exception as e:
             traceback.print_exc()
