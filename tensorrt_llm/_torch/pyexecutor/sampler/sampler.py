@@ -1630,7 +1630,7 @@ class TorchSampler(Sampler[SampleStateTorch], AsyncWorkerMixin):
     ) -> SampleStateTorch:
         # NB: There are 1 + get_draft_token_length(request) tokens per request.
         self.setup_sampler_step(scheduled_requests)
-        new_tokens = self.store.new_tokens
+        new_tokens_cuda = self.store.new_tokens
 
         if self._track_pending_steps:
             # A context request claims a (possibly reused) slot: clear any
@@ -1652,10 +1652,10 @@ class TorchSampler(Sampler[SampleStateTorch], AsyncWorkerMixin):
             new_tokens_host,
             single_step_greedy,
         ) = self._process_requests(
-            scheduled_requests,
-            model_outputs,
-            new_tokens,
-            num_context_logits_prefix_sum,
+            scheduled_requests=scheduled_requests,
+            raw_logits_cuda=model_outputs["logits"],
+            new_tokens_cuda=new_tokens_cuda,
+            num_context_logits_prefix_sum=num_context_logits_prefix_sum,
         )
 
         if self._track_pending_steps and requests:
@@ -1679,7 +1679,7 @@ class TorchSampler(Sampler[SampleStateTorch], AsyncWorkerMixin):
                     seq_slots_host=seq_slots_host,
                     seq_slots_cuda=seq_slots_cuda,
                     seq_lens_cuda=seq_lens_cuda,
-                    new_tokens_cuda=new_tokens,
+                    new_tokens_cuda=new_tokens_cuda,
                     first_finish_reasons_cuda=(
                         beam_search_store.first_finish_reasons
                         if beam_search_store is not None
@@ -1697,7 +1697,10 @@ class TorchSampler(Sampler[SampleStateTorch], AsyncWorkerMixin):
                 first_finish_reasons = beam_search_store.first_finish_reasons
                 first_finish_reasons_host = self._copy_to_host(first_finish_reasons)
                 self._update_original_tokens(
-                    beam_search_store.original_tokens, seq_slots_cuda, seq_lens_cuda, new_tokens
+                    beam_search_store.original_tokens,
+                    seq_slots_cuda,
+                    seq_lens_cuda,
+                    new_tokens_cuda,
                 )
                 beam_history_builders, side_stream_event = self._beam_search.prepare_beam_histories(
                     requests, finish_reasons=first_finish_reasons
@@ -1727,7 +1730,7 @@ class TorchSampler(Sampler[SampleStateTorch], AsyncWorkerMixin):
         sampler_event = self._record_sampler_event(side_stream_event=side_stream_event)
         return SampleStateTorch(
             requests=requests,
-            device=SampleStateTensors(new_tokens=new_tokens),
+            device=SampleStateTensors(new_tokens=new_tokens_cuda),
             host=SampleStateTensorsHostTorch(
                 new_tokens=new_tokens_host,
                 finish_reasons=finish_reasons_host,
@@ -2280,8 +2283,9 @@ class TorchSampler(Sampler[SampleStateTorch], AsyncWorkerMixin):
     @nvtx_range("_process_requests")
     def _process_requests(
         self,
+        *,
         scheduled_requests: ScheduledRequests,
-        model_outputs: dict[str, Any],
+        raw_logits_cuda: torch.Tensor,
         new_tokens_cuda: torch.Tensor,
         num_context_logits_prefix_sum: list[int],
     ) -> tuple[
@@ -2293,8 +2297,6 @@ class TorchSampler(Sampler[SampleStateTorch], AsyncWorkerMixin):
         torch.Tensor,
         bool,
     ]:
-        raw_logits_cuda = model_outputs["logits"]
-
         generation_requests = scheduled_requests.generation_requests
         request_ids = [request.py_request_id for request in generation_requests]
         maybe_seq_slots = [request.py_seq_slot for request in generation_requests]
